@@ -1,0 +1,80 @@
+{
+	"meta": {
+		"title": "My blone",
+		"description": "一个可编辑的博客初始化模板，用来记录文章、项目、收藏与想法。",
+		"username": "Jovian"
+	},
+	"faviconUrl": "/api/media/favicon.png?v=1775709597609",
+	"avatarUrl": "/api/media/images/avatar.png?v=1775709561368",
+	"theme": {
+		"colorBrand": "#de4331",
+		"colorPrimary": "#4E3F42",
+		"colorSecondary": "#7b888e",
+		"colorBrandSecondary": "#FCC841",
+		"colorBg": "#eeeeee",
+		"colorBorder": "#ffffff",
+		"colorCard": "#ffffff66",
+		"colorArticle": "#ffffffcc"
+	},
+	"backgroundColors": [
+		"#FCC841",
+		"#DFEFFC",
+		"#DEDE92",
+		"#DE4331",
+		"#FE9750",
+		"#FCC841"
+	],
+	"artImages": [
+		{
+			"id": "template-art",
+			"url": "/images/art/template-art.svg"
+		},
+		{
+			"id": "3af823fe184df4ad",
+			"url": "/uploads/site/art/3af823fe184df4ad6cdadc312d01d8ef5b9d3cff99cfcb90d918a3dfed9652b6.jpg"
+		}
+	],
+	"currentArtImageId": "3af823fe184df4ad",
+	"backgroundImages": [
+		{
+			"id": "",
+			"url": ""
+		}
+	],
+	"currentBackgroundImageId": "",
+	"socialButtons": [
+		{
+			"id": "github",
+			"type": "github",
+			"value": "https://github.com/yourname",
+			"label": "Github",
+			"order": 1
+		},
+		{
+			"id": "website",
+			"type": "link",
+			"value": "https://example.com",
+			"label": "Website",
+			"order": 2
+		},
+		{
+			"id": "email",
+			"type": "email",
+			"value": "hello@example.com",
+			"label": "",
+			"order": 3
+		}
+	],
+	"clockShowSeconds": false,
+	"summaryInContent": false,
+	"isCachePem": false,
+	"hideEditButton": true,
+	"enableCategories": true,
+	"currentHatIndex": 3,
+	"hatFlipped": false,
+	"enableChristmas": false,
+	"beian": {
+		"text": "",
+		"link": ""
+	}
+}

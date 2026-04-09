@@ -1,0 +1,14 @@
+[
+	{
+		"name": "项目名称",
+		"year": 2026,
+		"description": "这里可以放你的项目简介、亮点和访问地址。进入编辑模式后即可替换或新增项目内容。",
+		"image": "/images/avatar.png",
+		"url": "https://example.com/",
+		"tags": [
+			"模板",
+			"项目"
+		],
+		"github": "https://github.com/yourname/your-project"
+	}
+]

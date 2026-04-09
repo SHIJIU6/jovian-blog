@@ -1,0 +1,36 @@
+main = ".open-next/worker.js"
+name = "2025-blog-public"
+compatibility_date = "2025-03-25"
+compatibility_flags = ["nodejs_compat"]
+
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
+
+[build]
+command = "pnpm run build:cf"
+
+# Final content architecture bindings:
+# 1. GitHub stores code only
+# 2. D1 stores structured content
+# 3. R2 stores media assets
+#
+# [[d1_databases]]
+# binding = "BLOG_DB"
+# database_name = "blog-content"
+# database_id = "replace-with-your-d1-id"
+# migrations_dir = "migrations"
+#
+# [[r2_buckets]]
+# binding = "BLOG_MEDIA"
+# bucket_name = "blog-media"
+
+[observability]
+[observability.logs]
+enabled = true
+# 头部采样率，1 表示 100% 采样（所有请求都会被采样）
+head_sampling_rate = 1
+# 启用调用日志（记录每次函数调用）
+invocation_logs = true
+# 持久化日志到磁盘（本地开发时有用）
+persist = true
