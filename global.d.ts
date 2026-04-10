@@ -2,6 +2,43 @@ declare module '*.svg' {
 	export const ReactComponent: React.FC<React.SVGProps<SVGSVGElement>>
 	export default ReactComponent
 }
+
+declare module '*.png' {
+	const content: StaticImageData
+
+	export default content
+}
+
+declare module '*.jpg' {
+	const content: StaticImageData
+
+	export default content
+}
+
+declare module '*.jpeg' {
+	const content: StaticImageData
+
+	export default content
+}
+
+declare module '*.webp' {
+	const content: StaticImageData
+
+	export default content
+}
+
+declare module '*.gif' {
+	const content: StaticImageData
+
+	export default content
+}
+
+declare module '*.ico' {
+	const content: StaticImageData
+
+	export default content
+}
+
 declare module '*.svg?url' {
 	const content: StaticImageData
 
