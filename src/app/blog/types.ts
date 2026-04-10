@@ -1,3 +1,5 @@
+import type { BlogStatus } from '@/lib/blog-status'
+
 export type BlogIndexItem = {
 	slug: string
 	title: string
@@ -7,6 +9,7 @@ export type BlogIndexItem = {
 	cover?: string
 	hidden?: boolean
 	category?: string
+	status?: BlogStatus
 }
 
 export type BlogConfig = {
@@ -17,5 +20,6 @@ export type BlogConfig = {
 	cover?: string
 	hidden?: boolean
 	category?: string
+	status?: BlogStatus
 }
 

@@ -7,9 +7,9 @@ import CalendarCard from '@/app/(home)/calendar-card'
 import SocialButtons from '@/app/(home)/social-buttons'
 import ShareCard from '@/app/(home)/share-card'
 import AritcleCard from '@/app/(home)/aritcle-card'
+import SnippetCard from '@/app/(home)/snippet-card'
 import WriteButtons from '@/app/(home)/write-buttons'
 import LikePosition from './like-position'
-import HatCard from './hat-card'
 import BeianCard from './beian-card'
 import { useSize } from '@/hooks/use-size'
 import { motion } from 'motion/react'
@@ -17,9 +17,10 @@ import { useLayoutEditStore } from './stores/layout-edit-store'
 import { useConfigStore } from './stores/config-store'
 import { toast } from 'sonner'
 import ConfigDialog from './config-dialog/index'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import SnowfallBackground from '@/layout/backgrounds/snowfall'
 import { useManagementMode } from '@/hooks/use-management-mode'
+import { pushSiteContent } from './services/push-site-content'
 
 export default function Home() {
 	const { maxSM } = useSize()
@@ -28,10 +29,20 @@ export default function Home() {
 	const saveEditing = useLayoutEditStore(state => state.saveEditing)
 	const cancelEditing = useLayoutEditStore(state => state.cancelEditing)
 	const canManage = useManagementMode()
+	const [isPersistingLayout, setIsPersistingLayout] = useState(false)
 
-	const handleSave = () => {
-		saveEditing()
-		toast.success('首页布局偏移已保存（尚未提交到远程配置）')
+	const handleSave = async () => {
+		try {
+			setIsPersistingLayout(true)
+			await pushSiteContent(siteContent, cardStyles)
+			saveEditing()
+			toast.success('首页布局已保存')
+		} catch (error: any) {
+			console.error('Failed to persist home layout:', error)
+			toast.error(error?.message || '首页布局保存失败')
+		} finally {
+			setIsPersistingLayout(false)
+		}
 	}
 
 	const handleCancel = () => {
@@ -69,11 +80,18 @@ export default function Home() {
 								whileHover={{ scale: 1.05 }}
 								whileTap={{ scale: 0.95 }}
 								onClick={handleCancel}
+								disabled={isPersistingLayout}
 								className='rounded-xl border bg-white px-3 py-1 text-xs font-medium text-gray-700'>
 								取消
 							</motion.button>
-							<motion.button type='button' whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={handleSave} className='brand-btn px-3 py-1 text-xs'>
-								保存偏移
+							<motion.button
+								type='button'
+								whileHover={{ scale: 1.05 }}
+								whileTap={{ scale: 0.95 }}
+								onClick={() => void handleSave()}
+								disabled={isPersistingLayout}
+								className='brand-btn px-3 py-1 text-xs'>
+								{isPersistingLayout ? '保存中...' : '保存偏移'}
 							</motion.button>
 						</div>
 					</div>
@@ -88,9 +106,9 @@ export default function Home() {
 				{cardStyles.socialButtons?.enabled !== false && <SocialButtons />}
 				{!maxSM && cardStyles.shareCard?.enabled !== false && <ShareCard />}
 				{cardStyles.articleCard?.enabled !== false && <AritcleCard />}
+				{cardStyles.snippetCard?.enabled !== false && <SnippetCard />}
 				{!maxSM && cardStyles.writeButtons?.enabled !== false && <WriteButtons />}
 				{cardStyles.likePosition?.enabled !== false && <LikePosition />}
-				{cardStyles.hatCard?.enabled !== false && <HatCard />}
 				{cardStyles.beianCard?.enabled !== false && <BeianCard />}
 			</div>
 

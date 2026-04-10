@@ -65,6 +65,14 @@
 		"offsetY": null,
 		"enabled": true
 	},
+	"snippetCard": {
+		"width": 220,
+		"height": 92,
+		"order": 9,
+		"offsetX": null,
+		"offsetY": null,
+		"enabled": true
+	},
 	"writeButtons": {
 		"height": 42,
 		"width": 180,

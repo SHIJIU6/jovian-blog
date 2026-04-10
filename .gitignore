@@ -35,6 +35,9 @@ yarn-error.log*
 .start-stdout.log
 .start-stderr.log
 public/images/avatar-png
+public/uploads/
+project_document_local/
+.mcp.json
 
 # env files (can opt-in for committing if needed)
 .env*

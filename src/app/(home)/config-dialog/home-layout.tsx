@@ -14,10 +14,10 @@ const CARD_LABELS: Record<string, string> = {
 	socialButtons: '联系',
 	shareCard: '分享',
 	articleCard: '文章',
+	snippetCard: '短句',
 	writeButtons: '写作',
 	navCard: '导航',
 	likePosition: '点赞',
-	hatCard: '帽子',
 	beianCard: '备案'
 }
 
@@ -72,7 +72,9 @@ export function HomeLayout({ cardStylesData, setCardStylesData, onClose }: HomeL
 					</tr>
 				</thead>
 				<tbody>
-					{Object.entries(cardStylesData).map(([key, cardStyle]: [string, any]) => (
+					{Object.entries(cardStylesData)
+						.filter(([key]) => key !== 'hatCard')
+						.map(([key, cardStyle]: [string, any]) => (
 						<tr key={key} className='border-b last:border-0'>
 							<td className='px-3 py-2 align-middle whitespace-nowrap'>{CARD_LABELS[key] ?? key.replace(/([A-Z])/g, ' $1').trim()}</td>
 

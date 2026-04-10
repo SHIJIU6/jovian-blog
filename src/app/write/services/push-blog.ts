@@ -1,3 +1,4 @@
+import { normalizeBlogStatus } from '@/lib/blog-status'
 import type { ImageItem } from '../types'
 import { formatDateTimeLocal } from '../stores/write-store'
 
@@ -11,6 +12,7 @@ export type PushBlogParams = {
 		summary?: string
 		hidden?: boolean
 		category?: string
+		status?: string
 	}
 	cover?: ImageItem | null
 	images?: ImageItem[]
@@ -37,6 +39,7 @@ async function uploadAsset(file: File, folder: string) {
 
 export async function pushBlog(params: PushBlogParams): Promise<void> {
 	const { form, cover, images, mode = 'create', originalSlug } = params
+	const status = normalizeBlogStatus(form.status, form.hidden)
 
 	if (!form?.slug) throw new Error('需要 slug')
 	if (mode === 'edit' && originalSlug && originalSlug !== form.slug) {
@@ -77,7 +80,8 @@ export async function pushBlog(params: PushBlogParams): Promise<void> {
 			tags: form.tags,
 			category: form.category,
 			coverUrl,
-			hidden: form.hidden,
+			hidden: status !== 'published',
+			status,
 			date: form.date || formatDateTimeLocal()
 		})
 	})

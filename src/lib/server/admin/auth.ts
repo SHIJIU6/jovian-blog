@@ -7,7 +7,7 @@ type AdminAuthResult = {
 	ok: boolean
 	email?: string
 	role?: string
-	source?: 'local-dev' | 'admins-table' | 'allowlist'
+	source?: 'local-dev' | 'admins-table' | 'allowlist' | 'service-token'
 	reason?: string
 }
 
@@ -28,12 +28,25 @@ function getEmailFromHeaders(headers: Headers): string | null {
 	)
 }
 
+function getTokenFromHeaders(headers: Headers): string | null {
+	const authHeader = headers.get('authorization') || headers.get('Authorization')
+	if (authHeader?.startsWith('Bearer ')) {
+		return authHeader.slice('Bearer '.length).trim()
+	}
+
+	return headers.get('x-blog-admin-token') || null
+}
+
 function getHostFromHeaders(headers: Headers): string {
 	return (headers.get('host') || '').split(':')[0].trim().toLowerCase()
 }
 
 function isLocalRequest(headers: Headers): boolean {
 	return LOCAL_HOSTS.has(getHostFromHeaders(headers))
+}
+
+function isLocalBypassEnabled() {
+	return process.env.BLOG_LOCAL_ADMIN_BYPASS !== 'false'
 }
 
 async function getAdminAccessFromD1(email: string) {
@@ -66,8 +79,19 @@ async function getAdminAccessFromD1(email: string) {
 }
 
 export async function evaluateAdminHeaders(headers: Headers, allowlistRaw?: string | null): Promise<AdminAuthResult> {
-	if (isLocalRequest(headers)) {
+	if (isLocalRequest(headers) && isLocalBypassEnabled()) {
 		return { ok: true, reason: 'local-dev', role: 'owner', source: 'local-dev' }
+	}
+
+	const configuredServiceToken = process.env.BLOG_ADMIN_TOKEN
+	const requestToken = getTokenFromHeaders(headers)
+	if (configuredServiceToken && requestToken && requestToken === configuredServiceToken) {
+		return {
+			ok: true,
+			email: 'mcp-service',
+			role: 'owner',
+			source: 'service-token'
+		}
 	}
 
 	const email = getEmailFromHeaders(headers)

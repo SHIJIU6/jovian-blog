@@ -25,6 +25,12 @@ export default function HiCard() {
 	const styles = cardStyles.hiCard
 	const username = siteContent.meta.username || 'Your Name'
 	const avatarSrc = siteContent.avatarUrl || '/images/avatar.png'
+	const hatIndex = siteContent.currentHatIndex ?? 1
+	const hatFlipped = siteContent.hatFlipped ?? false
+	const showHat = siteContent.enableHat ?? true
+	const hatOffsetX = siteContent.hatOffsetX ?? 50
+	const hatOffsetY = siteContent.hatOffsetY ?? -30
+	const hatScale = siteContent.hatScale ?? 0.9
 
 	const x = styles.offsetX !== null ? center.x + styles.offsetX : center.x - styles.width / 2
 	const y = styles.offsetY !== null ? center.y + styles.offsetY : center.y - styles.height / 2
@@ -48,8 +54,34 @@ export default function HiCard() {
 						/>
 					</>
 				)}
-				<Link href='/about'>
-					<img src={avatarSrc} className='mx-auto rounded-full' style={{ width: 120, height: 120, boxShadow: ' 0 16px 32px -5px #E2D9CE' }} />
+				<Link href='/about' className='relative mx-auto block h-[120px] w-[120px]'>
+					<div className='relative h-[120px] w-[120px] overflow-visible'>
+						<img
+							src={avatarSrc}
+							className='h-[120px] w-[120px] rounded-full object-cover'
+							style={{ boxShadow: ' 0 16px 32px -5px #E2D9CE' }}
+						/>
+					{showHat && (
+							<div
+								className='pointer-events-none absolute left-1/2 top-0 z-10 h-[62px] w-[96px] -translate-x-1/2 overflow-hidden'
+								style={{
+									top: hatOffsetY,
+									marginLeft: hatOffsetX,
+									transform: `translateX(-50%) scale(${hatScale})`,
+									transformOrigin: 'top center'
+								}}>
+								<img
+									src={`/images/hats/${hatIndex}.webp`}
+									alt='avatar hat'
+									className='h-full w-full object-contain'
+									style={{
+										transform: hatFlipped ? 'scaleX(-1)' : 'none',
+										transformOrigin: 'center'
+									}}
+								/>
+							</div>
+					)}
+					</div>
 				</Link>
 				<h1 className='font-averia mt-3 text-2xl'>
 					{greeting} <br /> I'm <span className='text-linear text-[32px]'>{username}</span> , Nice to <br /> meet you!

@@ -1,6 +1,6 @@
 {
 	"meta": {
-		"title": "My blone",
+		"title": "My blog",
 		"description": "一个可编辑的博客初始化模板，用来记录文章、项目、收藏与想法。",
 		"username": "Jovian"
 	},
@@ -39,6 +39,10 @@
 		{
 			"id": "",
 			"url": ""
+		},
+		{
+			"id": "f82dfd80ee9616e7",
+			"url": "/api/media/uploads/site/backgrounds/f82dfd80ee9616e7e296564c88db38a1b0e72697a00e4367646b2240982132fb.png"
 		}
 	],
 	"currentBackgroundImageId": "",
@@ -46,31 +50,28 @@
 		{
 			"id": "github",
 			"type": "github",
-			"value": "https://github.com/yourname",
+			"value": "https://github.com/SHIJIU6",
 			"label": "Github",
 			"order": 1
 		},
 		{
-			"id": "website",
-			"type": "link",
-			"value": "https://example.com",
-			"label": "Website",
-			"order": 2
-		},
-		{
-			"id": "email",
+			"id": "button-1775733898409",
 			"type": "email",
-			"value": "hello@example.com",
+			"value": "3129003469jwj@gmail.com",
 			"label": "",
-			"order": 3
+			"order": 2
 		}
 	],
-	"clockShowSeconds": false,
+	"clockShowSeconds": true,
 	"summaryInContent": false,
+	"enableHat": true,
+	"hatOffsetX": null,
+	"hatOffsetY": -30,
+	"hatScale": null,
 	"isCachePem": false,
 	"hideEditButton": true,
 	"enableCategories": true,
-	"currentHatIndex": 3,
+	"currentHatIndex": 22,
 	"hatFlipped": false,
 	"enableChristmas": false,
 	"beian": {

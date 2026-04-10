@@ -27,6 +27,238 @@
 - 仓库内仍保留了一些历史说明和截图，主要用于回溯旧版本来源。
 - 如果你准备继续完善这个项目，请优先沿着 D1 / R2 / Cloudflare Access / `/studio` 这条路线推进。
 
+### 当前本地 AI 草稿测试
+
+当前版本已经接入一版本地可验证的 AI 草稿生成链路：
+
+- 后台入口：`/studio/write`
+- 服务端接口：
+  - `POST /api/admin/ai/research-topic`
+  - `POST /api/admin/ai/generate-post`
+- 本地未配置 `OPENAI_API_KEY` 时，会自动回退到 mock 模式，便于先验证“AI 草稿 -> 编辑 -> 发布”的完整链路。
+- 配置真实模型时，可设置：
+  - `OPENAI_API_KEY`
+  - `OPENAI_RESPONSES_MODEL`（可选，默认 `gpt-5`）
+
+### 当前外部工具 / MCP 集成方向
+
+如果你的目标不是“在网站里点按钮生成文章”，而是：
+
+- 在 Codex / GPT / Claude 里讨论问题
+- 再要求 AI 把当前讨论整理进博客
+
+那么当前项目更推荐的用法是：
+
+- 把本项目作为 **博客发布网关**
+- 让本地 MCP Server / Skill / Agent 直接调用本项目后台接口
+
+当前已经提供适合外部工具调用的文章接口：
+
+- `POST /api/admin/posts/create-draft`
+- `POST /api/admin/posts/publish-draft`
+
+典型本地流程：
+
+1. 在 Codex / GPT / Claude 中完成讨论
+2. 模型整理出标题、摘要、正文、标签、来源
+3. 通过 MCP tool 或本地脚本调用 `create-draft`
+4. 如需人工审核，可在 `/studio/blog` 或 `/studio/write` 中继续编辑
+5. 审核完成后再调用 `publish-draft`
+
+这一条路线优先级高于“先把 AI 塞进网站页面”，也更适合后续升级为：
+
+- 本地 `stdio MCP`
+- 远程 `Streamable HTTP MCP`
+- ChatGPT / Claude / Codex 统一工具接入
+
+### 本地 stdio MCP 使用
+
+当前项目已经提供一个本地 `stdio MCP` server：
+
+```bash
+pnpm mcp:blog
+```
+
+它当前暴露的工具包括：
+
+- `create_blog_draft`
+- `publish_blog_post`
+- `get_blog_post`
+- `list_recent_posts`
+- `delete_blog_post`
+- `search_blog_posts`
+
+#### 标准 MCP 是怎么做出来的
+
+对这个项目来说，一个标准 MCP server 的制作顺序应该是：
+
+1. **先有稳定的项目服务端能力**
+   - 例如草稿创建、草稿发布、内容读取、资源上传
+   - 这些能力应先落在项目自己的 `/api/admin/*` 与 service 层里
+
+2. **再把这些能力封装成 MCP tools**
+   - MCP 不直接操作数据库或页面 UI
+   - MCP 只调用项目自己的后台接口
+
+3. **最后再用 Skill 包装高频工作流**
+   - Skill 负责提示模型如何把当前讨论整理成标题、摘要、正文、标签和来源
+   - MCP 负责真正执行
+
+也就是说，这个项目的最优结构不是 “只做 skill + MCP”，而是：
+
+- **项目接口 / 服务层**：唯一真实执行层
+- **MCP server**：本地或远程工具适配层
+- **Skill**：对话工作流包装层
+
+#### MCP 安装与适配方式
+
+##### 方式 1：Codex 本地添加 stdio MCP
+
+当前环境下可以直接添加：
+
+```bash
+codex mcp add blog-publisher --env BLOG_BASE_URL=http://127.0.0.1:2025 --env BLOG_ADMIN_EMAIL=owner@example.com --env BLOG_ADMIN_TOKEN=replace-with-a-long-random-token -- node D:\IDEA\Project\2025-blog-public\scripts\blog-mcp-server.mjs
+```
+
+查看已配置的 MCP：
+
+```bash
+codex mcp list
+```
+
+##### 方式 2：Claude Code / 支持 `.mcp.json` 的本地客户端
+
+项目中已经附带可直接参考的配置文件：
+
+- [`.mcp.json.example`](D:/IDEA/Project/2025-blog-public/.mcp.json.example)
+
+你可以复制为本地实际配置，然后把 token 和邮箱换成你自己的值。
+
+配置核心是：
+
+- command: `node`
+- args: `scripts/blog-mcp-server.mjs`
+- env:
+  - `BLOG_BASE_URL`
+  - `BLOG_ADMIN_EMAIL`
+  - `BLOG_ADMIN_TOKEN`
+
+#### Skill 位置与用途
+
+项目中已经附带一个可继续使用/调整的 Skill：
+
+- [discussion-to-blog](D:/IDEA/Project/2025-blog-public/skills/discussion-to-blog/SKILL.md)
+
+作用：
+
+- 自动把当前讨论整理成博客草稿结构
+- 再调用 `create_blog_draft`
+- 如果用户明确要求公开，再继续调用 `publish_blog_post`
+
+当前 Skill 面向的目标话术是：
+
+- “把我们刚才讨论整理成博客草稿并写入项目”
+- “把这次分析整理成一篇博客草稿”
+- “把当前调试过程整理后发到博客后台”
+
+如果你要做文章检索与删除，推荐的话术是：
+
+- “先看看当前博客里有哪些 MCP 相关文章”
+- “把标题包含 xxx 的文章列出来”
+- “删除 slug 为 xxx 的文章”
+
+#### 本地安装 / 适配思路
+
+标准的本地 MCP 制作方式是：
+
+1. 让项目本身先具备稳定的服务端能力
+2. 再用一个本地 `stdio` 进程把这些能力封装成 MCP tools
+3. 让 Codex / Claude Code / 其他本地 agent 工具通过 MCP 调用
+
+对这个项目来说，最优做法不是把业务直接写在 Skill 里，而是：
+
+- **博客项目本身**：作为发布网关
+- **MCP server**：作为工具适配层
+- **Skill**：作为高频工作流包装层
+
+也就是说：
+
+- `Skill` 负责“怎么用”
+- `MCP` 负责“怎么调工具”
+- `/api/admin/*` 负责“真正执行”
+
+#### 环境变量
+
+- `BLOG_BASE_URL`
+  - 默认：`http://127.0.0.1:2025`
+- `BLOG_ADMIN_EMAIL`
+  - 可选，给服务端传递管理员邮箱头
+- `BLOG_ADMIN_TOKEN`
+  - 可选，给服务调用增加 Bearer Token
+- `BLOG_LOCAL_ADMIN_BYPASS`
+  - 默认：`true`
+  - 设置为 `false` 后，本地 `localhost` 也不再自动放行，必须使用 token 或管理员身份
+
+#### 安全建议
+
+本地开发时：
+
+- `localhost / 127.0.0.1` 默认允许进入后台和调用管理接口
+- 因此本地测试 MCP 时可以不配置 token
+- 如果你希望本地也强制鉴权，可设置 `BLOG_LOCAL_ADMIN_BYPASS=false`
+
+后续部署到生产环境时：
+
+- 不应裸开放 MCP 对应的管理接口
+- 推荐至少启用以下任一方案：
+- Cloudflare Access + `admins` 表
+- `BLOG_ADMIN_TOKEN` 服务级 Bearer Token
+- Cloudflare Access + 服务 token 组合
+
+当前项目已经支持：
+
+- 本地放行
+- Cloudflare Access 邮箱头识别
+- `admins` 表管理员校验
+- `BLOG_ADMIN_TOKEN` 服务级 token 校验
+
+因此后期如果把 MCP server 部署成远程版本，不需要让它直接碰数据库，
+只需要让它携带 token 调用本项目后台接口即可。
+
+#### 一句话工作流示例
+
+当你已经把本地 MCP 配好，并让 Skill 生效后，目标工作流就是：
+
+> “把我们刚才讨论整理成博客草稿并写入项目”
+
+然后流程会变成：
+
+1. 模型读取当前讨论上下文
+2. Skill 指导模型整理出：
+   - title
+   - summary
+   - discussion 或 contentMd
+   - tags
+   - category
+   - sources
+3. 调用 `create_blog_draft`
+4. 返回 slug 和草稿状态
+
+如果你再说：
+
+> “把刚才那篇草稿直接发布”
+
+则可以继续调用 `publish_blog_post`
+
+如果你要删除文章，推荐先让模型执行：
+
+1. `search_blog_posts`
+2. 或 `list_recent_posts`
+3. 再由你指定标题或 slug
+4. 然后调用 `delete_blog_post`
+
+这样可以避免模型直接删除错误文章。
+
 ## 快速启动（当前方案）
 
 1. 安装依赖：`pnpm i`

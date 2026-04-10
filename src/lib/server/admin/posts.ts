@@ -3,6 +3,7 @@ import { promises as fs } from 'node:fs'
 import { getContentBindings } from '../content/cloudflare'
 import type { BlogIndexItem } from '@/app/blog/types'
 import { getProjectRoot } from '../project-root'
+import { normalizeBlogStatus } from '@/lib/blog-status'
 
 type SavePostInput = {
 	slug: string
@@ -14,6 +15,7 @@ type SavePostInput = {
 	coverUrl?: string
 	hidden?: boolean
 	date?: string
+	status?: string
 }
 
 type SyncPostIndexInput = {
@@ -43,6 +45,7 @@ async function writeJsonFile(filePath: string, value: unknown) {
 }
 
 function createBlogIndexItem(input: SavePostInput): BlogIndexItem {
+	const status = normalizeBlogStatus(input.status, input.hidden)
 	return {
 		slug: input.slug,
 		title: input.title,
@@ -50,14 +53,16 @@ function createBlogIndexItem(input: SavePostInput): BlogIndexItem {
 		tags: input.tags,
 		date: input.date || new Date().toISOString(),
 		cover: input.coverUrl,
-		hidden: Boolean(input.hidden),
-		category: input.category
+		hidden: status !== 'published',
+		category: input.category,
+		status
 	}
 }
 
 async function upsertPostToFiles(input: SavePostInput) {
 	const basePath = path.join(PUBLIC_DIR, 'blogs', input.slug)
 	await ensureDir(basePath)
+	const status = normalizeBlogStatus(input.status, input.hidden)
 
 	const config = {
 		title: input.title,
@@ -65,8 +70,9 @@ async function upsertPostToFiles(input: SavePostInput) {
 		date: input.date || new Date().toISOString(),
 		summary: input.summary,
 		cover: input.coverUrl,
-		hidden: Boolean(input.hidden),
-		category: input.category
+		hidden: status !== 'published',
+		category: input.category,
+		status
 	}
 
 	await fs.writeFile(path.join(basePath, 'index.md'), input.contentMd, 'utf8')
@@ -116,6 +122,7 @@ async function syncPostIndexToFiles(input: SyncPostIndexInput) {
 	for (const item of input.nextItems) {
 		const configPath = path.join(PUBLIC_DIR, 'blogs', item.slug, 'config.json')
 		const current = await readJsonFile<Record<string, unknown>>(configPath, {})
+		const status = normalizeBlogStatus(item.status, item.hidden)
 		await writeJsonFile(configPath, {
 			...current,
 			title: item.title,
@@ -123,8 +130,9 @@ async function syncPostIndexToFiles(input: SyncPostIndexInput) {
 			date: item.date,
 			summary: item.summary,
 			cover: item.cover,
-			hidden: item.hidden,
-			category: item.category
+			hidden: status !== 'published',
+			category: item.category,
+			status
 		})
 	}
 }
@@ -162,7 +170,7 @@ async function upsertPostToD1(db: any, input: SavePostInput) {
 	const existing = await db.prepare('SELECT id, created_at FROM posts WHERE slug = ? LIMIT 1').bind(input.slug).first()
 	const id = existing?.id ? String(existing.id) : crypto.randomUUID()
 	const createdAt = existing?.created_at ? String(existing.created_at) : now
-	const status = input.hidden ? 'draft' : 'published'
+	const status = normalizeBlogStatus(input.status, input.hidden)
 	const displayDate = input.date || now
 	const publishedAt = status === 'published' ? displayDate : null
 
@@ -200,7 +208,8 @@ async function upsertPostToD1(db: any, input: SavePostInput) {
 	return createBlogIndexItem({
 		...input,
 		date: displayDate,
-		hidden: status !== 'published'
+		hidden: status !== 'published',
+		status
 	})
 }
 
@@ -218,6 +227,7 @@ async function syncPostIndexToD1(db: any, input: SyncPostIndexInput) {
 	}
 
 	for (const item of input.nextItems) {
+		const status = normalizeBlogStatus(item.status, item.hidden)
 		await db
 			.prepare(
 				`UPDATE posts
@@ -229,8 +239,8 @@ async function syncPostIndexToD1(db: any, input: SyncPostIndexInput) {
 				item.summary || null,
 				item.cover || null,
 				item.date || now,
-				item.hidden ? 'draft' : 'published',
-				item.hidden ? null : item.date || now,
+				status,
+				status === 'published' ? item.date || now : null,
 				now,
 				item.slug
 			)

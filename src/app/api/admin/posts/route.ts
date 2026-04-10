@@ -38,7 +38,8 @@ export async function POST(request: Request) {
 		category: payload.category,
 		coverUrl: payload.coverUrl,
 		hidden: payload.hidden,
-		date: payload.date
+		date: payload.date,
+		status: payload.status
 	})
 	await writeAuditLog({
 		actorEmail: auth.email || 'local-dev',
@@ -48,6 +49,7 @@ export async function POST(request: Request) {
 		payload: {
 			title: payload.title,
 			hidden: Boolean(payload.hidden),
+			status: payload.status,
 			tagCount: Array.isArray(payload.tags) ? payload.tags.length : 0,
 			hasCover: Boolean(payload.coverUrl),
 			contentLength: typeof payload.contentMd === 'string' ? payload.contentMd.length : 0

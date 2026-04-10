@@ -1,5 +1,6 @@
 import type { CategoriesConfig } from '@/hooks/use-categories'
 import type { ContentListOptions, ContentPostDetail, ContentPostListItem } from './types'
+import { isPublicBlogStatus, normalizeBlogStatus } from '@/lib/blog-status'
 
 function splitCsv(value: unknown): string[] {
 	if (typeof value !== 'string' || value.length === 0) return []
@@ -11,7 +12,7 @@ function splitCsv(value: unknown): string[] {
 
 function mapRowToPost(row: Record<string, unknown>): ContentPostListItem {
 	const categoryList = splitCsv(row.categories)
-	const status = typeof row.status === 'string' ? (row.status as string) : undefined
+	const status = normalizeBlogStatus(typeof row.status === 'string' ? (row.status as string) : undefined, Boolean(row.hidden))
 
 	return {
 		id: typeof row.id === 'string' ? (row.id as string) : undefined,
@@ -21,7 +22,7 @@ function mapRowToPost(row: Record<string, unknown>): ContentPostListItem {
 		tags: splitCsv(row.tags),
 		date: String(row.date || row.published_at || row.updated_at || row.created_at || ''),
 		cover: typeof row.cover === 'string' ? (row.cover as string) : undefined,
-		hidden: status ? status !== 'published' : Boolean(row.hidden),
+		hidden: !isPublicBlogStatus(status),
 		category: categoryList[0],
 		status,
 		createdAt: typeof row.created_at === 'string' ? (row.created_at as string) : undefined,

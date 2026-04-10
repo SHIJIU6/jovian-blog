@@ -4,6 +4,7 @@ import { TagInput } from '../ui/tag-input'
 import { useCategories } from '@/hooks/use-categories'
 import { useConfigStore } from '@/app/(home)/stores/config-store'
 import { Select } from '@/components/select'
+import { getBlogStatusLabel, normalizeBlogStatus } from '@/lib/blog-status'
 
 type MetaSectionProps = {
 	delay?: number
@@ -11,11 +12,11 @@ type MetaSectionProps = {
 
 export function MetaSection({ delay = 0 }: MetaSectionProps) {
 	const { form, updateForm } = useWriteStore()
-	console.log(form.date)
 
 	const { categories } = useCategories()
 	const { siteContent } = useConfigStore()
 	const enableCategories = siteContent.enableCategories ?? false
+	const status = normalizeBlogStatus(form.status, form.hidden)
 
 	const categoryOptions = [{ value: '', label: '未分类' }, ...categories.map(cat => ({ value: cat, label: cat }))]
 
@@ -46,17 +47,9 @@ export function MetaSection({ delay = 0 }: MetaSectionProps) {
 					}}
 				/>
 
-				<div className='flex items-center gap-2'>
-					<input
-						type='checkbox'
-						id='hidden-check'
-						checked={form.hidden || false}
-						onChange={e => updateForm({ hidden: e.target.checked })}
-						className='h-4 w-4 rounded border-gray-300'
-					/>
-					<label htmlFor='hidden-check' className='cursor-pointer text-sm text-gray-600 select-none'>
-						隐藏此文章（仅管理员可见）
-					</label>
+				<div className='rounded-xl border bg-white/45 px-3 py-2 text-sm text-gray-600'>
+					当前状态：<span className='font-medium text-gray-900'>{getBlogStatusLabel(status)}</span>
+					<span className='ml-2 text-xs text-gray-500'>请通过右上角按钮执行“存为草稿 / 直接发布 / 下线”。</span>
 				</div>
 			</div>
 		</motion.div>

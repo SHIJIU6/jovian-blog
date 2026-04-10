@@ -9,10 +9,11 @@ import { loadBlog, type BlogConfig } from '@/lib/load-blog'
 import { useReadArticles } from '@/hooks/use-read-articles'
 import LiquidGrass from '@/components/liquid-grass'
 import { useManagementMode } from '@/hooks/use-management-mode'
+import { normalizeRouteSlug } from '@/lib/route-slug'
 
 export default function Page() {
 	const params = useParams() as { id?: string | string[] }
-	const slug = Array.isArray(params?.id) ? params.id[0] : params?.id || ''
+	const slug = normalizeRouteSlug(params?.id)
 	const router = useRouter()
 	const { markAsRead } = useReadArticles()
 	const canManage = useManagementMode()
@@ -27,7 +28,7 @@ export default function Page() {
 			if (!slug) return
 			try {
 				setLoading(true)
-				const blogData = await loadBlog(slug)
+				const blogData = await loadBlog(slug, { includeHidden: typeof window !== 'undefined' && ['localhost', '127.0.0.1'].includes(window.location.hostname) })
 
 				if (!cancelled) {
 					setBlog(blogData)
@@ -35,7 +36,13 @@ export default function Page() {
 					markAsRead(slug)
 				}
 			} catch (e: any) {
-				if (!cancelled) setError(e?.message || '加载失败')
+				if (!cancelled) {
+					const localDraftHint =
+						typeof window !== 'undefined' && ['localhost', '127.0.0.1'].includes(window.location.hostname)
+							? null
+							: '如果这是草稿，请先在后台发布或通过 /studio/write 继续编辑。'
+					setError(localDraftHint ? `${e?.message || '加载失败'} ${localDraftHint}` : e?.message || '加载失败')
+				}
 			} finally {
 				if (!cancelled) setLoading(false)
 			}

@@ -19,6 +19,7 @@ import { saveBlogEdits } from './services/save-blog-edits'
 import { Check, PenSquare } from 'lucide-react'
 import { CategoryModal } from './components/category-modal'
 import { useManagementMode } from '@/hooks/use-management-mode'
+import { getBlogStatusLabel, normalizeBlogStatus } from '@/lib/blog-status'
 
 type DisplayMode = 'day' | 'week' | 'month' | 'year' | 'category'
 
@@ -30,7 +31,6 @@ export default function BlogPage() {
 	const canManage = useManagementMode()
 	const enableCategories = siteContent.enableCategories ?? false
 
-	const [editMode, setEditMode] = useState(false)
 	const [editableItems, setEditableItems] = useState<BlogIndexItem[]>([])
 	const [selectedSlugs, setSelectedSlugs] = useState<Set<string>>(new Set())
 	const [saving, setSaving] = useState(false)
@@ -38,18 +38,17 @@ export default function BlogPage() {
 	const [categoryModalOpen, setCategoryModalOpen] = useState(false)
 	const [categoryList, setCategoryList] = useState<string[]>([])
 	const [newCategory, setNewCategory] = useState('')
+	const isManageMode = canManage
 
 	useEffect(() => {
-		if (!editMode) {
-			setEditableItems(items)
-		}
-	}, [items, editMode])
+		setEditableItems(items)
+	}, [items])
 
 	useEffect(() => {
 		setCategoryList(categoriesFromServer || [])
 	}, [categoriesFromServer])
 
-	const displayItems = editMode ? editableItems : items
+	const displayItems = isManageMode ? editableItems : items
 
 	const { groupedItems, groupKeys, getGroupLabel } = useMemo(() => {
 		const sorted = [...displayItems].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
@@ -121,17 +120,6 @@ export default function BlogPage() {
 	}, [displayItems, displayMode, categoryList])
 
 	const selectedCount = selectedSlugs.size
-	const toggleEditMode = useCallback(() => {
-		if (editMode) {
-			setEditMode(false)
-			setEditableItems(items)
-			setSelectedSlugs(new Set())
-		} else {
-			setEditableItems(items)
-			setEditMode(true)
-		}
-	}, [editMode, items])
-
 	const toggleSelect = useCallback((slug: string) => {
 		setSelectedSlugs(prev => {
 			const next = new Set(prev)
@@ -184,12 +172,12 @@ export default function BlogPage() {
 
 	const handleItemClick = useCallback(
 		(event: React.MouseEvent, slug: string) => {
-			if (!editMode) return
+			if (!isManageMode) return
 			event.preventDefault()
 			event.stopPropagation()
 			toggleSelect(slug)
 		},
-		[editMode, toggleSelect]
+		[isManageMode, toggleSelect]
 	)
 
 	const handleDeleteSelected = useCallback(() => {
@@ -198,6 +186,26 @@ export default function BlogPage() {
 			return
 		}
 		setEditableItems(prev => prev.filter(item => !selectedSlugs.has(item.slug)))
+		setSelectedSlugs(new Set())
+	}, [selectedCount, selectedSlugs])
+
+	const handleOfflineSelected = useCallback(() => {
+		if (selectedCount === 0) {
+			toast.info('请选择要下线的文章')
+			return
+		}
+
+		setEditableItems(prev =>
+			prev.map(item =>
+				selectedSlugs.has(item.slug)
+					? {
+							...item,
+							status: 'offline',
+							hidden: true
+					  }
+					: item
+			)
+		)
 		setSelectedSlugs(new Set())
 	}, [selectedCount, selectedSlugs])
 
@@ -234,7 +242,6 @@ export default function BlogPage() {
 	const handleCancel = useCallback(() => {
 		setEditableItems(items)
 		setSelectedSlugs(new Set())
-		setEditMode(false)
 	}, [items])
 
 	const handleSave = useCallback(async () => {
@@ -267,22 +274,6 @@ export default function BlogPage() {
 			setSaving(false)
 		}
 	}, [items, editableItems, categoryList, categoriesFromServer])
-
-	useEffect(() => {
-		if (!canManage) return
-
-		const handleKeyDown = (e: KeyboardEvent) => {
-			if (!editMode && (e.ctrlKey || e.metaKey) && e.key === ',') {
-				e.preventDefault()
-				toggleEditMode()
-			}
-		}
-
-		window.addEventListener('keydown', handleKeyDown)
-		return () => {
-			window.removeEventListener('keydown', handleKeyDown)
-		}
-	}, [canManage, editMode, toggleEditMode])
 
 	return (
 		<>
@@ -331,7 +322,7 @@ export default function BlogPage() {
 									<div className='h-2 w-2 rounded-full bg-[#D9D9D9]'></div>
 									<div className='text-secondary text-sm'>{group.items.length} 篇文章</div>
 								</div>
-								{editMode &&
+								{isManageMode &&
 									(() => {
 										const groupAllSelected = group.items.every(item => selectedSlugs.has(item.slug))
 										return (
@@ -355,20 +346,19 @@ export default function BlogPage() {
 									const hasRead = isRead(it.slug)
 									const isSelected = selectedSlugs.has(it.slug)
 									return (
-										<Link
-											href={`/blog/${it.slug}`}
+										<div
 											key={it.slug}
 											onClick={event => handleItemClick(event, it.slug)}
 											className={cn(
 												'group flex min-h-10 items-center gap-3 py-3 transition-all',
-												editMode
+												isManageMode
 													? cn(
 															'rounded-lg border px-3',
 															isSelected ? 'border-brand/60 bg-brand/5' : 'hover:border-brand/40 border-transparent hover:bg-white/60'
 														)
 													: 'cursor-pointer'
 											)}>
-											{editMode && (
+											{isManageMode && (
 												<span
 													className={cn(
 														'flex h-4 w-4 items-center justify-center rounded-full border text-[10px] font-semibold',
@@ -383,13 +373,16 @@ export default function BlogPage() {
 												<div className='bg-secondary group-hover:bg-brand h-[5px] w-[5px] rounded-full transition-all group-hover:h-4'></div>
 												<ShortLineSVG className='absolute bottom-4' />
 											</div>
-											<div
-												className={cn(
-													'flex-1 truncate text-sm font-medium transition-all',
-													editMode ? null : 'group-hover:text-brand group-hover:translate-x-2'
-												)}>
-												{it.title || it.slug}
+											<div className='flex-1 truncate text-sm font-medium'>
+												<Link
+													href={`/blog/${encodeURIComponent(it.slug)}`}
+													className={cn('transition-all', isManageMode ? null : 'group-hover:text-brand group-hover:translate-x-2')}>
+													{it.title || it.slug}
+												</Link>
 												{hasRead && <span className='text-secondary ml-2 text-xs'>[已阅读]</span>}
+												<span className='ml-2 rounded-full border bg-white/60 px-2 py-0.5 text-[11px] text-gray-600'>
+													{getBlogStatusLabel(it.status, it.hidden)}
+												</span>
 											</div>
 											<div className='flex flex-wrap items-center gap-2 max-sm:hidden'>
 												{(it.tags || []).map(t => (
@@ -397,8 +390,22 @@ export default function BlogPage() {
 														#{t}
 													</span>
 												))}
+												{canManage && (
+													<>
+														<Link
+															href={`/blog/${encodeURIComponent(it.slug)}`}
+															className='rounded-full border bg-white/60 px-2.5 py-1 text-xs text-gray-600 transition-colors hover:border-brand/30 hover:text-brand'>
+															查看
+														</Link>
+														<Link
+															href={`/studio/write/${encodeURIComponent(it.slug)}`}
+															className='rounded-full border bg-white/60 px-2.5 py-1 text-xs text-gray-600 transition-colors hover:border-brand/30 hover:text-brand'>
+															编辑
+														</Link>
+													</>
+												)}
 											</div>
-										</Link>
+										</div>
 									)
 								})}
 							</div>
@@ -427,61 +434,57 @@ export default function BlogPage() {
 				{loading && <div className='text-secondary py-6 text-center text-sm'>加载中...</div>}
 			</div>
 
-			<motion.div
-				initial={{ opacity: 0, scale: 0.6 }}
-				animate={{ opacity: 1, scale: 1 }}
-				className='absolute top-4 right-6 flex items-center gap-3 max-sm:hidden'>
-				{editMode ? (
-					<>
-						{enableCategories && (
-							<motion.button
-								whileHover={{ scale: 1.05 }}
-								whileTap={{ scale: 0.95 }}
-								onClick={() => setCategoryModalOpen(true)}
-								disabled={saving}
-								className='rounded-xl border bg-white/60 px-4 py-2 text-sm transition-colors hover:bg-white/80'>
-								分类
-							</motion.button>
-						)}
+			{canManage && (
+				<motion.div
+					initial={{ opacity: 0, scale: 0.6 }}
+					animate={{ opacity: 1, scale: 1 }}
+					className='absolute top-4 right-6 flex items-center gap-3 max-sm:hidden'>
+					{enableCategories && (
 						<motion.button
 							whileHover={{ scale: 1.05 }}
 							whileTap={{ scale: 0.95 }}
-							onClick={handleCancel}
+							onClick={() => setCategoryModalOpen(true)}
 							disabled={saving}
-							className='rounded-xl border bg-white/60 px-6 py-2 text-sm'>
-							取消
-						</motion.button>
-						<motion.button
-							whileHover={{ scale: 1.05 }}
-							whileTap={{ scale: 0.95 }}
-							onClick={selectedCount === editableItems.length ? handleDeselectAll : handleSelectAll}
 							className='rounded-xl border bg-white/60 px-4 py-2 text-sm transition-colors hover:bg-white/80'>
-							{selectedCount === editableItems.length ? '取消全选' : '全选'}
+							分类
 						</motion.button>
-						<motion.button
-							whileHover={{ scale: 1.05 }}
-							whileTap={{ scale: 0.95 }}
-							onClick={handleDeleteSelected}
-							disabled={selectedCount === 0}
-							className='rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-600 transition-colors disabled:opacity-60'>
-							删除(已选:{selectedCount}篇)
-						</motion.button>
-						<motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => void handleSave()} disabled={saving} className='brand-btn px-6'>
-							{saving ? '保存中...' : '保存'}
-						</motion.button>
-					</>
-				) : (
-					canManage && (
-						<motion.button
-							whileHover={{ scale: 1.05 }}
-							whileTap={{ scale: 0.95 }}
-							onClick={toggleEditMode}
-							className='bg-card rounded-xl border px-6 py-2 text-sm backdrop-blur-sm transition-colors hover:bg-white/80'>
-							编辑
-						</motion.button>
-					)
-				)}
-			</motion.div>
+					)}
+					<motion.button
+						whileHover={{ scale: 1.05 }}
+						whileTap={{ scale: 0.95 }}
+						onClick={handleCancel}
+						disabled={saving}
+						className='rounded-xl border bg-white/60 px-6 py-2 text-sm'>
+						取消
+					</motion.button>
+					<motion.button
+						whileHover={{ scale: 1.05 }}
+						whileTap={{ scale: 0.95 }}
+						onClick={selectedCount === editableItems.length ? handleDeselectAll : handleSelectAll}
+						className='rounded-xl border bg-white/60 px-4 py-2 text-sm transition-colors hover:bg-white/80'>
+						{selectedCount === editableItems.length ? '取消全选' : '全选'}
+					</motion.button>
+					<motion.button
+						whileHover={{ scale: 1.05 }}
+						whileTap={{ scale: 0.95 }}
+						onClick={handleOfflineSelected}
+						disabled={selectedCount === 0}
+						className='rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-700 transition-colors disabled:opacity-60'>
+						下线(已选:{selectedCount}篇)
+					</motion.button>
+					<motion.button
+						whileHover={{ scale: 1.05 }}
+						whileTap={{ scale: 0.95 }}
+						onClick={handleDeleteSelected}
+						disabled={selectedCount === 0}
+						className='rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-600 transition-colors disabled:opacity-60'>
+						删除(已选:{selectedCount}篇)
+					</motion.button>
+					<motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => void handleSave()} disabled={saving} className='brand-btn px-6'>
+						{saving ? '保存中...' : '保存'}
+					</motion.button>
+				</motion.div>
+			)}
 
 			<CategoryModal
 				open={categoryModalOpen}

@@ -10,10 +10,11 @@ import { WriteActions } from '../components/actions'
 import { WritePreview } from '../components/preview'
 import { useManagementMode } from '@/hooks/use-management-mode'
 import { StudioAccessNotice } from '@/components/studio-access-notice'
+import { normalizeRouteSlug } from '@/lib/route-slug'
 
 export default function EditBlogPage() {
 	const params = useParams() as { slug?: string }
-	const slug = params?.slug || ''
+	const slug = normalizeRouteSlug(params?.slug)
 
 	const { form, cover } = useWriteStore()
 	const { isPreview, closePreview } = usePreviewStore()

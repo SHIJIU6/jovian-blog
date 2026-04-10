@@ -5,18 +5,19 @@ import { useRouter } from 'next/navigation'
 import { useWriteStore } from '../stores/write-store'
 import { usePreviewStore } from '../stores/preview-store'
 import { usePublish } from '../hooks/use-publish'
+import aiMessages from '@/config/i18n/write-ai.zh-CN.json'
+import { AiDraftDialog } from './ai-draft-dialog'
+import { getBlogStatusLabel, normalizeBlogStatus } from '@/lib/blog-status'
 
 export function WriteActions() {
-	const { loading, mode, form, loadBlogForEdit, originalSlug, updateForm } = useWriteStore()
+	const { loading, mode, form, originalSlug, updateForm } = useWriteStore()
 	const { openPreview } = usePreviewStore()
-	const { onPublish, onDelete } = usePublish()
+	const { onPublish, onSaveDraft, onOffline, onDelete } = usePublish()
 	const [saving, setSaving] = useState(false)
+	const [aiDialogOpen, setAiDialogOpen] = useState(false)
 	const mdInputRef = useRef<HTMLInputElement>(null)
 	const router = useRouter()
-
-	const handleImportOrPublish = () => {
-		onPublish()
-	}
+	const status = normalizeBlogStatus(form.status, form.hidden)
 
 	const handleCancel = () => {
 		if (!window.confirm('放弃本次修改吗？')) {
@@ -28,8 +29,6 @@ export function WriteActions() {
 			router.push('/')
 		}
 	}
-
-	const buttonText = mode === 'edit' ? '更新' : '发布'
 
 	const handleDelete = () => {
 		const confirmMsg = form?.title ? `确定删除《${form.title}》吗？该操作不可恢复。` : '确定删除当前文章吗？该操作不可恢复。'
@@ -60,12 +59,14 @@ export function WriteActions() {
 	return (
 		<>
 			<input ref={mdInputRef} type='file' accept='.md' className='hidden' onChange={handleMdFileChange} />
+			<AiDraftDialog open={aiDialogOpen} onClose={() => setAiDialogOpen(false)} />
 
 			<ul className='absolute top-4 right-6 flex items-center gap-2'>
 				{mode === 'edit' && (
 					<>
 						<motion.div initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} className='flex items-center gap-2'>
 							<div className='rounded-lg border bg-blue-50 px-4 py-2 text-sm text-blue-700'>编辑模式</div>
+							<div className='rounded-lg border bg-white/70 px-4 py-2 text-sm text-gray-700'>状态：{getBlogStatusLabel(status)}</div>
 						</motion.div>
 
 						<motion.button
@@ -89,7 +90,22 @@ export function WriteActions() {
 						</motion.button>
 					</>
 				)}
+				{mode !== 'edit' && (
+					<motion.div initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} className='flex items-center gap-2'>
+						<div className='rounded-lg border bg-white/70 px-4 py-2 text-sm text-gray-700'>状态：{getBlogStatusLabel(status)}</div>
+					</motion.div>
+				)}
 
+				<motion.button
+					initial={{ opacity: 0, scale: 0.6 }}
+					animate={{ opacity: 1, scale: 1 }}
+					whileHover={{ scale: 1.05 }}
+					whileTap={{ scale: 0.95 }}
+					className='bg-card rounded-xl border px-4 py-2 text-sm'
+					disabled={loading}
+					onClick={() => setAiDialogOpen(true)}>
+					{aiMessages.open}
+				</motion.button>
 				<motion.button
 					initial={{ opacity: 0, scale: 0.6 }}
 					animate={{ opacity: 1, scale: 1 }}
@@ -115,10 +131,32 @@ export function WriteActions() {
 					animate={{ opacity: 1, scale: 1 }}
 					whileHover={{ scale: 1.05 }}
 					whileTap={{ scale: 0.95 }}
+					className='bg-card rounded-xl border px-6 py-2 text-sm'
+					disabled={loading}
+					onClick={() => void onSaveDraft()}>
+					存为草稿
+				</motion.button>
+				{mode === 'edit' && status === 'published' && (
+					<motion.button
+						initial={{ opacity: 0, scale: 0.6 }}
+						animate={{ opacity: 1, scale: 1 }}
+						whileHover={{ scale: 1.05 }}
+						whileTap={{ scale: 0.95 }}
+						className='rounded-xl border border-amber-200 bg-amber-50 px-6 py-2 text-sm text-amber-700'
+						disabled={loading}
+						onClick={() => void onOffline()}>
+						下线
+					</motion.button>
+				)}
+				<motion.button
+					initial={{ opacity: 0, scale: 0.6 }}
+					animate={{ opacity: 1, scale: 1 }}
+					whileHover={{ scale: 1.05 }}
+					whileTap={{ scale: 0.95 }}
 					className='brand-btn px-6'
 					disabled={loading}
-					onClick={handleImportOrPublish}>
-					{buttonText}
+					onClick={() => void onPublish()}>
+					直接发布
 				</motion.button>
 			</ul>
 		</>

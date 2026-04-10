@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "blog-publisher": {
+      "command": "node",
+      "args": [
+        "scripts/blog-mcp-server.mjs"
+      ],
+      "env": {
+        "BLOG_BASE_URL": "http://127.0.0.1:2025",
+        "BLOG_ADMIN_EMAIL": "owner@example.com",
+        "BLOG_ADMIN_TOKEN": "replace-with-a-long-random-token"
+      }
+    }
+  }
+}

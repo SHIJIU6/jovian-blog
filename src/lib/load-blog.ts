@@ -22,8 +22,15 @@ export async function loadBlog(slug: string, options: LoadBlogOptions = {}): Pro
 		throw new Error('Slug is required')
 	}
 
+	let normalizedSlug = slug
+	try {
+		normalizedSlug = decodeURIComponent(slug)
+	} catch {
+		normalizedSlug = slug
+	}
+
 	const search = options.includeHidden ? '?includeHidden=true' : ''
-	const response = await fetch(`/api/content/posts/${encodeURIComponent(slug)}${search}`, { cache: 'no-store' })
+	const response = await fetch(`/api/content/posts/${encodeURIComponent(normalizedSlug)}${search}`, { cache: 'no-store' })
 	if (!response.ok) {
 		throw new Error('Blog not found')
 	}
@@ -35,11 +42,12 @@ export async function loadBlog(slug: string, options: LoadBlogOptions = {}): Pro
 		cover?: string
 		hidden?: boolean
 		category?: string
+		status?: string
 		markdown?: string
 	}
 
 	return {
-		slug,
+		slug: normalizedSlug,
 		config: {
 			title: payload.title,
 			tags: payload.tags,
@@ -47,7 +55,8 @@ export async function loadBlog(slug: string, options: LoadBlogOptions = {}): Pro
 			summary: payload.summary,
 			cover: payload.cover,
 			hidden: payload.hidden,
-			category: payload.category
+			category: payload.category,
+			status: payload.status as any
 		},
 		markdown: payload.markdown || '',
 		cover: payload.cover

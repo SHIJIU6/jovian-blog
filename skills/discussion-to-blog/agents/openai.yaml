@@ -1,0 +1,4 @@
+version: 1
+display_name: Discussion To Blog
+short_description: Turn the current discussion into a blog draft via the local blog MCP server.
+default_prompt: Convert the current discussion into a blog draft and write it into the local 2025-blog-public project using the blog-publisher MCP tools.

@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 import { hashFileSHA256 } from '@/lib/file-utils'
 import { loadBlog } from '@/lib/load-blog'
 import type { PublishForm, ImageItem } from '../types'
+import { normalizeBlogStatus } from '@/lib/blog-status'
 
 export const formatDateTimeLocal = (date: Date = new Date()): string => {
 	const pad = (n: number) => String(n).padStart(2, '0')
@@ -27,6 +28,7 @@ type WriteStore = {
 
 	// Image state
 	images: ImageItem[]
+	setImages: (images: ImageItem[]) => void
 	addUrlImage: (url: string) => void
 	addFiles: (files: FileList | File[]) => Promise<ImageItem[]>
 	deleteImage: (id: string) => void
@@ -41,6 +43,7 @@ type WriteStore = {
 
 	// Load blog for editing
 	loadBlogForEdit: (slug: string) => Promise<void>
+	applyGeneratedDraft: (draft: Partial<PublishForm>) => void
 
 	// Reset to create mode
 	reset: () => void
@@ -54,7 +57,8 @@ const initialForm: PublishForm = {
 	date: formatDateTimeLocal(),
 	summary: '',
 	hidden: false,
-	category: ''
+	category: '',
+	status: 'draft'
 }
 
 export const useWriteStore = create<WriteStore>((set, get) => ({
@@ -70,6 +74,7 @@ export const useWriteStore = create<WriteStore>((set, get) => ({
 
 	// Image state
 	images: [],
+	setImages: images => set({ images }),
 	addUrlImage: url => {
 		const { images } = get()
 		const exists = images.some(it => it.type === 'url' && it.url === url)
@@ -195,7 +200,8 @@ export const useWriteStore = create<WriteStore>((set, get) => ({
 					date: blog.config.date ? formatDateTimeLocal(new Date(blog.config.date)) : formatDateTimeLocal(),
 					summary: blog.config.summary || '',
 					hidden: blog.config.hidden || false,
-					category: blog.config.category || ''
+					category: blog.config.category || '',
+					status: normalizeBlogStatus(blog.config.status, blog.config.hidden)
 				},
 				images,
 				cover,
@@ -209,6 +215,32 @@ export const useWriteStore = create<WriteStore>((set, get) => ({
 			set({ loading: false })
 			throw err
 		}
+	},
+
+	applyGeneratedDraft: draft => {
+		const { images, cover } = get()
+		for (const img of images) {
+			if (img.type === 'file') {
+				URL.revokeObjectURL(img.previewUrl)
+			}
+		}
+		if (cover?.type === 'file') {
+			URL.revokeObjectURL(cover.previewUrl)
+		}
+
+		set({
+			mode: 'create',
+			originalSlug: null,
+			images: [],
+			cover: null,
+			form: {
+				...initialForm,
+				date: formatDateTimeLocal(),
+				hidden: true,
+				status: 'draft',
+				...draft
+			}
+		})
 	},
 
 	// Reset to create mode
