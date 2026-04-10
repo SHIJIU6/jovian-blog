@@ -15,11 +15,11 @@ command = "pnpm run build:cf"
 # 2. D1 stores structured content
 # 3. R2 stores media assets
 #
-# [[d1_databases]]
-# binding = "BLOG_DB"
-# database_name = "blog-content"
-# database_id = "replace-with-your-d1-id"
-# migrations_dir = "migrations"
+[[d1_databases]]
+binding = "BLOG_DB"
+database_name = "blog-content"
+database_id = "b910fbf7-8394-4fe7-83b4-ee935f6456a2"
+migrations_dir = "migrations"
 #
 # [[r2_buckets]]
 # binding = "BLOG_MEDIA"
