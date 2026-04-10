@@ -141,6 +141,20 @@ export default function StudioSitePage() {
 		)
 	}
 
+	const updateFormData: React.Dispatch<React.SetStateAction<SiteContent>> = nextValue => {
+		setFormData(prevValue => {
+			const currentValue = prevValue ?? formData
+			return typeof nextValue === 'function' ? nextValue(currentValue) : nextValue
+		})
+	}
+
+	const updateCardStylesData: React.Dispatch<React.SetStateAction<CardStyles>> = nextValue => {
+		setCardStylesData(prevValue => {
+			const currentValue = prevValue ?? cardStylesData
+			return typeof nextValue === 'function' ? nextValue(currentValue) : nextValue
+		})
+	}
+
 	return (
 		<div className='space-y-6'>
 			<section className='bg-card rounded-[32px] border p-6 shadow-[0_30px_45px_-30px_rgba(0,0,0,0.08)] backdrop-blur'>
@@ -194,7 +208,7 @@ export default function StudioSitePage() {
 					{activeTab === 'site' && (
 						<SiteSettings
 							formData={formData}
-							setFormData={setFormData}
+							setFormData={updateFormData}
 							faviconItem={faviconItem}
 							setFaviconItem={setFaviconItem}
 							avatarItem={avatarItem}
@@ -207,8 +221,8 @@ export default function StudioSitePage() {
 							setSocialButtonImageUploads={setSocialButtonImageUploads}
 						/>
 					)}
-					{activeTab === 'color' && <ColorConfig formData={formData} setFormData={setFormData} />}
-					{activeTab === 'layout' && <HomeLayout cardStylesData={cardStylesData} setCardStylesData={setCardStylesData} />}
+					{activeTab === 'color' && <ColorConfig formData={formData} setFormData={updateFormData} />}
+					{activeTab === 'layout' && <HomeLayout cardStylesData={cardStylesData} setCardStylesData={updateCardStylesData} />}
 				</div>
 			</section>
 		</div>

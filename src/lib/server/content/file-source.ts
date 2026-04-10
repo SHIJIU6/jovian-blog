@@ -4,8 +4,10 @@ import type { CategoriesConfig } from '@/hooks/use-categories'
 import type { ContentListOptions, ContentPostDetail, ContentPostListItem } from './types'
 import { getProjectRoot } from '../project-root'
 import { isPublicBlogStatus, normalizeBlogStatus } from '@/lib/blog-status'
+import { getLocalContentPath, resolveContentReadPath } from '../local-content'
 
 const PUBLIC_DIR = path.join(getProjectRoot(), 'public')
+const LOCAL_PUBLIC_DIR = getLocalContentPath('public')
 
 async function readJsonFile<T>(filePath: string, fallback: T): Promise<T> {
 	try {
@@ -17,7 +19,10 @@ async function readJsonFile<T>(filePath: string, fallback: T): Promise<T> {
 }
 
 export async function listPostsFromFiles(options: ContentListOptions = {}): Promise<ContentPostListItem[]> {
-	const items = await readJsonFile<ContentPostListItem[]>(path.join(PUBLIC_DIR, 'blogs', 'index.json'), [])
+	const items = await readJsonFile<ContentPostListItem[]>(
+		resolveContentReadPath(path.join(PUBLIC_DIR, 'blogs', 'index.json'), path.join(LOCAL_PUBLIC_DIR, 'blogs', 'index.json')),
+		[]
+	)
 	const normalized = items.map(item => ({
 		...item,
 		status: normalizeBlogStatus(item.status, item.hidden),
@@ -34,9 +39,13 @@ export async function getPostFromFiles(slug: string, options: ContentListOptions
 	if (!summaryItem) return null
 	if (!options.includeHidden && !isPublicBlogStatus(summaryItem.status, summaryItem.hidden)) return null
 
-	const config = await readJsonFile<Record<string, unknown>>(path.join(PUBLIC_DIR, 'blogs', slug, 'config.json'), {})
+	const config = await readJsonFile<Record<string, unknown>>(
+		resolveContentReadPath(path.join(PUBLIC_DIR, 'blogs', slug, 'config.json'), path.join(LOCAL_PUBLIC_DIR, 'blogs', slug, 'config.json')),
+		{}
+	)
 	try {
-		const markdown = await fs.readFile(path.join(PUBLIC_DIR, 'blogs', slug, 'index.md'), 'utf8')
+		const markdownPath = resolveContentReadPath(path.join(PUBLIC_DIR, 'blogs', slug, 'index.md'), path.join(LOCAL_PUBLIC_DIR, 'blogs', slug, 'index.md'))
+		const markdown = await fs.readFile(markdownPath, 'utf8')
 		const status = normalizeBlogStatus(typeof config.status === 'string' ? String(config.status) : summaryItem.status, typeof config.hidden === 'boolean' ? Boolean(config.hidden) : summaryItem.hidden)
 		return {
 			...summaryItem,
@@ -56,5 +65,8 @@ export async function getPostFromFiles(slug: string, options: ContentListOptions
 }
 
 export async function getCategoriesFromFiles(): Promise<CategoriesConfig> {
-	return readJsonFile<CategoriesConfig>(path.join(PUBLIC_DIR, 'blogs', 'categories.json'), { categories: [] })
+	return readJsonFile<CategoriesConfig>(
+		resolveContentReadPath(path.join(PUBLIC_DIR, 'blogs', 'categories.json'), path.join(LOCAL_PUBLIC_DIR, 'blogs', 'categories.json')),
+		{ categories: [] }
+	)
 }

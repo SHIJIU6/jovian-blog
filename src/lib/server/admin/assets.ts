@@ -1,9 +1,9 @@
 import path from 'node:path'
 import { promises as fs } from 'node:fs'
 import { getContentBindings } from '../content/cloudflare'
-import { getProjectRoot } from '../project-root'
+import { ensureLocalContentDir, getLocalContentPath } from '../local-content'
 
-const PUBLIC_DIR = path.join(getProjectRoot(), 'public')
+const LOCAL_PUBLIC_DIR = getLocalContentPath('public')
 
 function sanitizeSegment(value: string) {
 	return value
@@ -23,7 +23,7 @@ async function hashBuffer(buffer: ArrayBuffer) {
 }
 
 async function ensureDir(target: string) {
-	await fs.mkdir(target, { recursive: true })
+	await ensureLocalContentDir(target)
 }
 
 export async function saveAsset(file: File, folder = 'misc', exactKey?: string) {
@@ -72,7 +72,7 @@ export async function saveAsset(file: File, folder = 'misc', exactKey?: string) 
 	}
 
 	const relativeDir = exactKey ? path.dirname(resolvedKey) : path.join('uploads', normalizedFolder)
-	const absoluteDir = path.join(PUBLIC_DIR, relativeDir)
+	const absoluteDir = path.join(LOCAL_PUBLIC_DIR, relativeDir)
 	await ensureDir(absoluteDir)
 	const relativePath = exactKey ? `/${resolvedKey.replace(/\\/g, '/')}` : path.posix.join('/uploads', normalizedFolder, fileName)
 	const fileTarget = exactKey ? path.basename(resolvedKey) : fileName

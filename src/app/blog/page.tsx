@@ -264,7 +264,6 @@ export default function BlogPage() {
 		try {
 			setSaving(true)
 			await saveBlogEdits(items, editableItems, normalizedCategoryList)
-			setEditMode(false)
 			setSelectedSlugs(new Set())
 			setCategoryModalOpen(false)
 		} catch (error: any) {

@@ -10,6 +10,7 @@ import type { AboutData } from '@/app/about/services/push-about'
 import type { Picture } from '@/app/pictures/page'
 import { getContentBindings } from './cloudflare'
 import { getProjectRoot } from '../project-root'
+import { ensureLocalContentDir, getLocalContentPath, resolveContentReadPath } from '../local-content'
 import {
 	getBloggersFromD1,
 	getPicturesFromD1,
@@ -32,9 +33,19 @@ const FILES = {
 	projects: path.join(ROOT, 'src', 'app', 'projects', 'list.json'),
 	shares: path.join(ROOT, 'src', 'app', 'share', 'list.json'),
 	bloggers: path.join(ROOT, 'src', 'app', 'bloggers', 'list.json'),
-	snippets: path.join(ROOT, 'src', 'app', 'snippets', 'list.json')
-	,
+	snippets: path.join(ROOT, 'src', 'app', 'snippets', 'list.json'),
 	pictures: path.join(ROOT, 'src', 'app', 'pictures', 'list.json')
+}
+
+const LOCAL_FILES = {
+	siteContent: getLocalContentPath('src', 'config', 'site-content.json'),
+	cardStyles: getLocalContentPath('src', 'config', 'card-styles.json'),
+	about: getLocalContentPath('src', 'app', 'about', 'list.json'),
+	projects: getLocalContentPath('src', 'app', 'projects', 'list.json'),
+	shares: getLocalContentPath('src', 'app', 'share', 'list.json'),
+	bloggers: getLocalContentPath('src', 'app', 'bloggers', 'list.json'),
+	snippets: getLocalContentPath('src', 'app', 'snippets', 'list.json'),
+	pictures: getLocalContentPath('src', 'app', 'pictures', 'list.json')
 }
 
 async function readJsonFile<T>(filePath: string, fallback: T): Promise<T> {
@@ -47,7 +58,7 @@ async function readJsonFile<T>(filePath: string, fallback: T): Promise<T> {
 }
 
 async function writeJsonFile(filePath: string, value: unknown) {
-	await fs.mkdir(path.dirname(filePath), { recursive: true })
+	await ensureLocalContentDir(filePath)
 	await fs.writeFile(filePath, JSON.stringify(value, null, '\t'), 'utf8')
 }
 
@@ -80,8 +91,14 @@ async function writeSetting(key: string, value: unknown) {
 }
 
 export async function getSiteConfig() {
-	const siteContent = await readSetting<SiteContent>('site_content', await readJsonFile(FILES.siteContent, siteContentDefault))
-	const cardStyles = await readSetting<CardStyles>('card_styles', await readJsonFile(FILES.cardStyles, cardStylesDefault))
+	const siteContent = await readSetting<SiteContent>(
+		'site_content',
+		await readJsonFile(resolveContentReadPath(FILES.siteContent, LOCAL_FILES.siteContent), siteContentDefault)
+	)
+	const cardStyles = await readSetting<CardStyles>(
+		'card_styles',
+		await readJsonFile(resolveContentReadPath(FILES.cardStyles, LOCAL_FILES.cardStyles), cardStylesDefault)
+	)
 	return { siteContent, cardStyles }
 }
 
@@ -93,14 +110,14 @@ export async function saveSiteConfig(input: { siteContent: SiteContent; cardStyl
 		return
 	}
 
-	await writeJsonFile(FILES.siteContent, input.siteContent)
-	await writeJsonFile(FILES.cardStyles, input.cardStyles)
+	await writeJsonFile(LOCAL_FILES.siteContent, input.siteContent)
+	await writeJsonFile(LOCAL_FILES.cardStyles, input.cardStyles)
 }
 
 export async function getAboutData() {
 	return readSetting<AboutData>(
 		'about_page',
-		await readJsonFile<AboutData>(FILES.about, {
+		await readJsonFile<AboutData>(resolveContentReadPath(FILES.about, LOCAL_FILES.about), {
 			title: '关于',
 			description: '',
 			content: ''
@@ -114,7 +131,7 @@ export async function saveAboutData(value: AboutData) {
 		await writeSetting('about_page', value)
 		return
 	}
-	await writeJsonFile(FILES.about, value)
+	await writeJsonFile(LOCAL_FILES.about, value)
 }
 
 export async function getProjects() {
@@ -124,7 +141,7 @@ export async function getProjects() {
 		if (result) return result
 	}
 
-	return readSetting<Project[]>('projects_list', await readJsonFile<Project[]>(FILES.projects, []))
+	return readSetting<Project[]>('projects_list', await readJsonFile<Project[]>(resolveContentReadPath(FILES.projects, LOCAL_FILES.projects), []))
 }
 
 export async function saveProjects(items: Project[]) {
@@ -135,7 +152,7 @@ export async function saveProjects(items: Project[]) {
 		await writeSetting('projects_list', items)
 		return
 	}
-	await writeJsonFile(FILES.projects, items)
+	await writeJsonFile(LOCAL_FILES.projects, items)
 }
 
 export async function getShares() {
@@ -145,7 +162,7 @@ export async function getShares() {
 		if (result) return result
 	}
 
-	return readSetting<Share[]>('shares_list', await readJsonFile<Share[]>(FILES.shares, []))
+	return readSetting<Share[]>('shares_list', await readJsonFile<Share[]>(resolveContentReadPath(FILES.shares, LOCAL_FILES.shares), []))
 }
 
 export async function saveShares(items: Share[]) {
@@ -156,7 +173,7 @@ export async function saveShares(items: Share[]) {
 		await writeSetting('shares_list', items)
 		return
 	}
-	await writeJsonFile(FILES.shares, items)
+	await writeJsonFile(LOCAL_FILES.shares, items)
 }
 
 export async function getBloggers() {
@@ -166,7 +183,7 @@ export async function getBloggers() {
 		if (result) return result
 	}
 
-	return readSetting<Blogger[]>('bloggers_list', await readJsonFile<Blogger[]>(FILES.bloggers, []))
+	return readSetting<Blogger[]>('bloggers_list', await readJsonFile<Blogger[]>(resolveContentReadPath(FILES.bloggers, LOCAL_FILES.bloggers), []))
 }
 
 export async function saveBloggers(items: Blogger[]) {
@@ -177,7 +194,7 @@ export async function saveBloggers(items: Blogger[]) {
 		await writeSetting('bloggers_list', items)
 		return
 	}
-	await writeJsonFile(FILES.bloggers, items)
+	await writeJsonFile(LOCAL_FILES.bloggers, items)
 }
 
 export async function getSnippets() {
@@ -187,7 +204,7 @@ export async function getSnippets() {
 		if (result) return result
 	}
 
-	return readSetting<string[]>('snippets_list', await readJsonFile<string[]>(FILES.snippets, []))
+	return readSetting<string[]>('snippets_list', await readJsonFile<string[]>(resolveContentReadPath(FILES.snippets, LOCAL_FILES.snippets), []))
 }
 
 export async function saveSnippets(items: string[]) {
@@ -198,7 +215,7 @@ export async function saveSnippets(items: string[]) {
 		await writeSetting('snippets_list', items)
 		return
 	}
-	await writeJsonFile(FILES.snippets, items)
+	await writeJsonFile(LOCAL_FILES.snippets, items)
 }
 
 export async function getPictures() {
@@ -208,7 +225,7 @@ export async function getPictures() {
 		if (result) return result
 	}
 
-	return readSetting<Picture[]>('pictures_list', await readJsonFile<Picture[]>(FILES.pictures, []))
+	return readSetting<Picture[]>('pictures_list', await readJsonFile<Picture[]>(resolveContentReadPath(FILES.pictures, LOCAL_FILES.pictures), []))
 }
 
 export async function savePictures(items: Picture[]) {
@@ -219,5 +236,5 @@ export async function savePictures(items: Picture[]) {
 		await writeSetting('pictures_list', items)
 		return
 	}
-	await writeJsonFile(FILES.pictures, items)
+	await writeJsonFile(LOCAL_FILES.pictures, items)
 }

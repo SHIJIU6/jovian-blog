@@ -33,7 +33,7 @@ export default function ClockCard() {
 	const seconds = time.getSeconds().toString().padStart(2, '0')
 
 	const x = styles.offsetX !== null ? center.x + styles.offsetX : center.x + CARD_SPACING + hiCardStyles.width / 2
-	const y = styles.offsetY !== null ? center.y + styles.offsetY : center.y - styles.offset - styles.height
+	const y = styles.offsetY !== null ? center.y + styles.offsetY : center.y - (styles.offset ?? 0) - styles.height
 
 	return (
 		<HomeDraggableLayer cardKey='clockCard' x={x} y={y} width={styles.width} height={styles.height}>

@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "next dev --turbopack -p 2025",
     "svg": "node scripts/gen-svgs-index.js",
+    "typecheck": "tsc --noEmit",
+    "check": "pnpm typecheck && pnpm build",
     "build": "next build",
     "start": "next start",
     "mcp:blog": "node scripts/blog-mcp-server.mjs",

@@ -2,8 +2,8 @@ import path from 'node:path'
 import { promises as fs } from 'node:fs'
 import { getContentBindings } from '../content/cloudflare'
 import type { BlogIndexItem } from '@/app/blog/types'
-import { getProjectRoot } from '../project-root'
 import { normalizeBlogStatus } from '@/lib/blog-status'
+import { ensureLocalContentDir, getLocalContentPath } from '../local-content'
 
 type SavePostInput = {
 	slug: string
@@ -24,10 +24,10 @@ type SyncPostIndexInput = {
 	categories: string[]
 }
 
-const PUBLIC_DIR = path.join(getProjectRoot(), 'public')
+const LOCAL_PUBLIC_DIR = getLocalContentPath('public')
 
 async function ensureDir(target: string) {
-	await fs.mkdir(target, { recursive: true })
+	await ensureLocalContentDir(target)
 }
 
 async function readJsonFile<T>(filePath: string, fallback: T): Promise<T> {
@@ -60,7 +60,7 @@ function createBlogIndexItem(input: SavePostInput): BlogIndexItem {
 }
 
 async function upsertPostToFiles(input: SavePostInput) {
-	const basePath = path.join(PUBLIC_DIR, 'blogs', input.slug)
+	const basePath = path.join(LOCAL_PUBLIC_DIR, 'blogs', input.slug)
 	await ensureDir(basePath)
 	const status = normalizeBlogStatus(input.status, input.hidden)
 
@@ -78,14 +78,14 @@ async function upsertPostToFiles(input: SavePostInput) {
 	await fs.writeFile(path.join(basePath, 'index.md'), input.contentMd, 'utf8')
 	await writeJsonFile(path.join(basePath, 'config.json'), config)
 
-	const indexPath = path.join(PUBLIC_DIR, 'blogs', 'index.json')
+	const indexPath = path.join(LOCAL_PUBLIC_DIR, 'blogs', 'index.json')
 	const indexItems = await readJsonFile<BlogIndexItem[]>(indexPath, [])
 	const nextMap = new Map(indexItems.map(item => [item.slug, item]))
 	nextMap.set(input.slug, createBlogIndexItem(input))
 	const sorted = Array.from(nextMap.values()).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 	await writeJsonFile(indexPath, sorted)
 
-	const categoriesPath = path.join(PUBLIC_DIR, 'blogs', 'categories.json')
+	const categoriesPath = path.join(LOCAL_PUBLIC_DIR, 'blogs', 'categories.json')
 	const categoriesFile = await readJsonFile<{ categories: string[] }>(categoriesPath, { categories: [] })
 	const categorySet = new Set(categoriesFile.categories)
 	if (input.category) categorySet.add(input.category)
@@ -95,8 +95,8 @@ async function upsertPostToFiles(input: SavePostInput) {
 }
 
 async function removePostFromFiles(slug: string) {
-	await fs.rm(path.join(PUBLIC_DIR, 'blogs', slug), { recursive: true, force: true })
-	const indexPath = path.join(PUBLIC_DIR, 'blogs', 'index.json')
+	await fs.rm(path.join(LOCAL_PUBLIC_DIR, 'blogs', slug), { recursive: true, force: true })
+	const indexPath = path.join(LOCAL_PUBLIC_DIR, 'blogs', 'index.json')
 	const items = await readJsonFile<BlogIndexItem[]>(indexPath, [])
 	await writeJsonFile(
 		indexPath,
@@ -108,19 +108,19 @@ async function syncPostIndexToFiles(input: SyncPostIndexInput) {
 	const removedSlugs = input.originalItems.filter(item => !input.nextItems.some(next => next.slug === item.slug)).map(item => item.slug)
 
 	for (const slug of removedSlugs) {
-		await fs.rm(path.join(PUBLIC_DIR, 'blogs', slug), { recursive: true, force: true })
+		await fs.rm(path.join(LOCAL_PUBLIC_DIR, 'blogs', slug), { recursive: true, force: true })
 	}
 
 	await writeJsonFile(
-		path.join(PUBLIC_DIR, 'blogs', 'index.json'),
+		path.join(LOCAL_PUBLIC_DIR, 'blogs', 'index.json'),
 		[...input.nextItems].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 	)
-	await writeJsonFile(path.join(PUBLIC_DIR, 'blogs', 'categories.json'), {
+	await writeJsonFile(path.join(LOCAL_PUBLIC_DIR, 'blogs', 'categories.json'), {
 		categories: Array.from(new Set(input.categories.map(item => item.trim()).filter(Boolean)))
 	})
 
 	for (const item of input.nextItems) {
-		const configPath = path.join(PUBLIC_DIR, 'blogs', item.slug, 'config.json')
+		const configPath = path.join(LOCAL_PUBLIC_DIR, 'blogs', item.slug, 'config.json')
 		const current = await readJsonFile<Record<string, unknown>>(configPath, {})
 		const status = normalizeBlogStatus(item.status, item.hidden)
 		await writeJsonFile(configPath, {

@@ -1,8 +1,10 @@
 import path from 'node:path'
 import { promises as fs } from 'node:fs'
 import { getProjectRoot } from './project-root'
+import { getLocalContentPath } from './local-content'
 
 const PUBLIC_DIR = path.join(getProjectRoot(), 'public')
+const LOCAL_PUBLIC_DIR = getLocalContentPath('public')
 
 function getContentType(filePath: string) {
 	const ext = path.extname(filePath).toLowerCase()
@@ -42,14 +44,18 @@ export async function readLocalMedia(key: string) {
 	const safeKey = sanitizeKey(key)
 	if (!safeKey) return null
 
-	const filePath = path.join(PUBLIC_DIR, ...safeKey.split('/'))
-	try {
-		const buffer = await fs.readFile(filePath)
-		return {
-			buffer,
-			contentType: getContentType(filePath)
+	for (const root of [LOCAL_PUBLIC_DIR, PUBLIC_DIR]) {
+		const filePath = path.join(root, ...safeKey.split('/'))
+		try {
+			const buffer = await fs.readFile(filePath)
+			return {
+				buffer,
+				contentType: getContentType(filePath)
+			}
+		} catch {
+			// Try the next fallback.
 		}
-	} catch {
-		return null
 	}
+
+	return null
 }

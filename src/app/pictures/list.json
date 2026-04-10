@@ -1,9 +1,8 @@
 [
 	{
-		"id": "1775734001740-e82df66013ab9",
-		"uploadedAt": "2026-04-09T11:26:41.740Z",
-		"images": [
-			"/api/media/uploads/pictures/77d4e9a51cab5c43c3506495fad9f5b5ee3e16e8164ea5f8fe8b014c6773ebb0.jpg"
-		]
+		"id": "template-picture",
+		"uploadedAt": "2026-04-08T17:21:00.000Z",
+		"description": "这里可以放你的摄影、截图或插画，进入编辑模式后即可替换成自己的内容。",
+		"images": ["/images/art/template-art.svg"]
 	}
 ]

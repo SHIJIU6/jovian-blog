@@ -1,7 +1,6 @@
 import { getContentBindings } from '../content/cloudflare'
-import path from 'node:path'
 import { promises as fs } from 'node:fs'
-import { getProjectRoot } from '../project-root'
+import { ensureLocalContentDir, getLocalContentPath } from '../local-content'
 
 type AuditInput = {
 	actorEmail?: string | null
@@ -21,7 +20,7 @@ export type AuditLogItem = {
 	createdAt: string
 }
 
-const LOCAL_AUDIT_FILE = path.join(getProjectRoot(), 'project_document_local', 'audit-logs.json')
+const LOCAL_AUDIT_FILE = getLocalContentPath('runtime', 'audit', 'audit-logs.json')
 
 /**
  * Reference: Cloudflare D1 docs (Workers prepared statements with bind parameters, retrieved via Context7 on 2026-04-09).
@@ -50,7 +49,7 @@ async function readLocalAuditLogs(): Promise<AuditLogItem[]> {
 }
 
 async function writeLocalAuditLogs(logs: AuditLogItem[]) {
-	await fs.mkdir(path.dirname(LOCAL_AUDIT_FILE), { recursive: true })
+	await ensureLocalContentDir(LOCAL_AUDIT_FILE)
 	await fs.writeFile(LOCAL_AUDIT_FILE, JSON.stringify(logs, null, 2), 'utf8')
 }
 
