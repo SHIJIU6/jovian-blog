@@ -21,9 +21,9 @@ database_name = "blog-content"
 database_id = "b910fbf7-8394-4fe7-83b4-ee935f6456a2"
 migrations_dir = "migrations"
 #
-# [[r2_buckets]]
-# binding = "BLOG_MEDIA"
-# bucket_name = "blog-media"
+[[r2_buckets]]
+binding = "BLOG_MEDIA"
+bucket_name = "blog-media"
 
 [observability]
 [observability.logs]
