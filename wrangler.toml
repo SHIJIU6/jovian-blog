@@ -2,6 +2,7 @@ main = ".open-next/worker.js"
 name = "jovian-blog"
 compatibility_date = "2025-03-25"
 compatibility_flags = ["nodejs_compat"]
+keep_vars = true
 
 [assets]
 directory = ".open-next/assets"
