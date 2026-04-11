@@ -23,7 +23,7 @@ migrations_dir = "migrations"
 #
 [[r2_buckets]]
 binding = "BLOG_MEDIA"
-bucket_name = "blog-media"
+bucket_name = "blog-media-prod"
 
 [observability]
 [observability.logs]
