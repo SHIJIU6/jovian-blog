@@ -16,6 +16,8 @@ const SERVER_INFO = {
 const BLOG_BASE_URL = process.env.BLOG_BASE_URL || 'http://127.0.0.1:2025'
 const ADMIN_EMAIL = process.env.BLOG_ADMIN_EMAIL || ''
 const ADMIN_TOKEN = process.env.BLOG_ADMIN_TOKEN || ''
+const ACCESS_CLIENT_ID = process.env.CF_ACCESS_CLIENT_ID || ''
+const ACCESS_CLIENT_SECRET = process.env.CF_ACCESS_CLIENT_SECRET || ''
 let toolCallQueue = Promise.resolve()
 
 const TOOLS = [
@@ -132,6 +134,11 @@ const TOOLS = [
 function buildHeaders() {
   const headers = {
     'Content-Type': 'application/json'
+  }
+
+  if (ACCESS_CLIENT_ID && ACCESS_CLIENT_SECRET) {
+    headers['CF-Access-Client-Id'] = ACCESS_CLIENT_ID
+    headers['CF-Access-Client-Secret'] = ACCESS_CLIENT_SECRET
   }
 
   if (ADMIN_EMAIL) {

@@ -8,7 +8,9 @@
       "env": {
         "BLOG_BASE_URL": "http://127.0.0.1:2025",
         "BLOG_ADMIN_EMAIL": "owner@example.com",
-        "BLOG_ADMIN_TOKEN": "replace-with-a-long-random-token"
+        "BLOG_ADMIN_TOKEN": "replace-with-a-long-random-token",
+        "CF_ACCESS_CLIENT_ID": "your-access-client-id",
+        "CF_ACCESS_CLIENT_SECRET": "your-access-client-secret"
       }
     }
   }

@@ -153,6 +153,8 @@ pnpm check
   - `BLOG_BASE_URL`
   - `BLOG_ADMIN_EMAIL`
   - `BLOG_ADMIN_TOKEN`
+  - `CF_ACCESS_CLIENT_ID`（可选，用于通过 Cloudflare Access）
+  - `CF_ACCESS_CLIENT_SECRET`（可选，用于通过 Cloudflare Access）
 
 ## 内容管理说明
 
@@ -323,6 +325,37 @@ codex mcp add blog-publisher --env BLOG_BASE_URL=http://127.0.0.1:2025 --env BLO
 - env:
   - `BLOG_BASE_URL`
   - `BLOG_ADMIN_TOKEN`
+  - `CF_ACCESS_CLIENT_ID`（如果 `/api/admin/*` 受 Cloudflare Access 保护）
+  - `CF_ACCESS_CLIENT_SECRET`（如果 `/api/admin/*` 受 Cloudflare Access 保护）
+
+### 生产环境 + Cloudflare Access 场景
+
+如果你把 `/api/admin/*` 放在 Cloudflare Access 后面，`blog-publisher` MCP 需要两层凭据：
+
+- `CF_ACCESS_CLIENT_ID`
+- `CF_ACCESS_CLIENT_SECRET`
+- `BLOG_ADMIN_TOKEN`
+
+含义分别是：
+
+- `CF_ACCESS_CLIENT_ID` / `CF_ACCESS_CLIENT_SECRET`：让 MCP 请求先通过 Cloudflare Access 边缘校验
+- `BLOG_ADMIN_TOKEN`：让项目应用层后台鉴权通过
+
+仅配置其中一层通常不够：
+
+- 只有 Access Service Token：请求能穿过 Access，但应用层仍可能返回 `Unauthorized`
+- 只有 `BLOG_ADMIN_TOKEN`：应用层能识别，但请求可能在 Access 边缘就被拦住
+
+推荐的 Codex 配置示例：
+
+```bash
+codex mcp add blog-publisher \
+  --env BLOG_BASE_URL=https://blog.example.com \
+  --env BLOG_ADMIN_TOKEN=replace-with-a-long-random-token \
+  --env CF_ACCESS_CLIENT_ID=your-access-client-id \
+  --env CF_ACCESS_CLIENT_SECRET=your-access-client-secret \
+  -- node D:\IDEA\Project\2025-blog-public\scripts\blog-mcp-server.mjs
+```
 
 ## Skill
 
@@ -362,6 +395,7 @@ codex mcp add blog-publisher --env BLOG_BASE_URL=http://127.0.0.1:2025 --env BLO
 - 本地放行
 - `BLOG_ADMIN_TOKEN`
 - Cloudflare Access 邮箱头识别
+- Cloudflare Access Service Token（供本地 MCP 访问受保护的 `/api/admin/*`）
 - `admins` 表管理员判断
 
 ## 开源模板注意事项
