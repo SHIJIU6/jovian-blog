@@ -75,7 +75,11 @@ src/
     server/              服务端内容层、后台写入层、AI/MCP辅助层
 seeds/
   content/               模板结构化内容
-  assets/                模板静态资源
+public/
+  images/                默认静态资源（生产可直接发布）
+  music/                 默认音频资源
+  favicon.png            默认站点图标
+  manifest.json          默认站点清单
 .local-content/          本地开发运行数据（gitignored）
   content/               本地结构化内容与文章
   media/                 本地媒体与站点资源
@@ -188,10 +192,10 @@ pnpm check
 
 ## 本地与生产隔离
 
-- GitHub 仓库只存模板代码、`seeds/` 模板数据和迁移脚本
+- GitHub 仓库只存模板代码、`seeds/content/` 模板数据、`public/` 默认静态资源和迁移脚本
 - 本地开发时，文章与结构化内容写入 `.local-content/content/`，上传媒体写入 `.local-content/media/`
 - 生产环境接入 D1 / R2 后，读写优先走云端绑定，不依赖本地回退目录
-- 前台默认静态资源通过 `/images/*`、`/music/*`、`/favicon.png`、`/manifest.json` 统一映射到 `seeds/assets/` 或 `.local-content/media/`
+- 前台默认静态资源直接由 `public/` 提供，保证本地开发和 Cloudflare 生产部署都能稳定访问
 - 旧的 `.local-content/src/*` 与 `.local-content/public/*` 会在运行时自动迁移到新目录，迁移后运行链路只使用新结构
 
 ## Cloudflare 部署
@@ -421,8 +425,8 @@ codex mcp add blog-publisher \
 - [seeds/content/snippets.json](./seeds/content/snippets.json)
 - [seeds/content/pictures.json](./seeds/content/pictures.json)
 - [seeds/content/card-styles.json](./seeds/content/card-styles.json)
-- [seeds/assets/images/avatar.png](./seeds/assets/images/avatar.png)
-- [seeds/assets/favicon.png](./seeds/assets/favicon.png)
+- [public/images/avatar.png](./public/images/avatar.png)
+- [public/favicon.png](./public/favicon.png)
 
 ## 不会被提交到仓库的文件
 

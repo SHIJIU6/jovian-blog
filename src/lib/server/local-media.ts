@@ -1,9 +1,7 @@
 import path from 'node:path'
 import { promises as fs } from 'node:fs'
-import { getProjectRoot } from './project-root'
 import { ensureLocalContentLayout, getLocalContentPath } from './local-content'
 
-const SEED_ASSETS_DIR = path.join(getProjectRoot(), 'seeds', 'assets')
 const LOCAL_MEDIA_DIR = getLocalContentPath('media')
 
 function getContentType(filePath: string) {
@@ -47,7 +45,7 @@ export async function readLocalMedia(key: string) {
 	const safeKey = sanitizeKey(key)
 	if (!safeKey) return null
 
-	for (const root of [LOCAL_MEDIA_DIR, SEED_ASSETS_DIR]) {
+	for (const root of [LOCAL_MEDIA_DIR]) {
 		const filePath = path.join(root, ...safeKey.split('/'))
 		try {
 			const buffer = await fs.readFile(filePath)

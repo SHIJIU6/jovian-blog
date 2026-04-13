@@ -2,7 +2,7 @@ import path from 'node:path'
 import { existsSync } from 'node:fs'
 
 function isProjectRoot(target: string) {
-	return existsSync(path.join(target, 'package.json')) && existsSync(path.join(target, 'public')) && existsSync(path.join(target, 'src'))
+	return existsSync(path.join(target, 'package.json')) && existsSync(path.join(target, 'src'))
 }
 
 export function getProjectRoot() {
