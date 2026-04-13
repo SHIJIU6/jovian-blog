@@ -35,8 +35,6 @@ yarn-error.log*
 .start-stdout.log
 .start-stderr.log
 .mcp-test-output.txt
-public/images/avatar-png
-public/uploads/
 project_document_local/
 .mcp.json
 .local-content/

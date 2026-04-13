@@ -7,6 +7,7 @@ import { useConfigStore } from './stores/config-store'
 import { CARD_SPACING } from '@/consts'
 import { HomeDraggableLayer } from './home-draggable-layer'
 import { useSnippetsContent } from '@/hooks/use-structured-content'
+import { cn } from '@/lib/utils'
 
 const ROTATE_MS = 4000
 
@@ -15,10 +16,8 @@ export default function SnippetCard() {
 	const { cardStyles } = useConfigStore()
 	const { data: snippets = [] } = useSnippetsContent()
 	const styles = cardStyles.snippetCard
-	const hiCardStyles = cardStyles.hiCard
-	const clockCardStyles = cardStyles.clockCard
-	const writeButtonsStyles = cardStyles.writeButtons
 	const [index, setIndex] = useState(0)
+	const compact = styles.width < 260 || styles.height < 130
 
 	useEffect(() => {
 		if (snippets.length <= 1) return
@@ -48,8 +47,8 @@ export default function SnippetCard() {
 
 	return (
 		<HomeDraggableLayer cardKey='snippetCard' x={x} y={y} width={styles.width} height={styles.height}>
-			<Card order={styles.order} width={styles.width} height={styles.height} x={x} y={y} className='flex items-center max-sm:static'>
-				<p className='line-clamp-3 text-sm leading-6 font-medium'>{currentSnippet}</p>
+			<Card order={styles.order} width={styles.width} height={styles.height} x={x} y={y} className='flex items-center overflow-hidden max-sm:static'>
+				<p className={cn('w-full max-w-full text-sm leading-6 font-medium [overflow-wrap:anywhere]', compact ? 'line-clamp-2' : 'line-clamp-4')}>{currentSnippet}</p>
 			</Card>
 		</HomeDraggableLayer>
 	)

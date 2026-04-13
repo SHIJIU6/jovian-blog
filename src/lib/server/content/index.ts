@@ -1,7 +1,7 @@
 import type { CategoriesConfig } from '@/hooks/use-categories'
 import { getContentBindings } from './cloudflare'
-import { getCategoriesFromAssets, getPostFromAssets, listPostsFromAssets } from './assets-source'
 import { getCategoriesFromD1, getPostFromD1, listPostsFromD1 } from './d1-source'
+import { isD1ScopeInitialized } from './d1-state'
 import type { ContentListOptions, ContentPostDetail, ContentPostListItem } from './types'
 
 async function importFileSource() {
@@ -13,11 +13,7 @@ export async function listContentPosts(options: ContentListOptions = {}): Promis
 
 	if (env?.BLOG_DB) {
 		const result = await listPostsFromD1(env.BLOG_DB, options)
-		if (result) return result
-	}
-
-	if (env?.ASSETS?.fetch) {
-		return listPostsFromAssets(env, options)
+		if (result && (result.length > 0 || (await isD1ScopeInitialized(env.BLOG_DB, 'posts')))) return result
 	}
 
 	const fileSource = await importFileSource()
@@ -30,10 +26,7 @@ export async function getContentPost(slug: string, options: ContentListOptions =
 	if (env?.BLOG_DB) {
 		const result = await getPostFromD1(env.BLOG_DB, slug, options)
 		if (result) return result
-	}
-
-	if (env?.ASSETS?.fetch) {
-		return getPostFromAssets(env, slug, options)
+		if (await isD1ScopeInitialized(env.BLOG_DB, 'posts')) return null
 	}
 
 	const fileSource = await importFileSource()
@@ -45,11 +38,7 @@ export async function listContentCategories(): Promise<CategoriesConfig> {
 
 	if (env?.BLOG_DB) {
 		const result = await getCategoriesFromD1(env.BLOG_DB)
-		if (result) return result
-	}
-
-	if (env?.ASSETS?.fetch) {
-		return getCategoriesFromAssets(env)
+		if (result && (result.categories.length > 0 || (await isD1ScopeInitialized(env.BLOG_DB, 'posts')))) return result
 	}
 
 	const fileSource = await importFileSource()

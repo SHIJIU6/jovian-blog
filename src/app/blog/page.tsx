@@ -19,7 +19,7 @@ import { saveBlogEdits } from './services/save-blog-edits'
 import { Check, PenSquare } from 'lucide-react'
 import { CategoryModal } from './components/category-modal'
 import { useManagementMode } from '@/hooks/use-management-mode'
-import { getBlogStatusLabel, normalizeBlogStatus } from '@/lib/blog-status'
+import { getBlogStatusLabel } from '@/lib/blog-status'
 
 type DisplayMode = 'day' | 'week' | 'month' | 'year' | 'category'
 
@@ -344,12 +344,13 @@ export default function BlogPage() {
 								{group.items.map(it => {
 									const hasRead = isRead(it.slug)
 									const isSelected = selectedSlugs.has(it.slug)
+									const tags = it.tags || []
 									return (
 										<div
 											key={it.slug}
 											onClick={event => handleItemClick(event, it.slug)}
 											className={cn(
-												'group flex min-h-10 items-center gap-3 py-3 transition-all',
+												'group flex min-h-10 items-start gap-3 py-3 transition-all',
 												isManageMode
 													? cn(
 															'rounded-lg border px-3',
@@ -366,42 +367,62 @@ export default function BlogPage() {
 													<Check />
 												</span>
 											)}
-											<span className='text-secondary w-[44px] shrink-0 text-sm font-medium'>{dayjs(it.date).format('MM-DD')}</span>
+											<span className='text-secondary w-[44px] shrink-0 pt-1 text-sm font-medium'>{dayjs(it.date).format('MM-DD')}</span>
 
-											<div className='relative flex h-2 w-2 items-center justify-center'>
+											<div className='relative mt-2 flex h-2 w-2 shrink-0 items-center justify-center'>
 												<div className='bg-secondary group-hover:bg-brand h-[5px] w-[5px] rounded-full transition-all group-hover:h-4'></div>
 												<ShortLineSVG className='absolute bottom-4' />
 											</div>
-											<div className='flex-1 truncate text-sm font-medium'>
-												<Link
-													href={`/blog/${encodeURIComponent(it.slug)}`}
-													className={cn('transition-all', isManageMode ? null : 'group-hover:text-brand group-hover:translate-x-2')}>
-													{it.title || it.slug}
-												</Link>
-												{hasRead && <span className='text-secondary ml-2 text-xs'>[已阅读]</span>}
-												<span className='ml-2 rounded-full border bg-white/60 px-2 py-0.5 text-[11px] text-gray-600'>
-													{getBlogStatusLabel(it.status, it.hidden)}
-												</span>
-											</div>
-											<div className='flex flex-wrap items-center gap-2 max-sm:hidden'>
-												{(it.tags || []).map(t => (
-													<span key={t} className='text-secondary text-sm'>
-														#{t}
+											<div className='min-w-0 flex-1 text-sm font-medium'>
+												<div className='flex items-start gap-2 leading-6'>
+													<Link
+														href={`/blog/${encodeURIComponent(it.slug)}`}
+														className={cn(
+															'min-w-0 flex-1 whitespace-normal break-words transition-all',
+															isManageMode ? null : 'group-hover:text-brand group-hover:translate-x-2'
+														)}>
+														{it.title || it.slug}
+													</Link>
+												</div>
+												<div className='mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs md:hidden'>
+													{tags.map(tag => (
+														<span key={tag} className='text-secondary'>
+															#{tag}
+														</span>
+													))}
+													{tags.length > 0 && <span className='h-3 w-px bg-black/10' aria-hidden='true' />}
+													{hasRead && <span className='text-secondary'>已阅读</span>}
+													<span className='inline-flex items-center justify-center rounded-full border bg-white/60 px-2 py-0.5 text-[11px] text-gray-600'>
+														{getBlogStatusLabel(it.status, it.hidden)}
 													</span>
-												))}
+												</div>
+											</div>
+											<div className='flex shrink-0 self-center items-center gap-3 max-md:hidden'>
+												<div className='flex max-w-[280px] flex-wrap items-center justify-end gap-x-2 gap-y-1 text-right'>
+													{tags.map(tag => (
+														<span key={tag} className='text-secondary text-sm'>
+															#{tag}
+														</span>
+													))}
+													{tags.length > 0 && <span className='h-4 w-px bg-black/10' aria-hidden='true' />}
+													{hasRead && <span className='text-secondary text-xs'>已阅读</span>}
+													<span className='inline-flex items-center justify-center rounded-full border bg-white/60 px-2 py-0.5 text-[11px] text-gray-600'>
+														{getBlogStatusLabel(it.status, it.hidden)}
+													</span>
+												</div>
 												{canManage && (
-													<>
+													<div className='flex items-center gap-2'>
 														<Link
 															href={`/blog/${encodeURIComponent(it.slug)}`}
-															className='rounded-full border bg-white/60 px-2.5 py-1 text-xs text-gray-600 transition-colors hover:border-brand/30 hover:text-brand'>
+															className='inline-flex items-center justify-center rounded-full border bg-white/60 px-2.5 py-1 text-xs text-gray-600 transition-colors hover:border-brand/30 hover:text-brand'>
 															查看
 														</Link>
 														<Link
 															href={`/studio/write/${encodeURIComponent(it.slug)}`}
-															className='rounded-full border bg-white/60 px-2.5 py-1 text-xs text-gray-600 transition-colors hover:border-brand/30 hover:text-brand'>
+															className='inline-flex items-center justify-center rounded-full border bg-white/60 px-2.5 py-1 text-xs text-gray-600 transition-colors hover:border-brand/30 hover:text-brand'>
 															编辑
 														</Link>
-													</>
+													</div>
 												)}
 											</div>
 										</div>

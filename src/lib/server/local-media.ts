@@ -1,10 +1,10 @@
 import path from 'node:path'
 import { promises as fs } from 'node:fs'
 import { getProjectRoot } from './project-root'
-import { getLocalContentPath } from './local-content'
+import { ensureLocalContentLayout, getLocalContentPath } from './local-content'
 
-const PUBLIC_DIR = path.join(getProjectRoot(), 'public')
-const LOCAL_PUBLIC_DIR = getLocalContentPath('public')
+const SEED_ASSETS_DIR = path.join(getProjectRoot(), 'seeds', 'assets')
+const LOCAL_MEDIA_DIR = getLocalContentPath('media')
 
 function getContentType(filePath: string) {
 	const ext = path.extname(filePath).toLowerCase()
@@ -26,6 +26,8 @@ function getContentType(filePath: string) {
 			return 'audio/mpeg'
 		case '.m4a':
 			return 'audio/mp4'
+		case '.json':
+			return filePath.endsWith('manifest.json') ? 'application/manifest+json' : 'application/json'
 		default:
 			return 'application/octet-stream'
 	}
@@ -41,10 +43,11 @@ function sanitizeKey(key: string) {
 }
 
 export async function readLocalMedia(key: string) {
+	await ensureLocalContentLayout()
 	const safeKey = sanitizeKey(key)
 	if (!safeKey) return null
 
-	for (const root of [LOCAL_PUBLIC_DIR, PUBLIC_DIR]) {
+	for (const root of [LOCAL_MEDIA_DIR, SEED_ASSETS_DIR]) {
 		const filePath = path.join(root, ...safeKey.split('/'))
 		try {
 			const buffer = await fs.readFile(filePath)

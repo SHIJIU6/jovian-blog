@@ -18,6 +18,11 @@ export default function ClockCard() {
 	const styles = cardStyles.clockCard
 	const hiCardStyles = cardStyles.hiCard
 	const showSeconds = siteContent.clockShowSeconds ?? false
+	const digitCount = showSeconds ? 6 : 4
+	const colonCount = showSeconds ? 2 : 1
+	const rawDisplayWidth = digitCount * 29 + colonCount * 8 + (digitCount + colonCount - 1) * 6
+	const rawDisplayHeight = 52
+	const displayScale = Math.min((styles.width - 28) / rawDisplayWidth, (styles.height - 28) / rawDisplayHeight, 1)
 
 	useEffect(() => {
 		const interval = showSeconds ? 1000 : 5000
@@ -37,7 +42,7 @@ export default function ClockCard() {
 
 	return (
 		<HomeDraggableLayer cardKey='clockCard' x={x} y={y} width={styles.width} height={styles.height}>
-			<Card order={styles.order} width={styles.width} height={styles.height} x={x} y={y} className='p-2'>
+			<Card order={styles.order} width={styles.width} height={styles.height} x={x} y={y} className='overflow-hidden p-2'>
 				{siteContent.enableChristmas && (
 					<>
 						<img
@@ -60,19 +65,21 @@ export default function ClockCard() {
 							router.push('/clock')
 						}
 					}}
-					className='bg-secondary/20 card-rounded flex h-full w-full cursor-pointer items-center justify-center gap-1.5 p-2'>
-					<SevenSegmentDigit value={parseInt(hours[0])} />
-					<SevenSegmentDigit value={parseInt(hours[1])} />
-					<Colon />
-					<SevenSegmentDigit value={parseInt(minutes[0])} />
-					<SevenSegmentDigit value={parseInt(minutes[1])} />
-					{showSeconds && (
-						<>
-							<Colon />
-							<SevenSegmentDigit value={parseInt(seconds[0])} />
-							<SevenSegmentDigit value={parseInt(seconds[1])} />
-						</>
-					)}
+					className='bg-secondary/20 card-rounded flex h-full w-full cursor-pointer items-center justify-center overflow-hidden p-2'>
+					<div className='flex origin-center items-center gap-1.5' style={{ transform: `scale(${Math.max(displayScale, 0.3)})` }}>
+						<SevenSegmentDigit value={parseInt(hours[0])} />
+						<SevenSegmentDigit value={parseInt(hours[1])} />
+						<Colon />
+						<SevenSegmentDigit value={parseInt(minutes[0])} />
+						<SevenSegmentDigit value={parseInt(minutes[1])} />
+						{showSeconds && (
+							<>
+								<Colon />
+								<SevenSegmentDigit value={parseInt(seconds[0])} />
+								<SevenSegmentDigit value={parseInt(seconds[1])} />
+							</>
+						)}
+					</div>
 				</div>
 			</Card>
 		</HomeDraggableLayer>

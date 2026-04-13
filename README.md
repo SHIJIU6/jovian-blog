@@ -13,7 +13,7 @@
 - 移除了个人测试文章与示例运行痕迹
 - 默认站点信息改为中性占位内容
 - `.env`、本地日志、MCP 私有配置和本地上传文件不会纳入版本控制
-- 仓库只保留模板数据；本地开发产生的内容、媒体和审计回退统一写入 `.local-content/`
+- 仓库不再保存模板文章内容；本地开发产生的内容、媒体和审计回退统一写入 `.local-content/`
 
 ## 功能概览
 
@@ -73,10 +73,13 @@ src/
     snippets/            短句
   lib/
     server/              服务端内容层、后台写入层、AI/MCP辅助层
-public/
-  blogs/                 模板文章内容
-  images/                模板素材
+seeds/
+  content/               模板结构化内容
+  assets/                模板静态资源
 .local-content/          本地开发运行数据（gitignored）
+  content/               本地结构化内容与文章
+  media/                 本地媒体与站点资源
+  runtime/               审计等运行时回退
 migrations/              D1 migrations
 scripts/
   blog-mcp-server.mjs    本地 stdio MCP server
@@ -98,6 +101,12 @@ pnpm i
 pnpm dev
 ```
 
+如果你希望本地开发直接走 D1，而不是 `.local-content` 文件回退，先执行一次本地 migration：
+
+```bash
+pnpm db:migrate:local
+```
+
 默认端口：
 
 ```text
@@ -114,6 +123,7 @@ pnpm build
 
 - 如果你的机器内存较小，`next build` 在最后阶段可能因为 Node 内存不足失败
 - 本地开发与功能调试优先使用 `pnpm dev`
+- 如果本地 D1 尚未初始化，文章和后台结构化内容保存会自动回退到 `.local-content/`；需要验证 D1 路径时请先执行 `pnpm db:migrate:local`
 
 ### 4. 类型检查与仓库校验
 
@@ -124,7 +134,7 @@ pnpm check
 
 说明：
 
-- `pnpm typecheck` 只做 TypeScript 静态检查
+- `pnpm typecheck` 会先执行 `next typegen`，再做 TypeScript 静态检查
 - `pnpm check` 会顺序执行类型检查和生产构建
 - 仓库已附带 GitHub Actions CI，推送到 GitHub 后会自动执行上述校验
 
@@ -178,10 +188,11 @@ pnpm check
 
 ## 本地与生产隔离
 
-- GitHub 仓库只存模板代码和模板数据
-- 本地开发时，文章、结构化内容、上传媒体、审计回退会优先写入 `.local-content/`
+- GitHub 仓库只存模板代码、`seeds/` 模板数据和迁移脚本
+- 本地开发时，文章与结构化内容写入 `.local-content/content/`，上传媒体写入 `.local-content/media/`
 - 生产环境接入 D1 / R2 后，读写优先走云端绑定，不依赖本地回退目录
-- `public/` 目录保留为模板静态资源，不再作为本地运行时数据的落盘位置
+- 前台默认静态资源通过 `/images/*`、`/music/*`、`/favicon.png`、`/manifest.json` 统一映射到 `seeds/assets/` 或 `.local-content/media/`
+- 旧的 `.local-content/src/*` 与 `.local-content/public/*` 会在运行时自动迁移到新目录，迁移后运行链路只使用新结构
 
 ## Cloudflare 部署
 
@@ -238,7 +249,7 @@ bucket_name = "blog-media-prod"
 ### 5. 应用 migrations
 
 ```bash
-pnpm wrangler d1 migrations apply BLOG_DB --remote
+pnpm db:migrate:remote
 ```
 
 ### 6. 配置 Secret
@@ -402,13 +413,16 @@ codex mcp add blog-publisher \
 
 该模板已经尽量去除了个人化默认信息，但你在公开自己的站点前，仍建议手动检查这些文件并替换成自己的内容：
 
-- [src/config/site-content.json](./src/config/site-content.json)
-- [src/app/about/list.json](./src/app/about/list.json)
-- [public/blogs/getting-started](./public/blogs/getting-started)
-- [src/app/projects/list.json](./src/app/projects/list.json)
-- [src/app/share/list.json](./src/app/share/list.json)
-- [src/app/bloggers/list.json](./src/app/bloggers/list.json)
-- [src/app/snippets/list.json](./src/app/snippets/list.json)
+- [seeds/content/site-content.json](./seeds/content/site-content.json)
+- [seeds/content/about.json](./seeds/content/about.json)
+- [seeds/content/projects.json](./seeds/content/projects.json)
+- [seeds/content/shares.json](./seeds/content/shares.json)
+- [seeds/content/bloggers.json](./seeds/content/bloggers.json)
+- [seeds/content/snippets.json](./seeds/content/snippets.json)
+- [seeds/content/pictures.json](./seeds/content/pictures.json)
+- [seeds/content/card-styles.json](./seeds/content/card-styles.json)
+- [seeds/assets/images/avatar.png](./seeds/assets/images/avatar.png)
+- [seeds/assets/favicon.png](./seeds/assets/favicon.png)
 
 ## 不会被提交到仓库的文件
 
@@ -423,7 +437,6 @@ codex mcp add blog-publisher \
 - `.start-stderr.log`
 - `.local-content/`
 - `project_document_local/`
-- `public/uploads/`
 
 ## License
 

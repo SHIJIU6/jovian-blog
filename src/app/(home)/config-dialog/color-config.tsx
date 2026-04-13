@@ -4,14 +4,14 @@ import { motion } from 'motion/react'
 import { ColorPicker } from '@/components/color-picker'
 import { XIcon } from 'lucide-react'
 import type { SiteContent } from '../stores/config-store'
-import siteContent from '@/config/site-content.json'
+import { defaultSiteContent } from '@/config/default-content'
 
 interface ColorConfigProps {
 	formData: SiteContent
 	setFormData: React.Dispatch<React.SetStateAction<SiteContent>>
 }
 
-const DEFAULT_THEME_COLORS = siteContent.theme
+const DEFAULT_THEME_COLORS = defaultSiteContent.theme
 
 type ColorPreset = {
 	name: string

@@ -1,0 +1,5 @@
+{
+	"title": "关于这个模板",
+	"description": "一个已经清理过示例内容的博客初始化模板",
+	"content": "这是一个可以继续定制的博客模板。\n\n当前仓库已经清理掉个人化示例数据，保留了前台展示、后台管理、内容接口、媒体上传、MCP 工具接入等可复用能力，方便你直接替换成自己的站点。\n\n## 你可以从这里开始\n\n- 修改站点标题、用户名、描述、配色和社交链接\n- 替换初始化文章，写下自己的第一篇博客\n- 在项目页、资源页、图片页和短句页中添加内容\n- 按需接入 Cloudflare D1 / R2 / Access 或本地 MCP 工具链\n\n## 当前技术栈\n\n- Next.js\n- React\n- TypeScript\n- Tailwind CSS\n- Motion\n- OpenNext Cloudflare 适配"
+}

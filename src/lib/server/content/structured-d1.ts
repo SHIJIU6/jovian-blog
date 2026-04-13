@@ -2,6 +2,7 @@ import type { Project } from '@/app/projects/components/project-card'
 import type { Share } from '@/app/share/components/share-card'
 import type { Blogger } from '@/app/bloggers/grid-view'
 import type { Picture } from '@/app/pictures/page'
+import { markD1ScopeInitialized } from './d1-state'
 
 type D1Row = Record<string, unknown>
 
@@ -121,6 +122,7 @@ export async function saveProjectsToD1(db: any, items: Project[]): Promise<boole
 		})
 
 		await runBatch(db, statements)
+		await markD1ScopeInitialized(db, 'projects')
 		return true
 	} catch {
 		return false
@@ -180,6 +182,7 @@ export async function saveSharesToD1(db: any, items: Share[]): Promise<boolean> 
 		})
 
 		await runBatch(db, statements)
+		await markD1ScopeInitialized(db, 'shares')
 		return true
 	} catch {
 		return false
@@ -239,6 +242,7 @@ export async function saveBloggersToD1(db: any, items: Blogger[]): Promise<boole
 		})
 
 		await runBatch(db, statements)
+		await markD1ScopeInitialized(db, 'bloggers')
 		return true
 	} catch {
 		return false
@@ -272,6 +276,7 @@ export async function saveSnippetsToD1(db: any, items: string[]): Promise<boolea
 		})
 
 		await runBatch(db, statements)
+		await markD1ScopeInitialized(db, 'snippets')
 		return true
 	} catch {
 		return false
@@ -329,6 +334,7 @@ export async function savePicturesToD1(db: any, items: Picture[]): Promise<boole
 		})
 
 		await runBatch(db, statements)
+		await markD1ScopeInitialized(db, 'pictures')
 		return true
 	} catch {
 		return false

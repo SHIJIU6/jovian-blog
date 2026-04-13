@@ -1,0 +1,13 @@
+[
+	{
+		"name": "资源名称",
+		"url": "https://example.com/",
+		"logo": "/images/blockies.svg",
+		"description": "这里可以放你想长期保存的工具、网站、参考文章或素材库。",
+		"tags": [
+			"模板",
+			"收藏"
+		],
+		"stars": 4
+	}
+]

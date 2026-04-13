@@ -21,13 +21,15 @@ export default function CalendarCard() {
 	const styles = cardStyles.calendarCard
 	const hiCardStyles = cardStyles.hiCard
 	const clockCardStyles = cardStyles.clockCard
+	const compact = styles.height < 240 || styles.width < 240
+	const tiny = styles.height < 210 || styles.width < 220
 
 	const x = styles.offsetX !== null ? center.x + styles.offsetX : center.x + CARD_SPACING + hiCardStyles.width / 2
 	const y = styles.offsetY !== null ? center.y + styles.offsetY : center.y - (clockCardStyles.offset ?? 0) + CARD_SPACING
 
 	return (
 		<HomeDraggableLayer cardKey='calendarCard' x={x} y={y} width={styles.width} height={styles.height}>
-			<Card order={styles.order} width={styles.width} height={styles.height} x={x} y={y} className='flex flex-col'>
+			<Card order={styles.order} width={styles.width} height={styles.height} x={x} y={y} className='flex flex-col overflow-hidden'>
 				{siteContent.enableChristmas && (
 					<>
 						<img
@@ -39,10 +41,10 @@ export default function CalendarCard() {
 					</>
 				)}
 
-				<h3 className='text-secondary text-sm'>
+				<h3 className={cn('text-secondary [overflow-wrap:anywhere]', tiny ? 'text-xs leading-4' : 'text-sm')}>
 					{now.format('YYYY/M/D')} {now.format('ddd')}
 				</h3>
-				<ul className={cn('text-secondary mt-3 grid h-[206px] flex-1 grid-cols-7 gap-2 text-sm', (styles.height < 240 || styles.width < 240) && 'text-xs')}>
+				<ul className={cn('text-secondary mt-3 grid min-h-0 flex-1 grid-cols-7 text-sm', tiny ? 'gap-1 text-[11px]' : compact ? 'gap-1.5 text-xs' : 'gap-2')}>
 					{new Array(7).fill(0).map((_, index) => {
 						const isCurrentWeekday = index === currentWeekday
 						return (

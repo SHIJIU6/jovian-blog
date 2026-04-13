@@ -23,13 +23,17 @@ export default function BeianCard() {
 
 	return (
 		<HomeDraggableLayer cardKey='beianCard' x={x} y={y} width={styles.width} height={styles.height}>
-			<Card order={styles.order} width={styles.width} height={styles.height} x={x} y={y} className='flex items-center justify-center max-sm:static'>
+			<Card order={styles.order} width={styles.width} height={styles.height} x={x} y={y} className='flex items-center justify-center overflow-hidden max-sm:static'>
 				{beian.link ? (
-					<Link href={beian.link} target='_blank' rel='noopener noreferrer' className='text-secondary text-xs transition-opacity hover:opacity-80'>
+					<Link
+						href={beian.link}
+						target='_blank'
+						rel='noopener noreferrer'
+						className='text-secondary line-clamp-2 w-full text-center text-xs leading-5 transition-opacity [overflow-wrap:anywhere] hover:opacity-80'>
 						{beian.text}
 					</Link>
 				) : (
-					<span className='text-secondary text-xs'>{beian.text}</span>
+					<span className='text-secondary line-clamp-2 w-full text-center text-xs leading-5 [overflow-wrap:anywhere]'>{beian.text}</span>
 				)}
 			</Card>
 		</HomeDraggableLayer>

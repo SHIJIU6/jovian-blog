@@ -1,6 +1,5 @@
 import { create } from 'zustand'
-import siteContent from '@/config/site-content.json'
-import cardStyles from '@/config/card-styles.json'
+import { defaultCardStyles, defaultSiteContent } from '@/config/default-content'
 
 export type SiteMeta = {
 	title: string
@@ -91,8 +90,8 @@ interface ConfigStore {
 }
 
 export const useConfigStore = create<ConfigStore>((set, get) => ({
-	siteContent: { ...siteContent } as SiteContent,
-	cardStyles: { ...cardStyles } as CardStyles,
+	siteContent: { ...defaultSiteContent } as SiteContent,
+	cardStyles: { ...defaultCardStyles } as CardStyles,
 	regenerateKey: 0,
 	configDialogOpen: false,
 	hydrated: false,
@@ -110,10 +109,10 @@ export const useConfigStore = create<ConfigStore>((set, get) => ({
 		})
 	},
 	resetSiteContent: () => {
-		set({ siteContent: { ...siteContent } as SiteContent })
+		set({ siteContent: { ...defaultSiteContent } as SiteContent })
 	},
 	resetCardStyles: () => {
-		set({ cardStyles: { ...cardStyles } as CardStyles })
+		set({ cardStyles: { ...defaultCardStyles } as CardStyles })
 	},
 	regenerateBubbles: () => {
 		set(state => ({ regenerateKey: state.regenerateKey + 1 }))

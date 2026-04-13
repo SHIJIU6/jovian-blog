@@ -192,9 +192,11 @@ export default function NavCard() {
 							style={{ boxShadow: ' 0 12px 20px -5px #E2D9CE' }}
 							className='rounded-full object-cover'
 						/>
-						{form === 'full' && <span className='font-averia mt-1 text-2xl leading-none font-medium'>{siteContent.meta.title}</span>}
+						{form === 'full' && (
+							<span className='font-averia mt-1 max-w-[11rem] min-w-0 text-2xl leading-tight font-medium [overflow-wrap:anywhere]'>{siteContent.meta.title}</span>
+						)}
 						{form === 'full' && <span className='text-brand mt-2 text-xs font-medium'>(开发中)</span>}
-						{form === 'compact' && <span className='font-averia text-lg leading-none font-medium whitespace-nowrap'>{siteContent.meta.title}</span>}
+						{form === 'compact' && <span className='font-averia max-w-[140px] min-w-0 truncate text-lg leading-none font-medium'>{siteContent.meta.title}</span>}
 					</Link>
 
 					{(form === 'full' || form === 'icons' || form === 'compact') && (
@@ -244,6 +246,8 @@ export default function NavCard() {
 										{form !== 'icons' && (
 											<span
 												className={clsx(
+													'min-w-0 [overflow-wrap:anywhere]',
+													form === 'compact' && 'truncate',
 													(index == hoveredIndex || activeIndex === index) && 'text-primary font-medium'
 												)}>
 												{item.label}

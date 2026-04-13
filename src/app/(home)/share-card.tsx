@@ -7,6 +7,7 @@ import { useConfigStore } from './stores/config-store'
 import { CARD_SPACING } from '@/consts'
 import Link from 'next/link'
 import { HomeDraggableLayer } from './home-draggable-layer'
+import { cn } from '@/lib/utils'
 import { useSharesContent } from '@/hooks/use-structured-content'
 
 type ShareItem = {
@@ -26,6 +27,7 @@ export default function ShareCard() {
 	const styles = cardStyles.shareCard
 	const hiCardStyles = cardStyles.hiCard
 	const socialButtonsStyles = cardStyles.socialButtons
+	const compact = styles.width < 290 || styles.height < 170
 
 	useEffect(() => {
 		if (shares.length === 0) {
@@ -45,7 +47,7 @@ export default function ShareCard() {
 
 	return (
 		<HomeDraggableLayer cardKey='shareCard' x={x} y={y} width={styles.width} height={styles.height}>
-			<Card order={styles.order} width={styles.width} height={styles.height} x={x} y={y}>
+			<Card order={styles.order} width={styles.width} height={styles.height} x={x} y={y} className='overflow-hidden'>
 				{siteContent.enableChristmas && (
 					<>
 						<img
@@ -59,15 +61,15 @@ export default function ShareCard() {
 
 				<h2 className='text-secondary text-sm'>随机推荐</h2>
 
-				<Link href='/share' className='mt-2 block space-y-2'>
-					<div className='flex items-center'>
-						<div className='relative mr-3 h-12 w-12 shrink-0 overflow-hidden rounded-xl'>
+				<Link href='/share' className='mt-2 block min-w-0 space-y-2 overflow-hidden'>
+					<div className='flex min-w-0 items-center gap-3'>
+						<div className='relative h-12 w-12 shrink-0 overflow-hidden rounded-xl'>
 							<img src={randomItem.logo} alt={randomItem.name} className='h-full w-full object-contain' />
 						</div>
-						<h3 className='text-sm font-medium'>{randomItem.name}</h3>
+						<h3 className={cn('min-w-0 text-sm leading-5 font-medium [overflow-wrap:anywhere]', compact ? 'line-clamp-1' : 'line-clamp-2')}>{randomItem.name}</h3>
 					</div>
 
-					<p className='text-secondary line-clamp-3 text-xs'>{randomItem.description}</p>
+					<p className={cn('text-secondary text-xs leading-5 [overflow-wrap:anywhere]', compact ? 'line-clamp-2' : 'line-clamp-3')}>{randomItem.description}</p>
 				</Link>
 			</Card>
 		</HomeDraggableLayer>

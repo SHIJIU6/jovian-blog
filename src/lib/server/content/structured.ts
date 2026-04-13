@@ -1,7 +1,6 @@
 import path from 'node:path'
 import { promises as fs } from 'node:fs'
-import siteContentDefault from '@/config/site-content.json'
-import cardStylesDefault from '@/config/card-styles.json'
+import { defaultCardStyles, defaultSiteContent } from '@/config/default-content'
 import type { Project } from '@/app/projects/components/project-card'
 import type { Share } from '@/app/share/components/share-card'
 import type { Blogger } from '@/app/bloggers/grid-view'
@@ -9,8 +8,9 @@ import type { SiteContent, CardStyles } from '@/app/(home)/stores/config-store'
 import type { AboutData } from '@/app/about/services/push-about'
 import type { Picture } from '@/app/pictures/page'
 import { getContentBindings } from './cloudflare'
+import { isD1ScopeInitialized } from './d1-state'
 import { getProjectRoot } from '../project-root'
-import { ensureLocalContentDir, getLocalContentPath, resolveContentReadPath } from '../local-content'
+import { ensureLocalContentDir, ensureLocalContentLayout, getLocalContentPath, resolveContentReadPath } from '../local-content'
 import {
 	getBloggersFromD1,
 	getPicturesFromD1,
@@ -27,25 +27,25 @@ import {
 const ROOT = getProjectRoot()
 
 const FILES = {
-	siteContent: path.join(ROOT, 'src', 'config', 'site-content.json'),
-	cardStyles: path.join(ROOT, 'src', 'config', 'card-styles.json'),
-	about: path.join(ROOT, 'src', 'app', 'about', 'list.json'),
-	projects: path.join(ROOT, 'src', 'app', 'projects', 'list.json'),
-	shares: path.join(ROOT, 'src', 'app', 'share', 'list.json'),
-	bloggers: path.join(ROOT, 'src', 'app', 'bloggers', 'list.json'),
-	snippets: path.join(ROOT, 'src', 'app', 'snippets', 'list.json'),
-	pictures: path.join(ROOT, 'src', 'app', 'pictures', 'list.json')
+	siteContent: path.join(ROOT, 'seeds', 'content', 'site-content.json'),
+	cardStyles: path.join(ROOT, 'seeds', 'content', 'card-styles.json'),
+	about: path.join(ROOT, 'seeds', 'content', 'about.json'),
+	projects: path.join(ROOT, 'seeds', 'content', 'projects.json'),
+	shares: path.join(ROOT, 'seeds', 'content', 'shares.json'),
+	bloggers: path.join(ROOT, 'seeds', 'content', 'bloggers.json'),
+	snippets: path.join(ROOT, 'seeds', 'content', 'snippets.json'),
+	pictures: path.join(ROOT, 'seeds', 'content', 'pictures.json')
 }
 
 const LOCAL_FILES = {
-	siteContent: getLocalContentPath('src', 'config', 'site-content.json'),
-	cardStyles: getLocalContentPath('src', 'config', 'card-styles.json'),
-	about: getLocalContentPath('src', 'app', 'about', 'list.json'),
-	projects: getLocalContentPath('src', 'app', 'projects', 'list.json'),
-	shares: getLocalContentPath('src', 'app', 'share', 'list.json'),
-	bloggers: getLocalContentPath('src', 'app', 'bloggers', 'list.json'),
-	snippets: getLocalContentPath('src', 'app', 'snippets', 'list.json'),
-	pictures: getLocalContentPath('src', 'app', 'pictures', 'list.json')
+	siteContent: getLocalContentPath('content', 'site-content.json'),
+	cardStyles: getLocalContentPath('content', 'card-styles.json'),
+	about: getLocalContentPath('content', 'about.json'),
+	projects: getLocalContentPath('content', 'projects.json'),
+	shares: getLocalContentPath('content', 'shares.json'),
+	bloggers: getLocalContentPath('content', 'bloggers.json'),
+	snippets: getLocalContentPath('content', 'snippets.json'),
+	pictures: getLocalContentPath('content', 'pictures.json')
 }
 
 async function readJsonFile<T>(filePath: string, fallback: T): Promise<T> {
@@ -79,34 +79,41 @@ async function readSetting<T>(key: string, fallback: T): Promise<T> {
 
 async function writeSetting(key: string, value: unknown) {
 	const env = await getContentBindings()
-	if (env?.BLOG_DB) {
+	if (!env?.BLOG_DB) {
+		return false
+	}
+
+	try {
 		const now = new Date().toISOString()
 		await env.BLOG_DB.prepare(
 			'INSERT INTO site_settings (key, value_json, updated_at) VALUES (?, ?, ?) ON CONFLICT(key) DO UPDATE SET value_json = excluded.value_json, updated_at = excluded.updated_at'
 		)
 			.bind(key, JSON.stringify(value), now)
 			.run()
-		return
+		return true
+	} catch {
+		return false
 	}
 }
 
 export async function getSiteConfig() {
+	await ensureLocalContentLayout()
 	const siteContent = await readSetting<SiteContent>(
 		'site_content',
-		await readJsonFile(resolveContentReadPath(FILES.siteContent, LOCAL_FILES.siteContent), siteContentDefault)
+		await readJsonFile(resolveContentReadPath(FILES.siteContent, LOCAL_FILES.siteContent), defaultSiteContent)
 	)
 	const cardStyles = await readSetting<CardStyles>(
 		'card_styles',
-		await readJsonFile(resolveContentReadPath(FILES.cardStyles, LOCAL_FILES.cardStyles), cardStylesDefault)
+		await readJsonFile(resolveContentReadPath(FILES.cardStyles, LOCAL_FILES.cardStyles), defaultCardStyles)
 	)
 	return { siteContent, cardStyles }
 }
 
 export async function saveSiteConfig(input: { siteContent: SiteContent; cardStyles: CardStyles }) {
-	const env = await getContentBindings()
-	if (env?.BLOG_DB) {
-		await writeSetting('site_content', input.siteContent)
-		await writeSetting('card_styles', input.cardStyles)
+	await ensureLocalContentLayout()
+	const siteContentSaved = await writeSetting('site_content', input.siteContent)
+	const cardStylesSaved = await writeSetting('card_styles', input.cardStyles)
+	if (siteContentSaved && cardStylesSaved) {
 		return
 	}
 
@@ -115,6 +122,7 @@ export async function saveSiteConfig(input: { siteContent: SiteContent; cardStyl
 }
 
 export async function getAboutData() {
+	await ensureLocalContentLayout()
 	return readSetting<AboutData>(
 		'about_page',
 		await readJsonFile<AboutData>(resolveContentReadPath(FILES.about, LOCAL_FILES.about), {
@@ -126,115 +134,119 @@ export async function getAboutData() {
 }
 
 export async function saveAboutData(value: AboutData) {
-	const env = await getContentBindings()
-	if (env?.BLOG_DB) {
-		await writeSetting('about_page', value)
+	await ensureLocalContentLayout()
+	if (await writeSetting('about_page', value)) {
 		return
 	}
 	await writeJsonFile(LOCAL_FILES.about, value)
 }
 
 export async function getProjects() {
+	await ensureLocalContentLayout()
 	const env = await getContentBindings()
 	if (env?.BLOG_DB) {
 		const result = await getProjectsFromD1(env.BLOG_DB)
-		if (result) return result
+		if (result && (result.length > 0 || (await isD1ScopeInitialized(env.BLOG_DB, 'projects')))) return result
 	}
 
 	return readSetting<Project[]>('projects_list', await readJsonFile<Project[]>(resolveContentReadPath(FILES.projects, LOCAL_FILES.projects), []))
 }
 
 export async function saveProjects(items: Project[]) {
+	await ensureLocalContentLayout()
 	const env = await getContentBindings()
 	if (env?.BLOG_DB) {
 		const saved = await saveProjectsToD1(env.BLOG_DB, items)
 		if (saved) return
-		await writeSetting('projects_list', items)
-		return
+		if (await writeSetting('projects_list', items)) return
 	}
 	await writeJsonFile(LOCAL_FILES.projects, items)
 }
 
 export async function getShares() {
+	await ensureLocalContentLayout()
 	const env = await getContentBindings()
 	if (env?.BLOG_DB) {
 		const result = await getSharesFromD1(env.BLOG_DB)
-		if (result) return result
+		if (result && (result.length > 0 || (await isD1ScopeInitialized(env.BLOG_DB, 'shares')))) return result
 	}
 
 	return readSetting<Share[]>('shares_list', await readJsonFile<Share[]>(resolveContentReadPath(FILES.shares, LOCAL_FILES.shares), []))
 }
 
 export async function saveShares(items: Share[]) {
+	await ensureLocalContentLayout()
 	const env = await getContentBindings()
 	if (env?.BLOG_DB) {
 		const saved = await saveSharesToD1(env.BLOG_DB, items)
 		if (saved) return
-		await writeSetting('shares_list', items)
-		return
+		if (await writeSetting('shares_list', items)) return
 	}
 	await writeJsonFile(LOCAL_FILES.shares, items)
 }
 
 export async function getBloggers() {
+	await ensureLocalContentLayout()
 	const env = await getContentBindings()
 	if (env?.BLOG_DB) {
 		const result = await getBloggersFromD1(env.BLOG_DB)
-		if (result) return result
+		if (result && (result.length > 0 || (await isD1ScopeInitialized(env.BLOG_DB, 'bloggers')))) return result
 	}
 
 	return readSetting<Blogger[]>('bloggers_list', await readJsonFile<Blogger[]>(resolveContentReadPath(FILES.bloggers, LOCAL_FILES.bloggers), []))
 }
 
 export async function saveBloggers(items: Blogger[]) {
+	await ensureLocalContentLayout()
 	const env = await getContentBindings()
 	if (env?.BLOG_DB) {
 		const saved = await saveBloggersToD1(env.BLOG_DB, items)
 		if (saved) return
-		await writeSetting('bloggers_list', items)
-		return
+		if (await writeSetting('bloggers_list', items)) return
 	}
 	await writeJsonFile(LOCAL_FILES.bloggers, items)
 }
 
 export async function getSnippets() {
+	await ensureLocalContentLayout()
 	const env = await getContentBindings()
 	if (env?.BLOG_DB) {
 		const result = await getSnippetsFromD1(env.BLOG_DB)
-		if (result) return result
+		if (result && (result.length > 0 || (await isD1ScopeInitialized(env.BLOG_DB, 'snippets')))) return result
 	}
 
 	return readSetting<string[]>('snippets_list', await readJsonFile<string[]>(resolveContentReadPath(FILES.snippets, LOCAL_FILES.snippets), []))
 }
 
 export async function saveSnippets(items: string[]) {
+	await ensureLocalContentLayout()
 	const env = await getContentBindings()
 	if (env?.BLOG_DB) {
 		const saved = await saveSnippetsToD1(env.BLOG_DB, items)
 		if (saved) return
-		await writeSetting('snippets_list', items)
-		return
+		if (await writeSetting('snippets_list', items)) return
 	}
 	await writeJsonFile(LOCAL_FILES.snippets, items)
 }
 
 export async function getPictures() {
+	await ensureLocalContentLayout()
 	const env = await getContentBindings()
 	if (env?.BLOG_DB) {
 		const result = await getPicturesFromD1(env.BLOG_DB)
-		if (result) return result
+		if (result && (result.length > 0 || (await isD1ScopeInitialized(env.BLOG_DB, 'pictures')))) return result
 	}
 
 	return readSetting<Picture[]>('pictures_list', await readJsonFile<Picture[]>(resolveContentReadPath(FILES.pictures, LOCAL_FILES.pictures), []))
 }
 
 export async function savePictures(items: Picture[]) {
+	await ensureLocalContentLayout()
 	const env = await getContentBindings()
 	if (env?.BLOG_DB) {
 		const saved = await savePicturesToD1(env.BLOG_DB, items)
 		if (saved) return
-		await writeSetting('pictures_list', items)
-		return
+		if (await writeSetting('pictures_list', items)) return
 	}
 	await writeJsonFile(LOCAL_FILES.pictures, items)
 }

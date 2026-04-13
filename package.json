@@ -5,8 +5,11 @@
   "packageManager": "pnpm@8.15.4",
   "scripts": {
     "dev": "next dev --turbopack -p 2025",
+    "db:migrate:local": "wrangler d1 migrations apply BLOG_DB --local",
+    "db:migrate:remote": "wrangler d1 migrations apply BLOG_DB --remote",
     "svg": "node scripts/gen-svgs-index.js",
-    "typecheck": "tsc --noEmit",
+    "typegen": "next typegen",
+    "typecheck": "pnpm typegen && tsc --noEmit",
     "check": "pnpm typecheck && pnpm build",
     "build": "next build",
     "start": "next start",

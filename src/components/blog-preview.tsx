@@ -33,11 +33,13 @@ export function BlogPreview({ markdown, title, tags, date, summary, cover, slug 
 				initial={{ opacity: 0 }}
 				animate={{ opacity: 1 }}
 				transition={{ delay: INIT_DELAY }}
-				className='card bg-article static flex-1 overflow-auto rounded-xl p-8'>
+				className='card bg-article static min-w-0 flex-1 overflow-auto rounded-xl p-8 max-sm:px-5 max-sm:py-6'>
 				<div>
-					<div className='text-center text-2xl font-semibold'>{title}</div>
+					<h1 className='mx-auto max-w-full text-center text-2xl leading-tight font-semibold break-all [overflow-wrap:anywhere] sm:text-[32px]'>
+						{title}
+					</h1>
 
-					<div className='text-secondary mt-4 flex flex-wrap items-center justify-center gap-3 px-8 text-center text-sm'>
+					<div className='text-secondary mt-4 flex max-w-full flex-wrap items-center justify-center gap-3 px-2 text-center text-sm sm:px-8'>
 						{tags.map(t => (
 							<span key={t}>#{t}</span>
 						))}

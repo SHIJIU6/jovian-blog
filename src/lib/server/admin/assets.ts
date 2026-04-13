@@ -3,7 +3,7 @@ import { promises as fs } from 'node:fs'
 import { getContentBindings } from '../content/cloudflare'
 import { ensureLocalContentDir, getLocalContentPath } from '../local-content'
 
-const LOCAL_PUBLIC_DIR = getLocalContentPath('public')
+const LOCAL_MEDIA_DIR = getLocalContentPath('media')
 
 function sanitizeSegment(value: string) {
 	return value
@@ -72,7 +72,7 @@ export async function saveAsset(file: File, folder = 'misc', exactKey?: string) 
 	}
 
 	const relativeDir = exactKey ? path.dirname(resolvedKey) : path.join('uploads', normalizedFolder)
-	const absoluteDir = path.join(LOCAL_PUBLIC_DIR, relativeDir)
+	const absoluteDir = path.join(LOCAL_MEDIA_DIR, relativeDir)
 	await ensureDir(absoluteDir)
 	const relativePath = exactKey ? `/${resolvedKey.replace(/\\/g, '/')}` : path.posix.join('/uploads', normalizedFolder, fileName)
 	const fileTarget = exactKey ? path.basename(resolvedKey) : fileName

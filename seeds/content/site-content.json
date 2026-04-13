@@ -1,0 +1,80 @@
+{
+	"meta": {
+		"title": "My Blog",
+		"description": "一个可编辑的博客初始化模板，用来记录文章、项目、收藏与想法。",
+		"username": "Your Name"
+	},
+	"faviconUrl": "/favicon.png",
+	"avatarUrl": "/images/blockies.svg",
+	"theme": {
+		"colorBrand": "#de4331",
+		"colorPrimary": "#4E3F42",
+		"colorSecondary": "#7b888e",
+		"colorBrandSecondary": "#FCC841",
+		"colorBg": "#eeeeee",
+		"colorBorder": "#ffffff",
+		"colorCard": "#ffffff66",
+		"colorArticle": "#ffffffcc"
+	},
+	"backgroundColors": [
+		"#FCC841",
+		"#DFEFFC",
+		"#DEDE92",
+		"#DE4331",
+		"#FE9750",
+		"#FCC841"
+	],
+	"artImages": [
+		{
+			"id": "template-art",
+			"url": "/images/art/template-art.svg"
+		}
+	],
+	"currentArtImageId": "template-art",
+	"backgroundImages": [
+		{
+			"id": "",
+			"url": ""
+		}
+	],
+	"currentBackgroundImageId": "",
+	"socialButtons": [
+		{
+			"id": "github",
+			"type": "github",
+			"value": "https://github.com/yourname",
+			"label": "Github",
+			"order": 1
+		},
+		{
+			"id": "website",
+			"type": "link",
+			"value": "https://example.com",
+			"label": "Website",
+			"order": 2
+		},
+		{
+			"id": "email",
+			"type": "email",
+			"value": "hello@example.com",
+			"label": "",
+			"order": 3
+		}
+	],
+	"clockShowSeconds": true,
+	"summaryInContent": false,
+	"enableHat": true,
+	"hatOffsetX": null,
+	"hatOffsetY": -30,
+	"hatScale": null,
+	"isCachePem": false,
+	"hideEditButton": true,
+	"enableCategories": true,
+	"currentHatIndex": 1,
+	"hatFlipped": false,
+	"enableChristmas": false,
+	"beian": {
+		"text": "",
+		"link": ""
+	}
+}

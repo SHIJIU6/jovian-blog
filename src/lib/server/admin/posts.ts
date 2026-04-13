@@ -1,9 +1,10 @@
 import path from 'node:path'
 import { promises as fs } from 'node:fs'
 import { getContentBindings } from '../content/cloudflare'
+import { markD1ScopeInitialized } from '../content/d1-state'
 import type { BlogIndexItem } from '@/app/blog/types'
 import { normalizeBlogStatus } from '@/lib/blog-status'
-import { ensureLocalContentDir, getLocalContentPath } from '../local-content'
+import { ensureLocalContentDir, ensureLocalContentLayout, getLocalContentPath } from '../local-content'
 
 type SavePostInput = {
 	slug: string
@@ -24,7 +25,11 @@ type SyncPostIndexInput = {
 	categories: string[]
 }
 
-const LOCAL_PUBLIC_DIR = getLocalContentPath('public')
+const LOCAL_BLOG_DIR = getLocalContentPath('content', 'blogs')
+
+function getBlogContentPath(...segments: string[]) {
+	return path.join(LOCAL_BLOG_DIR, ...segments)
+}
 
 async function ensureDir(target: string) {
 	await ensureLocalContentDir(target)
@@ -60,7 +65,8 @@ function createBlogIndexItem(input: SavePostInput): BlogIndexItem {
 }
 
 async function upsertPostToFiles(input: SavePostInput) {
-	const basePath = path.join(LOCAL_PUBLIC_DIR, 'blogs', input.slug)
+	await ensureLocalContentLayout()
+	const basePath = getBlogContentPath(input.slug)
 	await ensureDir(basePath)
 	const status = normalizeBlogStatus(input.status, input.hidden)
 
@@ -78,14 +84,14 @@ async function upsertPostToFiles(input: SavePostInput) {
 	await fs.writeFile(path.join(basePath, 'index.md'), input.contentMd, 'utf8')
 	await writeJsonFile(path.join(basePath, 'config.json'), config)
 
-	const indexPath = path.join(LOCAL_PUBLIC_DIR, 'blogs', 'index.json')
+	const indexPath = getBlogContentPath('index.json')
 	const indexItems = await readJsonFile<BlogIndexItem[]>(indexPath, [])
 	const nextMap = new Map(indexItems.map(item => [item.slug, item]))
 	nextMap.set(input.slug, createBlogIndexItem(input))
 	const sorted = Array.from(nextMap.values()).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 	await writeJsonFile(indexPath, sorted)
 
-	const categoriesPath = path.join(LOCAL_PUBLIC_DIR, 'blogs', 'categories.json')
+	const categoriesPath = getBlogContentPath('categories.json')
 	const categoriesFile = await readJsonFile<{ categories: string[] }>(categoriesPath, { categories: [] })
 	const categorySet = new Set(categoriesFile.categories)
 	if (input.category) categorySet.add(input.category)
@@ -95,8 +101,9 @@ async function upsertPostToFiles(input: SavePostInput) {
 }
 
 async function removePostFromFiles(slug: string) {
-	await fs.rm(path.join(LOCAL_PUBLIC_DIR, 'blogs', slug), { recursive: true, force: true })
-	const indexPath = path.join(LOCAL_PUBLIC_DIR, 'blogs', 'index.json')
+	await ensureLocalContentLayout()
+	await fs.rm(getBlogContentPath(slug), { recursive: true, force: true })
+	const indexPath = getBlogContentPath('index.json')
 	const items = await readJsonFile<BlogIndexItem[]>(indexPath, [])
 	await writeJsonFile(
 		indexPath,
@@ -105,25 +112,22 @@ async function removePostFromFiles(slug: string) {
 }
 
 async function syncPostIndexToFiles(input: SyncPostIndexInput) {
+	await ensureLocalContentLayout()
 	const removedSlugs = input.originalItems.filter(item => !input.nextItems.some(next => next.slug === item.slug)).map(item => item.slug)
 
 	for (const slug of removedSlugs) {
-		await fs.rm(path.join(LOCAL_PUBLIC_DIR, 'blogs', slug), { recursive: true, force: true })
+		await fs.rm(getBlogContentPath(slug), { recursive: true, force: true })
 	}
 
-	await writeJsonFile(
-		path.join(LOCAL_PUBLIC_DIR, 'blogs', 'index.json'),
-		[...input.nextItems].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-	)
-	await writeJsonFile(path.join(LOCAL_PUBLIC_DIR, 'blogs', 'categories.json'), {
+	await writeJsonFile(getBlogContentPath('index.json'), [...input.nextItems].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()))
+	await writeJsonFile(getBlogContentPath('categories.json'), {
 		categories: Array.from(new Set(input.categories.map(item => item.trim()).filter(Boolean)))
 	})
 
 	for (const item of input.nextItems) {
-		const configPath = path.join(LOCAL_PUBLIC_DIR, 'blogs', item.slug, 'config.json')
-		const current = await readJsonFile<Record<string, unknown>>(configPath, {})
+		const current = await readJsonFile<Record<string, unknown>>(getBlogContentPath(item.slug, 'config.json'), {})
 		const status = normalizeBlogStatus(item.status, item.hidden)
-		await writeJsonFile(configPath, {
+		await writeJsonFile(getBlogContentPath(item.slug, 'config.json'), {
 			...current,
 			title: item.title,
 			tags: item.tags,
@@ -205,6 +209,8 @@ async function upsertPostToD1(db: any, input: SavePostInput) {
 		await db.prepare('INSERT INTO post_categories (post_id, category_id) VALUES (?, ?)').bind(id, categoryId).run()
 	}
 
+	await markD1ScopeInitialized(db, 'posts')
+
 	return createBlogIndexItem({
 		...input,
 		date: displayDate,
@@ -215,6 +221,7 @@ async function upsertPostToD1(db: any, input: SavePostInput) {
 
 async function removePostFromD1(db: any, slug: string) {
 	await db.prepare('UPDATE posts SET deleted_at = ?, updated_at = ? WHERE slug = ?').bind(new Date().toISOString(), new Date().toISOString(), slug).run()
+	await markD1ScopeInitialized(db, 'posts')
 }
 
 async function syncPostIndexToD1(db: any, input: SyncPostIndexInput) {
@@ -264,12 +271,19 @@ async function syncPostIndexToD1(db: any, input: SyncPostIndexInput) {
 			await db.prepare('UPDATE categories SET sort_order = ? WHERE id = ?').bind(index, found.id).run()
 		}
 	}
+
+	await markD1ScopeInitialized(db, 'posts')
 }
 
 export async function savePost(input: SavePostInput) {
 	const env = await getContentBindings()
 	if (env?.BLOG_DB) {
-		return upsertPostToD1(env.BLOG_DB, input)
+		try {
+			return await upsertPostToD1(env.BLOG_DB, input)
+		} catch {
+			// Local dev may expose a D1 binding before migrations are applied.
+			// Fall back to file persistence so authoring still works.
+		}
 	}
 	return upsertPostToFiles(input)
 }
@@ -277,8 +291,12 @@ export async function savePost(input: SavePostInput) {
 export async function deletePost(slug: string) {
 	const env = await getContentBindings()
 	if (env?.BLOG_DB) {
-		await removePostFromD1(env.BLOG_DB, slug)
-		return
+		try {
+			await removePostFromD1(env.BLOG_DB, slug)
+			return
+		} catch {
+			// Fall back to local files when the local D1 schema is not ready yet.
+		}
 	}
 	await removePostFromFiles(slug)
 }
@@ -286,8 +304,12 @@ export async function deletePost(slug: string) {
 export async function syncPostIndex(input: SyncPostIndexInput) {
 	const env = await getContentBindings()
 	if (env?.BLOG_DB) {
-		await syncPostIndexToD1(env.BLOG_DB, input)
-		return
+		try {
+			await syncPostIndexToD1(env.BLOG_DB, input)
+			return
+		} catch {
+			// Keep local authoring editable even if the D1 tables are missing locally.
+		}
 	}
 	await syncPostIndexToFiles(input)
 }

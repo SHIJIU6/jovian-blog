@@ -1,0 +1,9 @@
+[
+	{
+		"name": "你喜欢的博客",
+		"avatar": "/images/blockies.svg",
+		"url": "https://example.com/",
+		"description": "这里可以保存你想长期关注的博客、作者或独立站。进入编辑模式后即可替换成你自己的收藏。",
+		"stars": 5
+	}
+]

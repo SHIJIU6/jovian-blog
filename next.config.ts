@@ -47,6 +47,27 @@ const nextConfig: NextConfig = {
 				permanent: true
 			}
 		]
+	},
+
+	async rewrites() {
+		return [
+			{
+				source: '/images/:path*',
+				destination: '/api/static/images/:path*'
+			},
+			{
+				source: '/music/:path*',
+				destination: '/api/static/music/:path*'
+			},
+			{
+				source: '/favicon.png',
+				destination: '/api/static/favicon.png'
+			},
+			{
+				source: '/manifest.json',
+				destination: '/api/static/manifest.json'
+			}
+		]
 	}
 }
 

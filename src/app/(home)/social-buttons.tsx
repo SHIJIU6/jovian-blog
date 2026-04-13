@@ -106,6 +106,7 @@ export default function SocialButtons() {
 
 	const x = styles.offsetX !== null ? center.x + styles.offsetX : center.x + hiCardStyles.width / 2 - styles.width
 	const y = styles.offsetY !== null ? center.y + styles.offsetY : center.y + hiCardStyles.height / 2 + CARD_SPACING
+	const containerWidth = maxSM && center.width > 0 ? Math.min(styles.width, Math.max(center.width - 24, 0)) : styles.width
 
 	if (!showStates.container) return null
 
@@ -148,10 +149,10 @@ export default function SocialButtons() {
 					href={button.value}
 					target='_blank'
 					{...commonProps}
-					className={`font-averia flex items-center gap-2 rounded-xl border bg-[#070707] text-xl text-white ${!hasLabel ? 'p-1.5' : 'px-3 py-1.5'}`}
+					className={`font-averia flex min-w-0 max-w-full items-center gap-2 overflow-hidden rounded-xl border bg-[#070707] text-xl text-white ${!hasLabel ? 'p-1.5' : 'px-3 py-1.5'}`}
 					style={{ boxShadow: ' inset 0 0 12px rgba(255, 255, 255, 0.4)' }}>
 					<Icon className={'size-8'} />
-					{hasLabel && button.label}
+					{hasLabel && <span className='max-w-[12ch] truncate text-base'>{button.label}</span>}
 				</motion.a>
 			)
 		}
@@ -239,8 +240,8 @@ export default function SocialButtons() {
 					href={button.value}
 					target='_blank'
 					{...commonProps}
-					className='card relative flex items-center gap-2 rounded-xl px-3 py-2.5 font-medium whitespace-nowrap'>
-					{hasLabel ? button.label : button.value}
+					className='card relative flex min-w-0 max-w-full items-center gap-2 overflow-hidden rounded-xl px-3 py-2.5 font-medium'>
+					<span className='block max-w-[14ch] truncate'>{hasLabel ? button.label : button.value}</span>
 				</motion.a>
 			)
 		}
@@ -251,9 +252,9 @@ export default function SocialButtons() {
 				href={button.value}
 				target='_blank'
 				{...commonProps}
-				className={`card relative rounded-xl font-medium whitespace-nowrap ${hasLabel ? 'flex items-center gap-2 px-3 py-2.5' : 'p-1.5'}`}>
+				className={`card relative min-w-0 max-w-full overflow-hidden rounded-xl font-medium ${hasLabel ? 'flex items-center gap-2 px-3 py-2.5' : 'p-1.5'}`}>
 				<Icon className={iconSize} />
-				{hasLabel && button.label}
+				{hasLabel && <span className='block max-w-[12ch] truncate'>{button.label}</span>}
 			</motion.a>
 		)
 	}
@@ -261,7 +262,7 @@ export default function SocialButtons() {
 	return (
 		<HomeDraggableLayer cardKey='socialButtons' x={x} y={y} width={styles.width} height={styles.height}>
 			<motion.div className='absolute max-sm:static' animate={{ left: x, top: y }} initial={{ left: x, top: y }}>
-				<div className='absolute top-0 left-0 flex flex-row-reverse items-center gap-3 max-sm:static' style={{ width: styles.width }}>
+				<div className='absolute top-0 left-0 flex max-w-full flex-row-reverse flex-wrap items-center gap-3 overflow-hidden max-sm:static' style={{ width: containerWidth }}>
 					{sortedButtons.map(button => renderButton(button))}
 				</div>
 			</motion.div>
