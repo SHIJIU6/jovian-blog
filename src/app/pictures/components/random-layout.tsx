@@ -7,12 +7,19 @@ import { Picture } from '../page'
 import { cn } from '@/lib/utils'
 import { useSize } from '@/hooks/use-size'
 import { useConfigStore } from '@/app/(home)/stores/config-store'
+import { buildLikeTargetKey, buildPictureLikeTarget } from '@/lib/like-target'
+import { LikeCountBadge } from '@/components/like-count-badge'
+import { ItemLikeButton } from '@/components/item-like-button'
+import type { LikeState } from '@/lib/like-types'
 
 interface RandomLayoutProps {
 	pictures: Picture[]
 	isEditMode?: boolean
 	onDeleteSingle?: (pictureId: string, imageIndex: number | 'single') => void
 	onDeleteGroup?: (picture: Picture) => void
+	getLikeState?: (targetKey: string) => LikeState
+	onLikeStateChange?: (targetKey: string, nextState: LikeState) => void
+	isManagementView?: boolean
 }
 
 type PositionedItem = {
@@ -38,6 +45,10 @@ interface FloatingImageProps {
 	isEditMode?: boolean
 	onDeleteSingle?: (pictureId: string, imageIndex: number | 'single') => void
 	onDeleteGroup?: () => void
+	likeTargetKey?: string
+	likeState?: LikeState
+	onLikeStateChange?: (state: LikeState) => void
+	isManagementView?: boolean
 }
 
 type UrlItem = {
@@ -53,6 +64,20 @@ const buildUrlList = (pictures: Picture[]): UrlItem[] => {
 	const result: UrlItem[] = []
 
 	for (const [index, picture] of pictures.entries()) {
+		if (picture.images && picture.images.length > 0) {
+			result.push(
+				...picture.images.map((url, imageIndex) => ({
+					url,
+					groupIndex: index,
+					description: picture.description,
+					uploadedAt: picture.uploadedAt,
+					pictureId: picture.id,
+					imageIndex
+				}))
+			)
+			continue
+		}
+
 		if (picture.image) {
 			result.push({
 				url: picture.image,
@@ -62,19 +87,6 @@ const buildUrlList = (pictures: Picture[]): UrlItem[] => {
 				pictureId: picture.id,
 				imageIndex: 'single'
 			})
-		}
-
-		if (picture.images && picture.images.length > 0) {
-			result.push(
-				...picture.images.map((url, imageIndex) => ({
-					url,
-					groupIndex: index,
-					description: picture.description,
-					uploadedAt: picture.uploadedAt,
-					pictureId: picture.id,
-					imageIndex: imageIndex
-				}))
-			)
 		}
 	}
 
@@ -130,10 +142,14 @@ const FloatingImage = ({
 	imageIndex,
 	isEditMode,
 	onDeleteSingle,
-	onDeleteGroup
+	onDeleteGroup,
+	likeTargetKey,
+	likeState,
+	onLikeStateChange,
+	isManagementView = false
 }: FloatingImageProps) => {
 	const { centerX, centerY } = useCenterStore()
-	const { maxSM, init } = useSize()
+	const { maxSM } = useSize()
 	const { siteContent } = useConfigStore()
 	const bodyRef = useRef(document.body)
 	const mouseDownTimeRef = useRef<number | null>(null)
@@ -190,6 +206,8 @@ const FloatingImage = ({
 
 	const [isZoomed, setIsZoomed] = useState(false)
 	const dragStartOffsetRef = useRef({ x: 0, y: 0 })
+	const showMetaCard = isZoomed && Boolean(description || uploadedAt || likeTargetKey)
+	const backgroundColors = siteContent.backgroundColors.length > 0 ? siteContent.backgroundColors : ['rgba(255,255,255,0.92)']
 
 	if (!position || !show) return null
 
@@ -300,6 +318,11 @@ const FloatingImage = ({
 					draggable={false}
 					className={cn('h-full w-full object-cover select-none')}
 				/>
+				{likeTargetKey && (
+					<div className='pointer-events-none absolute top-3 left-3'>
+						<LikeCountBadge count={likeState?.count ?? 0} likedToday={likeState?.likedToday} soft />
+					</div>
+				)}
 				{isEditMode && !isZoomed && (
 					<motion.button
 						initial={{ opacity: 0, scale: 0.8 }}
@@ -320,14 +343,14 @@ const FloatingImage = ({
 				)}
 			</motion.div>
 
-			{isZoomed && description && (
+			{showMetaCard && (
 				<motion.div
 					drag
 					dragConstraints={maxSM ? undefined : bodyRef}
 					dragMomentum={false}
-					className='fixed min-h-[150px] w-[200px] cursor-pointer p-6 shadow'
+					className='fixed min-h-[150px] w-[220px] p-6 shadow'
 					style={{
-						backgroundColor: siteContent.backgroundColors[groupIndex % siteContent.backgroundColors.length],
+						backgroundColor: backgroundColors[groupIndex % backgroundColors.length],
 						zIndex: TOP_Z_INDEX + 1,
 						right: maxSM ? 12 : centerX / 3,
 						top: maxSM ? 12 : centerY
@@ -335,7 +358,16 @@ const FloatingImage = ({
 					initial={{ opacity: 0, scale: 0.4 }}
 					animate={{ opacity: 1, scale: 1 }}>
 					<div className='text-secondary mb-2 text-xs'>{formatUploadedAt(uploadedAt)}</div>
-					<div className='text-sm'>{description}</div>
+					{description && <div className='text-sm'>{description}</div>}
+					{likeTargetKey && (
+						<div className='mt-4 flex justify-end'>
+							{isManagementView ? (
+								<LikeCountBadge count={likeState?.count ?? 0} likedToday={likeState?.likedToday} />
+							) : (
+								<ItemLikeButton targetKey={likeTargetKey} state={likeState} onStateChange={onLikeStateChange} />
+							)}
+						</div>
+					)}
 				</motion.div>
 			)}
 		</>
@@ -389,7 +421,15 @@ const getStablePosition = (uniqueId: string, width: number, height: number): Pos
 	return position
 }
 
-export const RandomLayout = ({ pictures, isEditMode = false, onDeleteSingle, onDeleteGroup }: RandomLayoutProps) => {
+export const RandomLayout = ({
+	pictures,
+	isEditMode = false,
+	onDeleteSingle,
+	onDeleteGroup,
+	getLikeState,
+	onLikeStateChange,
+	isManagementView = false
+}: RandomLayoutProps) => {
 	useCenterInit()
 	const { width, height } = useCenterStore()
 	const [show, setShow] = useState(false)
@@ -424,6 +464,8 @@ export const RandomLayout = ({ pictures, isEditMode = false, onDeleteSingle, onD
 				const picture = pictureMap.get(item.pictureId)
 				const uniqueId = item.url
 				const position = getStablePosition(uniqueId, width, height)
+				const normalizedImageIndex = item.imageIndex === 'single' ? 0 : item.imageIndex
+				const likeTargetKey = buildLikeTargetKey(buildPictureLikeTarget(item.pictureId, normalizedImageIndex), 'picture')
 
 				return (
 					<FloatingImage
@@ -439,6 +481,10 @@ export const RandomLayout = ({ pictures, isEditMode = false, onDeleteSingle, onD
 						isEditMode={isEditMode}
 						onDeleteSingle={onDeleteSingle}
 						onDeleteGroup={picture ? () => onDeleteGroup?.(picture) : undefined}
+						likeTargetKey={likeTargetKey}
+						likeState={getLikeState?.(likeTargetKey)}
+						onLikeStateChange={nextState => onLikeStateChange?.(likeTargetKey, nextState)}
+						isManagementView={isManagementView}
 					/>
 				)
 			})}

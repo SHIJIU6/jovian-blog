@@ -6,7 +6,7 @@ import weekOfYear from 'dayjs/plugin/weekOfYear'
 import { motion } from 'motion/react'
 
 dayjs.extend(weekOfYear)
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { ANIMATION_DELAY, INIT_DELAY } from '@/consts'
 import ShortLineSVG from '@/svgs/short-line.svg'
@@ -20,7 +20,9 @@ import { Check, PenSquare } from 'lucide-react'
 import { CategoryModal } from './components/category-modal'
 import { useManagementMode } from '@/hooks/use-management-mode'
 import { getBlogStatusLabel } from '@/lib/blog-status'
-import PageLikeButton from '@/components/page-like-button'
+import { LikeCountBadge } from '@/components/like-count-badge'
+import { buildLikeTargetKey } from '@/lib/like-target'
+import { useBatchLikes } from '@/hooks/use-batch-likes'
 
 type DisplayMode = 'day' | 'week' | 'month' | 'year' | 'category'
 
@@ -50,6 +52,8 @@ export default function BlogPage() {
 	}, [categoriesFromServer])
 
 	const displayItems = isManageMode ? editableItems : items
+	const postLikeKeys = useMemo(() => displayItems.map(item => buildLikeTargetKey(item.slug, 'post')).filter(Boolean), [displayItems])
+	const { getLikeState } = useBatchLikes(postLikeKeys)
 
 	const { groupedItems, groupKeys, getGroupLabel } = useMemo(() => {
 		const sorted = [...displayItems].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
@@ -346,6 +350,8 @@ export default function BlogPage() {
 									const hasRead = isRead(it.slug)
 									const isSelected = selectedSlugs.has(it.slug)
 									const tags = it.tags || []
+									const likeTargetKey = buildLikeTargetKey(it.slug, 'post')
+									const likeState = getLikeState(likeTargetKey)
 									return (
 										<div
 											key={it.slug}
@@ -396,6 +402,7 @@ export default function BlogPage() {
 													<span className='inline-flex items-center justify-center rounded-full border bg-white/60 px-2 py-0.5 text-[11px] text-gray-600'>
 														{getBlogStatusLabel(it.status, it.hidden)}
 													</span>
+													<LikeCountBadge count={likeState.count} likedToday={likeState.likedToday} className='px-2 py-0.5 text-[11px]' />
 												</div>
 											</div>
 											<div className='flex shrink-0 self-center items-center gap-3 max-md:hidden'>
@@ -410,6 +417,7 @@ export default function BlogPage() {
 													<span className='inline-flex items-center justify-center rounded-full border bg-white/60 px-2 py-0.5 text-[11px] text-gray-600'>
 														{getBlogStatusLabel(it.status, it.hidden)}
 													</span>
+													<LikeCountBadge count={likeState.count} likedToday={likeState.likedToday} className='px-2 py-0.5 text-[11px]' />
 												</div>
 												{canManage && (
 													<div className='flex items-center gap-2'>
@@ -519,8 +527,6 @@ export default function BlogPage() {
 				editableItems={editableItems}
 				onAssignCategory={handleAssignCategory}
 			/>
-
-			<PageLikeButton pageKey='blog' />
 		</>
 	)
 }

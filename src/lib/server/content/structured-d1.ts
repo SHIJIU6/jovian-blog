@@ -3,6 +3,7 @@ import type { Share } from '@/app/share/components/share-card'
 import type { Blogger } from '@/app/bloggers/grid-view'
 import type { Picture } from '@/app/pictures/page'
 import { markD1ScopeInitialized } from './d1-state'
+import type { SnippetItem } from '@/lib/content-item-id'
 
 type D1Row = Record<string, unknown>
 
@@ -73,6 +74,7 @@ export async function getProjectsFromD1(db: any): Promise<Project[] | null> {
 		)
 
 		return rows.map(row => ({
+			id: String(row.id || ''),
 			name: String(row.name || ''),
 			year: getNumber(row.year) || 0,
 			description: String(row.description || ''),
@@ -90,12 +92,12 @@ export async function getProjectsFromD1(db: any): Promise<Project[] | null> {
 export async function saveProjectsToD1(db: any, items: Project[]): Promise<boolean> {
 	try {
 		const rows = await getAllRows(db, 'SELECT id, url, name, created_at FROM projects')
-		const existing = getExistingMetaMap(rows, row => normalizeKey(row.url, row.name))
+		const existing = getExistingMetaMap(rows, row => normalizeKey(row.id, row.url, row.name))
 		const now = new Date().toISOString()
 		const statements = [db.prepare('DELETE FROM projects')]
 
 		items.forEach((project, index) => {
-			const key = normalizeKey(project.url, project.name)
+			const key = normalizeKey(project.id, project.url, project.name)
 			const meta = existing.get(key)
 			statements.push(
 				db
@@ -105,7 +107,7 @@ export async function saveProjectsToD1(db: any, items: Project[]): Promise<boole
 						) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 					)
 					.bind(
-						meta?.id || crypto.randomUUID(),
+						project.id || meta?.id || crypto.randomUUID(),
 						project.name,
 						project.description || null,
 						project.year || null,
@@ -137,6 +139,7 @@ export async function getSharesFromD1(db: any): Promise<Share[] | null> {
 		)
 
 		return rows.map(row => ({
+			id: String(row.id || ''),
 			name: String(row.name || ''),
 			logo: getString(row.logo_url) || '',
 			url: String(row.url || ''),
@@ -152,12 +155,12 @@ export async function getSharesFromD1(db: any): Promise<Share[] | null> {
 export async function saveSharesToD1(db: any, items: Share[]): Promise<boolean> {
 	try {
 		const rows = await getAllRows(db, 'SELECT id, url, name, created_at FROM resources')
-		const existing = getExistingMetaMap(rows, row => normalizeKey(row.url, row.name))
+		const existing = getExistingMetaMap(rows, row => normalizeKey(row.id, row.url, row.name))
 		const now = new Date().toISOString()
 		const statements = [db.prepare('DELETE FROM resources')]
 
 		items.forEach((share, index) => {
-			const key = normalizeKey(share.url, share.name)
+			const key = normalizeKey(share.id, share.url, share.name)
 			const meta = existing.get(key)
 			statements.push(
 				db
@@ -167,7 +170,7 @@ export async function saveSharesToD1(db: any, items: Share[]): Promise<boolean> 
 						) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 					)
 					.bind(
-						meta?.id || crypto.randomUUID(),
+						share.id || meta?.id || crypto.randomUUID(),
 						share.name,
 						share.description || null,
 						share.url,
@@ -197,6 +200,7 @@ export async function getBloggersFromD1(db: any): Promise<Blogger[] | null> {
 		)
 
 		return rows.map(row => ({
+			id: String(row.id || ''),
 			name: String(row.name || ''),
 			avatar: getString(row.avatar_url) || '',
 			url: String(row.url || ''),
@@ -212,12 +216,12 @@ export async function getBloggersFromD1(db: any): Promise<Blogger[] | null> {
 export async function saveBloggersToD1(db: any, items: Blogger[]): Promise<boolean> {
 	try {
 		const rows = await getAllRows(db, 'SELECT id, url, name, created_at FROM bloggers')
-		const existing = getExistingMetaMap(rows, row => normalizeKey(row.url, row.name))
+		const existing = getExistingMetaMap(rows, row => normalizeKey(row.id, row.url, row.name))
 		const now = new Date().toISOString()
 		const statements = [db.prepare('DELETE FROM bloggers')]
 
 		items.forEach((blogger, index) => {
-			const key = normalizeKey(blogger.url, blogger.name)
+			const key = normalizeKey(blogger.id, blogger.url, blogger.name)
 			const meta = existing.get(key)
 			statements.push(
 				db
@@ -227,7 +231,7 @@ export async function saveBloggersToD1(db: any, items: Blogger[]): Promise<boole
 						) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 					)
 					.bind(
-						meta?.id || crypto.randomUUID(),
+						blogger.id || meta?.id || crypto.randomUUID(),
 						blogger.name,
 						blogger.url,
 						blogger.avatar || null,
@@ -249,29 +253,34 @@ export async function saveBloggersToD1(db: any, items: Blogger[]): Promise<boole
 	}
 }
 
-export async function getSnippetsFromD1(db: any): Promise<string[] | null> {
+export async function getSnippetsFromD1(db: any): Promise<SnippetItem[] | null> {
 	try {
-		const rows = await getAllRows(db, 'SELECT content FROM snippets ORDER BY sort_order ASC, created_at ASC')
-		return rows.map(row => String(row.content || '')).filter(Boolean)
+		const rows = await getAllRows(db, 'SELECT id, content FROM snippets ORDER BY sort_order ASC, created_at ASC')
+		return rows
+			.map(row => ({
+				id: String(row.id || ''),
+				content: String(row.content || '')
+			}))
+			.filter(item => item.content)
 	} catch {
 		return null
 	}
 }
 
-export async function saveSnippetsToD1(db: any, items: string[]): Promise<boolean> {
+export async function saveSnippetsToD1(db: any, items: SnippetItem[]): Promise<boolean> {
 	try {
 		const rows = await getAllRows(db, 'SELECT id, content, created_at FROM snippets')
-		const existing = getExistingMetaMap(rows, row => normalizeKey(row.content))
+		const existing = getExistingMetaMap(rows, row => normalizeKey(row.id, row.content))
 		const now = new Date().toISOString()
 		const statements = [db.prepare('DELETE FROM snippets')]
 
-		items.forEach((content, index) => {
-			const key = normalizeKey(content)
+		items.forEach((item, index) => {
+			const key = normalizeKey(item.id, item.content)
 			const meta = existing.get(key)
 			statements.push(
 				db
 					.prepare('INSERT INTO snippets (id, content, sort_order, created_at) VALUES (?, ?, ?, ?)')
-					.bind(meta?.id || crypto.randomUUID(), content, index, meta?.createdAt || now)
+					.bind(item.id || meta?.id || crypto.randomUUID(), item.content, index, meta?.createdAt || now)
 			)
 		})
 

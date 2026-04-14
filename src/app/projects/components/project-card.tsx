@@ -6,8 +6,12 @@ import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { useSize } from '@/hooks/use-size'
 import ImageUploadDialog, { type ImageItem } from './image-upload-dialog'
+import { ItemLikeButton } from '@/components/item-like-button'
+import { LikeCountBadge } from '@/components/like-count-badge'
+import type { LikeState } from '@/lib/like-types'
 
 export interface Project {
+	id: string
 	name: string
 	year: number
 	description: string
@@ -23,9 +27,22 @@ interface ProjectCardProps {
 	isEditMode?: boolean
 	onUpdate?: (project: Project, oldProject: Project, imageItem?: ImageItem) => void
 	onDelete?: () => void
+	likeTargetKey?: string
+	likeState?: LikeState
+	onLikeStateChange?: (state: LikeState) => void
+	readOnlyLike?: boolean
 }
 
-export function ProjectCard({ project, isEditMode = false, onUpdate, onDelete }: ProjectCardProps) {
+export function ProjectCard({
+	project,
+	isEditMode = false,
+	onUpdate,
+	onDelete,
+	likeTargetKey,
+	likeState,
+	onLikeStateChange,
+	readOnlyLike = false
+}: ProjectCardProps) {
 	const [isEditing, setIsEditing] = useState(false)
 	const { maxSM } = useSize()
 	const [localProject, setLocalProject] = useState(project)
@@ -153,7 +170,8 @@ export function ProjectCard({ project, isEditMode = false, onUpdate, onDelete }:
 				{localProject.description}
 			</p>
 
-			<div className='flex flex-wrap gap-2'>
+			<div className='flex flex-wrap items-start justify-between gap-3'>
+				<div className='flex flex-wrap gap-2'>
 				{canEdit ? (
 					<>
 						<input
@@ -207,6 +225,14 @@ export function ProjectCard({ project, isEditMode = false, onUpdate, onDelete }:
 						)}
 					</>
 				)}
+				</div>
+
+				{likeTargetKey &&
+					(readOnlyLike ? (
+						<LikeCountBadge count={likeState?.count ?? 0} likedToday={likeState?.likedToday} className='shrink-0' />
+					) : (
+						<ItemLikeButton targetKey={likeTargetKey} state={likeState} onStateChange={onLikeStateChange} className='shrink-0 self-start' />
+					))}
 			</div>
 
 			{canEdit && showImageDialog && (

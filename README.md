@@ -161,7 +161,7 @@ pnpm check
   - `OPENAI_RESPONSES_MODEL`
 - 可选前台能力：
   - `NEXT_PUBLIC_LIKE_ENDPOINT`（默认内置为 `/api/likes`，仅在接第三方点赞服务时覆盖）
-  - `NEXT_PUBLIC_SAMPLE_AUDIO`（可选，支持单个 URL 或逗号分隔多个 URL；未配置时本地会自动发现 `public/music/` 下的音频）
+  - `NEXT_PUBLIC_SAMPLE_AUDIO`（可选，支持单个 URL 或逗号分隔多个 URL；未配置时会优先使用构建期生成的 `public/music/` 音频清单，本地开发仍可直接发现新文件）
   - `BLOG_SLUG_KEY`
 
 ## 点赞实现

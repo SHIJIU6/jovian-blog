@@ -1,6 +1,7 @@
 import { promises as fs } from 'node:fs'
 import { getContentBindings } from './content/cloudflare'
 import { ensureLocalContentDir, getLocalContentPath } from './local-content'
+import { EMPTY_LIKE_STATE, type LikeState, type LikeStateMap } from '@/lib/like-types'
 
 const LOCAL_LIKES_FILE = getLocalContentPath('runtime', 'likes', 'likes.json')
 const LOCAL_VOTE_RETENTION_DAYS = 45
@@ -25,11 +26,6 @@ type LocalLikeStore = {
 	votes: Record<string, LikeVote>
 }
 
-export type LikeState = {
-	count: number
-	likedToday: boolean
-}
-
 export type LikeMutationResult = LikeState & {
 	reason?: 'rate_limited'
 }
@@ -47,6 +43,10 @@ let volatileLocalStore: LocalLikeStore = {
 
 function normalizeTargetKey(targetKey: string) {
 	return targetKey.trim()
+}
+
+function normalizeTargetKeys(targetKeys: string[]) {
+	return Array.from(new Set(targetKeys.map(normalizeTargetKey).filter(Boolean)))
 }
 
 function getVoteDate(input = new Date()) {
@@ -137,17 +137,32 @@ async function withLocalStoreMutation<T>(mutate: (store: LocalLikeStore) => Prom
 }
 
 async function getLikeStateFromLocal(targetKey: string, fingerprint: string, voteDate: string): Promise<LikeState> {
+	const states = await getLikeStatesFromLocal([targetKey], fingerprint, voteDate)
+	return states[targetKey] || EMPTY_LIKE_STATE
+}
+
+async function getLikeStatesFromLocal(targetKeysInput: string[], fingerprint: string, voteDate: string): Promise<LikeStateMap> {
+	const targetKeys = normalizeTargetKeys(targetKeysInput)
+	if (targetKeys.length === 0) return {}
+
 	const store = await readLocalStore()
 	const pruned = pruneVotes(store)
 	if (pruned) {
 		await writeLocalStore(store)
 	}
 
-	const counter = store.counters[targetKey]
-	return {
-		count: toPositiveInteger(counter?.count),
-		likedToday: Boolean(store.votes[getVoteKey(targetKey, fingerprint, voteDate)])
-	}
+	return Object.fromEntries(
+		targetKeys.map(targetKey => {
+			const counter = store.counters[targetKey]
+			return [
+				targetKey,
+				{
+					count: toPositiveInteger(counter?.count),
+					likedToday: Boolean(store.votes[getVoteKey(targetKey, fingerprint, voteDate)])
+				}
+			]
+		})
+	)
 }
 
 async function registerLikeInLocal(targetKey: string, fingerprint: string, voteDate: string): Promise<LikeMutationResult> {
@@ -195,7 +210,23 @@ async function countVotesInD1(db: any, targetKey: string): Promise<number | null
 	}
 }
 
-async function syncLikeCounterInD1(db: any, targetKey: string, timestamp: string) {
+async function countVotesMapInD1(db: any, targetKeys: string[]): Promise<Map<string, number> | null> {
+	if (targetKeys.length === 0) return new Map()
+
+	const placeholders = targetKeys.map(() => '?').join(', ')
+	try {
+		const result = await db
+			.prepare(`SELECT target_key, COUNT(*) as total FROM ${D1_VOTE_TABLE} WHERE target_key IN (${placeholders}) GROUP BY target_key`)
+			.bind(...targetKeys)
+			.all()
+		const rows = Array.isArray(result?.results) ? result.results : []
+		return new Map<string, number>(rows.map((row: Record<string, unknown>) => [String(row.target_key || ''), toPositiveInteger(row.total)]))
+	} catch {
+		return null
+	}
+}
+
+async function backfillLikeCounterInD1(db: any, targetKey: string, timestamp: string) {
 	await db
 		.prepare(
 			`INSERT INTO ${D1_COUNTER_TABLE} (target_key, total_count, created_at, updated_at)
@@ -204,6 +235,19 @@ async function syncLikeCounterInD1(db: any, targetKey: string, timestamp: string
 		)
 		.bind(targetKey, targetKey, timestamp, timestamp)
 		.run()
+}
+
+async function incrementLikeCounterInD1(db: any, targetKey: string, timestamp: string) {
+	const updateResult = await db
+		.prepare(`UPDATE ${D1_COUNTER_TABLE} SET total_count = total_count + 1, updated_at = ? WHERE target_key = ?`)
+		.bind(timestamp, targetKey)
+		.run()
+
+	if (Number(updateResult?.meta?.changes || 0) > 0) {
+		return
+	}
+
+	await backfillLikeCounterInD1(db, targetKey, timestamp)
 }
 
 async function getLikeCountFromD1(db: any, targetKey: string): Promise<number | null> {
@@ -217,7 +261,7 @@ async function getLikeCountFromD1(db: any, targetKey: string): Promise<number | 
 		if (fallbackCount === null) return null
 
 		if (fallbackCount > 0) {
-			await syncLikeCounterInD1(db, targetKey, new Date().toISOString()).catch(() => undefined)
+			await backfillLikeCounterInD1(db, targetKey, new Date().toISOString()).catch(() => undefined)
 		}
 
 		return fallbackCount
@@ -230,22 +274,77 @@ async function getLikeCountFromD1(db: any, targetKey: string): Promise<number | 
 	}
 }
 
-async function getLikeStateFromD1(db: any, targetKey: string, fingerprint: string, voteDate: string): Promise<LikeState | null> {
+async function getLikeCountMapFromD1(db: any, targetKeys: string[]): Promise<Map<string, number> | null> {
+	if (targetKeys.length === 0) return new Map()
+
+	const placeholders = targetKeys.map(() => '?').join(', ')
+
 	try {
-		const [count, likedRow] = await Promise.all([
-			getLikeCountFromD1(db, targetKey),
+		const result = await db
+			.prepare(`SELECT target_key, total_count as totalCount FROM ${D1_COUNTER_TABLE} WHERE target_key IN (${placeholders})`)
+			.bind(...targetKeys)
+			.all()
+		const rows = Array.isArray(result?.results) ? result.results : []
+		const countMap = new Map<string, number>(rows.map((row: Record<string, unknown>) => [String(row.target_key || ''), toPositiveInteger(row.totalCount)]))
+		const missingKeys = targetKeys.filter(targetKey => !countMap.has(targetKey))
+		if (missingKeys.length === 0) return countMap
+
+		const fallbackCounts = await countVotesMapInD1(db, missingKeys)
+		if (!fallbackCounts) return null
+
+		for (const [targetKey, count] of fallbackCounts.entries()) {
+			countMap.set(targetKey, count)
+			if (count > 0) {
+				await backfillLikeCounterInD1(db, targetKey, new Date().toISOString()).catch(() => undefined)
+			}
+		}
+
+		return countMap
+	} catch (error) {
+		if (isMissingTableError(error, D1_COUNTER_TABLE)) {
+			return countVotesMapInD1(db, targetKeys)
+		}
+
+		return null
+	}
+}
+
+async function getLikeStateFromD1(db: any, targetKey: string, fingerprint: string, voteDate: string): Promise<LikeState | null> {
+	const states = await getLikeStatesFromD1(db, [targetKey], fingerprint, voteDate)
+	return states ? states[targetKey] || EMPTY_LIKE_STATE : null
+}
+
+async function getLikeStatesFromD1(db: any, targetKeysInput: string[], fingerprint: string, voteDate: string): Promise<LikeStateMap | null> {
+	const targetKeys = normalizeTargetKeys(targetKeysInput)
+	if (targetKeys.length === 0) return {}
+
+	const placeholders = targetKeys.map(() => '?').join(', ')
+
+	try {
+		const [countMap, likedResult] = await Promise.all([
+			getLikeCountMapFromD1(db, targetKeys),
 			db
-				.prepare(`SELECT 1 as liked FROM ${D1_VOTE_TABLE} WHERE target_key = ? AND client_fingerprint = ? AND vote_date = ? LIMIT 1`)
-				.bind(targetKey, fingerprint, voteDate)
-				.first()
+				.prepare(
+					`SELECT target_key FROM ${D1_VOTE_TABLE} WHERE target_key IN (${placeholders}) AND client_fingerprint = ? AND vote_date = ?`
+				)
+				.bind(...targetKeys, fingerprint, voteDate)
+				.all()
 		])
 
-		if (count === null) return null
+		if (!countMap) return null
 
-		return {
-			count,
-			likedToday: Boolean(likedRow)
-		}
+		const likedRows = Array.isArray(likedResult?.results) ? likedResult.results : []
+		const likedKeys = new Set(likedRows.map((row: Record<string, unknown>) => String(row.target_key || '')).filter(Boolean))
+
+		return Object.fromEntries(
+			targetKeys.map(targetKey => [
+				targetKey,
+				{
+					count: countMap.get(targetKey) ?? 0,
+					likedToday: likedKeys.has(targetKey)
+				}
+			])
+		)
 	} catch {
 		return null
 	}
@@ -261,7 +360,7 @@ async function registerLikeInD1(db: any, targetKey: string, fingerprint: string,
 
 		if (Number(insertResult?.meta?.changes || 0) > 0) {
 			try {
-				await syncLikeCounterInD1(db, targetKey, now)
+				await incrementLikeCounterInD1(db, targetKey, now)
 			} catch (error) {
 				if (!isMissingTableError(error, D1_COUNTER_TABLE)) {
 					return null
@@ -283,15 +382,25 @@ async function registerLikeInD1(db: any, targetKey: string, fingerprint: string,
 
 export async function getLikeState(targetKeyInput: string, fingerprint: string): Promise<LikeState> {
 	const targetKey = normalizeTargetKey(targetKeyInput)
+	if (!targetKey) return EMPTY_LIKE_STATE
+
+	const states = await getLikeStates([targetKey], fingerprint)
+	return states[targetKey] || EMPTY_LIKE_STATE
+}
+
+export async function getLikeStates(targetKeysInput: string[], fingerprint: string): Promise<LikeStateMap> {
+	const targetKeys = normalizeTargetKeys(targetKeysInput)
+	if (targetKeys.length === 0) return {}
+
 	const voteDate = getVoteDate()
 	const env = await getContentBindings()
 
 	if (env?.BLOG_DB) {
-		const state = await getLikeStateFromD1(env.BLOG_DB, targetKey, fingerprint, voteDate)
-		if (state) return state
+		const states = await getLikeStatesFromD1(env.BLOG_DB, targetKeys, fingerprint, voteDate)
+		if (states) return states
 	}
 
-	return getLikeStateFromLocal(targetKey, fingerprint, voteDate)
+	return getLikeStatesFromLocal(targetKeys, fingerprint, voteDate)
 }
 
 export async function registerLike(targetKeyInput: string, fingerprint: string): Promise<LikeMutationResult> {

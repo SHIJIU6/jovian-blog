@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'motion/react'
 import { toast } from 'sonner'
 import GridView from './grid-view'
@@ -10,7 +10,8 @@ import type { Share } from './components/share-card'
 import type { LogoItem } from './components/logo-upload-dialog'
 import { useManagementMode } from '@/hooks/use-management-mode'
 import { useSharesContent } from '@/hooks/use-structured-content'
-import PageLikeButton from '@/components/page-like-button'
+import { buildLikeTargetKey } from '@/lib/like-target'
+import { useBatchLikes } from '@/hooks/use-batch-likes'
 
 export default function Page() {
 	const { data: remoteShares } = useSharesContent()
@@ -29,12 +30,15 @@ export default function Page() {
 		setOriginalShares(remoteShares)
 	}, [remoteShares, isEditMode])
 
+	const shareLikeKeys = useMemo(() => shares.map(share => buildLikeTargetKey(share.id, 'share')).filter(Boolean), [shares])
+	const { getLikeState, updateLikeState } = useBatchLikes(shareLikeKeys)
+
 	const handleUpdate = (updatedShare: Share, oldShare: Share, logoItem?: LogoItem) => {
-		setShares(prev => prev.map(s => (s.url === oldShare.url ? updatedShare : s)))
+		setShares(prev => prev.map(share => (share.id === oldShare.id ? updatedShare : share)))
 		if (logoItem) {
 			setLogoItems(prev => {
 				const newMap = new Map(prev)
-				newMap.set(updatedShare.url, logoItem)
+				newMap.set(updatedShare.id, logoItem)
 				return newMap
 			})
 		}
@@ -47,7 +51,7 @@ export default function Page() {
 
 	const handleSaveShare = (updatedShare: Share) => {
 		if (editingShare) {
-			const updated = shares.map(s => (s.url === editingShare.url ? updatedShare : s))
+			const updated = shares.map(share => (share.id === editingShare.id ? updatedShare : share))
 			setShares(updated)
 		} else {
 			setShares([...shares, updatedShare])
@@ -56,7 +60,7 @@ export default function Page() {
 
 	const handleDelete = (share: Share) => {
 		if (confirm(`确定要删除 ${share.name} 吗？`)) {
-			setShares(shares.filter(s => s.url !== share.url))
+			setShares(shares.filter(item => item.id !== share.id))
 		}
 	}
 
@@ -105,7 +109,15 @@ export default function Page() {
 
 	return (
 		<>
-			<GridView shares={shares} isEditMode={isEditMode} onUpdate={handleUpdate} onDelete={handleDelete} />
+			<GridView
+				shares={shares}
+				isEditMode={isEditMode}
+				onUpdate={handleUpdate}
+				onDelete={handleDelete}
+				getLikeState={getLikeState}
+				onLikeStateChange={updateLikeState}
+				readOnlyLike={canManage}
+			/>
 
 			<motion.div initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} className='absolute top-4 right-6 flex gap-3 max-sm:hidden'>
 				{isEditMode ? (
@@ -143,7 +155,6 @@ export default function Page() {
 			</motion.div>
 
 			{isCreateDialogOpen && <CreateDialog share={editingShare} onClose={() => setIsCreateDialogOpen(false)} onSave={handleSaveShare} />}
-			{!isEditMode && <PageLikeButton pageKey='shares' />}
 		</>
 	)
 }

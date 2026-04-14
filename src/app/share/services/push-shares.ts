@@ -25,10 +25,10 @@ export async function pushShares(params: PushSharesParams): Promise<void> {
 	let nextShares = [...shares]
 
 	if (logoItems?.size) {
-		for (const [url, logoItem] of logoItems.entries()) {
+		for (const [shareId, logoItem] of logoItems.entries()) {
 			if (logoItem.type !== 'file') continue
 			const uploaded = await uploadAsset(logoItem.file, 'shares')
-			nextShares = nextShares.map(share => (share.url === url ? { ...share, logo: uploaded.url } : share))
+			nextShares = nextShares.map(share => (share.id === shareId ? { ...share, logo: uploaded.url } : share))
 		}
 	}
 

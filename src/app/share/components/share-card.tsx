@@ -7,8 +7,12 @@ import { cn } from '@/lib/utils'
 import EditableStarRating from '@/components/editable-star-rating'
 import { useState } from 'react'
 import LogoUploadDialog, { type LogoItem } from './logo-upload-dialog'
+import { ItemLikeButton } from '@/components/item-like-button'
+import { LikeCountBadge } from '@/components/like-count-badge'
+import type { LikeState } from '@/lib/like-types'
 
 export interface Share {
+	id: string
 	name: string
 	logo: string
 	url: string
@@ -22,9 +26,22 @@ interface ShareCardProps {
 	isEditMode?: boolean
 	onUpdate?: (share: Share, oldShare: Share, logoItem?: LogoItem) => void
 	onDelete?: () => void
+	likeTargetKey?: string
+	likeState?: LikeState
+	onLikeStateChange?: (state: LikeState) => void
+	readOnlyLike?: boolean
 }
 
-export function ShareCard({ share, isEditMode = false, onUpdate, onDelete }: ShareCardProps) {
+export function ShareCard({
+	share,
+	isEditMode = false,
+	onUpdate,
+	onDelete,
+	likeTargetKey,
+	likeState,
+	onLikeStateChange,
+	readOnlyLike = false
+}: ShareCardProps) {
 	const [expanded, setExpanded] = useState(false)
 	const [isEditing, setIsEditing] = useState(false)
 	const { maxSM } = useSize()
@@ -175,6 +192,17 @@ export function ShareCard({ share, isEditMode = false, onUpdate, onDelete }: Sha
 					)}>
 					{localShare.description}
 				</p>
+
+				{likeTargetKey && (
+					<div className='mt-4 flex items-center justify-between gap-3'>
+						<div className='text-secondary text-xs'>{localShare.tags.length > 0 ? `${localShare.tags.length} 个标签` : '未设置标签'}</div>
+						{readOnlyLike ? (
+							<LikeCountBadge count={likeState?.count ?? 0} likedToday={likeState?.likedToday} />
+						) : (
+							<ItemLikeButton targetKey={likeTargetKey} state={likeState} onStateChange={onLikeStateChange} />
+						)}
+					</div>
+				)}
 			</div>
 
 			{canEdit && showLogoDialog && <LogoUploadDialog currentLogo={localShare.logo} onClose={() => setShowLogoDialog(false)} onSubmit={handleLogoSubmit} />}

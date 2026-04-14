@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'motion/react'
 import { toast } from 'sonner'
 import { ProjectCard, type Project } from './components/project-card'
@@ -9,7 +9,8 @@ import { pushProjects } from './services/push-projects'
 import type { ImageItem } from './components/image-upload-dialog'
 import { useManagementMode } from '@/hooks/use-management-mode'
 import { useProjectsContent } from '@/hooks/use-structured-content'
-import PageLikeButton from '@/components/page-like-button'
+import { buildLikeTargetKey } from '@/lib/like-target'
+import { useBatchLikes } from '@/hooks/use-batch-likes'
 
 export default function Page() {
 	const { data: remoteProjects } = useProjectsContent()
@@ -28,12 +29,15 @@ export default function Page() {
 		setOriginalProjects(remoteProjects)
 	}, [remoteProjects, isEditMode])
 
+	const projectLikeKeys = useMemo(() => projects.map(project => buildLikeTargetKey(project.id, 'project')).filter(Boolean), [projects])
+	const { getLikeState, updateLikeState } = useBatchLikes(projectLikeKeys)
+
 	const handleUpdate = (updatedProject: Project, oldProject: Project, imageItem?: ImageItem) => {
-		setProjects(prev => prev.map(p => (p.url === oldProject.url ? updatedProject : p)))
+		setProjects(prev => prev.map(project => (project.id === oldProject.id ? updatedProject : project)))
 		if (imageItem) {
 			setImageItems(prev => {
 				const newMap = new Map(prev)
-				newMap.set(updatedProject.url, imageItem)
+				newMap.set(updatedProject.id, imageItem)
 				return newMap
 			})
 		}
@@ -46,7 +50,7 @@ export default function Page() {
 
 	const handleSaveProject = (updatedProject: Project) => {
 		if (editingProject) {
-			const updated = projects.map(p => (p.url === editingProject.url ? updatedProject : p))
+			const updated = projects.map(project => (project.id === editingProject.id ? updatedProject : project))
 			setProjects(updated)
 		} else {
 			setProjects([...projects, updatedProject])
@@ -55,7 +59,7 @@ export default function Page() {
 
 	const handleDelete = (project: Project) => {
 		if (confirm(`确定要删除 ${project.name} 吗？`)) {
-			setProjects(projects.filter(p => p.url !== project.url))
+			setProjects(projects.filter(item => item.id !== project.id))
 		}
 	}
 
@@ -106,9 +110,22 @@ export default function Page() {
 		<>
 			<div className='flex flex-col items-center justify-center px-6 pt-32 pb-12'>
 				<div className='grid w-full max-w-[1200px] grid-cols-2 gap-6 max-md:grid-cols-1'>
-					{projects.map((project, index) => (
-						<ProjectCard key={project.url} project={project} isEditMode={isEditMode} onUpdate={handleUpdate} onDelete={() => handleDelete(project)} />
-					))}
+					{projects.map(project => {
+						const likeTargetKey = buildLikeTargetKey(project.id, 'project')
+						return (
+							<ProjectCard
+								key={project.id}
+								project={project}
+								isEditMode={isEditMode}
+								onUpdate={handleUpdate}
+								onDelete={() => handleDelete(project)}
+								likeTargetKey={likeTargetKey}
+								likeState={getLikeState(likeTargetKey)}
+								onLikeStateChange={nextState => updateLikeState(likeTargetKey, nextState)}
+								readOnlyLike={canManage}
+							/>
+						)
+					})}
 				</div>
 			</div>
 
@@ -148,7 +165,6 @@ export default function Page() {
 			</motion.div>
 
 			{isCreateDialogOpen && <CreateDialog project={editingProject} onClose={() => setIsCreateDialogOpen(false)} onSave={handleSaveProject} />}
-			{!isEditMode && <PageLikeButton pageKey='projects' />}
 		</>
 	)
 }

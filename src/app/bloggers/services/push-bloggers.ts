@@ -25,10 +25,10 @@ export async function pushBloggers(params: PushBloggersParams): Promise<void> {
 	let nextBloggers = [...bloggers]
 
 	if (avatarItems?.size) {
-		for (const [url, avatarItem] of avatarItems.entries()) {
+		for (const [bloggerId, avatarItem] of avatarItems.entries()) {
 			if (avatarItem.type !== 'file') continue
 			const uploaded = await uploadAsset(avatarItem.file, 'bloggers')
-			nextBloggers = nextBloggers.map(blogger => (blogger.url === url ? { ...blogger, avatar: uploaded.url } : blogger))
+			nextBloggers = nextBloggers.map(blogger => (blogger.id === bloggerId ? { ...blogger, avatar: uploaded.url } : blogger))
 		}
 	}
 

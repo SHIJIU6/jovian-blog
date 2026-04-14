@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'motion/react'
 import { toast } from 'sonner'
 import GridView, { type Blogger } from './grid-view'
@@ -9,7 +9,8 @@ import { pushBloggers } from './services/push-bloggers'
 import type { AvatarItem } from './components/avatar-upload-dialog'
 import { useManagementMode } from '@/hooks/use-management-mode'
 import { useBloggersContent } from '@/hooks/use-structured-content'
-import PageLikeButton from '@/components/page-like-button'
+import { buildLikeTargetKey } from '@/lib/like-target'
+import { useBatchLikes } from '@/hooks/use-batch-likes'
 
 export default function Page() {
 	const { data: remoteBloggers } = useBloggersContent()
@@ -28,12 +29,15 @@ export default function Page() {
 		setOriginalBloggers(remoteBloggers)
 	}, [remoteBloggers, isEditMode])
 
+	const bloggerLikeKeys = useMemo(() => bloggers.map(blogger => buildLikeTargetKey(blogger.id, 'blogger')).filter(Boolean), [bloggers])
+	const { getLikeState, updateLikeState } = useBatchLikes(bloggerLikeKeys)
+
 	const handleUpdate = (updatedBlogger: Blogger, oldBlogger: Blogger, avatarItem?: AvatarItem) => {
-		setBloggers(prev => prev.map(b => (b.url === oldBlogger.url ? updatedBlogger : b)))
+		setBloggers(prev => prev.map(blogger => (blogger.id === oldBlogger.id ? updatedBlogger : blogger)))
 		if (avatarItem) {
 			setAvatarItems(prev => {
 				const newMap = new Map(prev)
-				newMap.set(updatedBlogger.url, avatarItem)
+				newMap.set(updatedBlogger.id, avatarItem)
 				return newMap
 			})
 		}
@@ -46,7 +50,7 @@ export default function Page() {
 
 	const handleSaveBlogger = (updatedBlogger: Blogger) => {
 		if (editingBlogger) {
-			const updated = bloggers.map(b => (b.url === editingBlogger.url ? updatedBlogger : b))
+			const updated = bloggers.map(blogger => (blogger.id === editingBlogger.id ? updatedBlogger : blogger))
 			setBloggers(updated)
 		} else {
 			setBloggers([...bloggers, updatedBlogger])
@@ -55,7 +59,7 @@ export default function Page() {
 
 	const handleDelete = (blogger: Blogger) => {
 		if (confirm(`确定要删除 ${blogger.name} 吗？`)) {
-			setBloggers(bloggers.filter(b => b.url !== blogger.url))
+			setBloggers(bloggers.filter(item => item.id !== blogger.id))
 		}
 	}
 
@@ -104,7 +108,15 @@ export default function Page() {
 
 	return (
 		<>
-			<GridView bloggers={bloggers} isEditMode={isEditMode} onUpdate={handleUpdate} onDelete={handleDelete} />
+			<GridView
+				bloggers={bloggers}
+				isEditMode={isEditMode}
+				onUpdate={handleUpdate}
+				onDelete={handleDelete}
+				getLikeState={getLikeState}
+				onLikeStateChange={updateLikeState}
+				readOnlyLike={canManage}
+			/>
 
 			<motion.div initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} className='absolute top-4 right-6 flex gap-3 max-sm:hidden'>
 				{isEditMode ? (
@@ -142,7 +154,6 @@ export default function Page() {
 			</motion.div>
 
 			{isCreateDialogOpen && <CreateDialog blogger={editingBlogger} onClose={() => setIsCreateDialogOpen(false)} onSave={handleSaveBlogger} />}
-			{!isEditMode && <PageLikeButton pageKey='bloggers' />}
 		</>
 	)
 }

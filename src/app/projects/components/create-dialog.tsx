@@ -6,6 +6,7 @@ import { Plus } from 'lucide-react'
 import ImageUploadDialog, { type ImageItem } from './image-upload-dialog'
 import type { Project } from './project-card'
 import { DialogModal } from '@/components/dialog-modal'
+import { createContentItemId } from '@/lib/content-item-id'
 
 interface CreateDialogProps {
 	project: Project | null
@@ -15,6 +16,7 @@ interface CreateDialogProps {
 
 export default function CreateDialog({ project, onClose, onSave }: CreateDialogProps) {
 	const [formData, setFormData] = useState<Project>({
+		id: createContentItemId('project'),
 		name: '',
 		year: new Date().getFullYear(),
 		image: '',
@@ -33,6 +35,7 @@ export default function CreateDialog({ project, onClose, onSave }: CreateDialogP
 			setTagsInput(project.tags.join(', '))
 		} else {
 			setFormData({
+				id: createContentItemId('project'),
 				name: '',
 				year: new Date().getFullYear(),
 				image: '',

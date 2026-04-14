@@ -25,10 +25,10 @@ export async function pushProjects(params: PushProjectsParams): Promise<void> {
 	let nextProjects = [...projects]
 
 	if (imageItems?.size) {
-		for (const [url, imageItem] of imageItems.entries()) {
+		for (const [projectId, imageItem] of imageItems.entries()) {
 			if (imageItem.type !== 'file') continue
 			const uploaded = await uploadAsset(imageItem.file, 'projects')
-			nextProjects = nextProjects.map(project => (project.url === url ? { ...project, image: uploaded.url } : project))
+			nextProjects = nextProjects.map(project => (project.id === projectId ? { ...project, image: uploaded.url } : project))
 		}
 	}
 

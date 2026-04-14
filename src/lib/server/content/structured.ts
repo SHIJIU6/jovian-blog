@@ -23,6 +23,7 @@ import {
 	saveSharesToD1,
 	saveSnippetsToD1
 } from './structured-d1'
+import { normalizeBloggerId, normalizeProjectId, normalizeShareId, normalizeSnippetItems, type SnippetItem } from '@/lib/content-item-id'
 
 const ROOT = getProjectRoot()
 
@@ -60,6 +61,31 @@ async function readJsonFile<T>(filePath: string, fallback: T): Promise<T> {
 async function writeJsonFile(filePath: string, value: unknown) {
 	await ensureLocalContentDir(filePath)
 	await fs.writeFile(filePath, JSON.stringify(value, null, '\t'), 'utf8')
+}
+
+function normalizeProjects(items: Project[]) {
+	return items.map(project => ({
+		...project,
+		id: normalizeProjectId(project)
+	}))
+}
+
+function normalizeShares(items: Share[]) {
+	return items.map(share => ({
+		...share,
+		id: normalizeShareId(share)
+	}))
+}
+
+function normalizeBloggers(items: Blogger[]) {
+	return items.map(blogger => ({
+		...blogger,
+		id: normalizeBloggerId(blogger)
+	}))
+}
+
+function normalizeSnippets(items: Array<SnippetItem | string>) {
+	return normalizeSnippetItems(items).filter(item => item.content)
 }
 
 async function readSetting<T>(key: string, fallback: T): Promise<T> {
@@ -146,21 +172,24 @@ export async function getProjects() {
 	const env = await getContentBindings()
 	if (env?.BLOG_DB) {
 		const result = await getProjectsFromD1(env.BLOG_DB)
-		if (result && (result.length > 0 || (await isD1ScopeInitialized(env.BLOG_DB, 'projects')))) return result
+		if (result && (result.length > 0 || (await isD1ScopeInitialized(env.BLOG_DB, 'projects')))) return normalizeProjects(result)
 	}
 
-	return readSetting<Project[]>('projects_list', await readJsonFile<Project[]>(resolveContentReadPath(FILES.projects, LOCAL_FILES.projects), []))
+	return normalizeProjects(
+		await readSetting<Project[]>('projects_list', await readJsonFile<Project[]>(resolveContentReadPath(FILES.projects, LOCAL_FILES.projects), []))
+	)
 }
 
 export async function saveProjects(items: Project[]) {
 	await ensureLocalContentLayout()
+	const normalizedItems = normalizeProjects(items)
 	const env = await getContentBindings()
 	if (env?.BLOG_DB) {
-		const saved = await saveProjectsToD1(env.BLOG_DB, items)
+		const saved = await saveProjectsToD1(env.BLOG_DB, normalizedItems)
 		if (saved) return
-		if (await writeSetting('projects_list', items)) return
+		if (await writeSetting('projects_list', normalizedItems)) return
 	}
-	await writeJsonFile(LOCAL_FILES.projects, items)
+	await writeJsonFile(LOCAL_FILES.projects, normalizedItems)
 }
 
 export async function getShares() {
@@ -168,21 +197,22 @@ export async function getShares() {
 	const env = await getContentBindings()
 	if (env?.BLOG_DB) {
 		const result = await getSharesFromD1(env.BLOG_DB)
-		if (result && (result.length > 0 || (await isD1ScopeInitialized(env.BLOG_DB, 'shares')))) return result
+		if (result && (result.length > 0 || (await isD1ScopeInitialized(env.BLOG_DB, 'shares')))) return normalizeShares(result)
 	}
 
-	return readSetting<Share[]>('shares_list', await readJsonFile<Share[]>(resolveContentReadPath(FILES.shares, LOCAL_FILES.shares), []))
+	return normalizeShares(await readSetting<Share[]>('shares_list', await readJsonFile<Share[]>(resolveContentReadPath(FILES.shares, LOCAL_FILES.shares), [])))
 }
 
 export async function saveShares(items: Share[]) {
 	await ensureLocalContentLayout()
+	const normalizedItems = normalizeShares(items)
 	const env = await getContentBindings()
 	if (env?.BLOG_DB) {
-		const saved = await saveSharesToD1(env.BLOG_DB, items)
+		const saved = await saveSharesToD1(env.BLOG_DB, normalizedItems)
 		if (saved) return
-		if (await writeSetting('shares_list', items)) return
+		if (await writeSetting('shares_list', normalizedItems)) return
 	}
-	await writeJsonFile(LOCAL_FILES.shares, items)
+	await writeJsonFile(LOCAL_FILES.shares, normalizedItems)
 }
 
 export async function getBloggers() {
@@ -190,21 +220,24 @@ export async function getBloggers() {
 	const env = await getContentBindings()
 	if (env?.BLOG_DB) {
 		const result = await getBloggersFromD1(env.BLOG_DB)
-		if (result && (result.length > 0 || (await isD1ScopeInitialized(env.BLOG_DB, 'bloggers')))) return result
+		if (result && (result.length > 0 || (await isD1ScopeInitialized(env.BLOG_DB, 'bloggers')))) return normalizeBloggers(result)
 	}
 
-	return readSetting<Blogger[]>('bloggers_list', await readJsonFile<Blogger[]>(resolveContentReadPath(FILES.bloggers, LOCAL_FILES.bloggers), []))
+	return normalizeBloggers(
+		await readSetting<Blogger[]>('bloggers_list', await readJsonFile<Blogger[]>(resolveContentReadPath(FILES.bloggers, LOCAL_FILES.bloggers), []))
+	)
 }
 
 export async function saveBloggers(items: Blogger[]) {
 	await ensureLocalContentLayout()
+	const normalizedItems = normalizeBloggers(items)
 	const env = await getContentBindings()
 	if (env?.BLOG_DB) {
-		const saved = await saveBloggersToD1(env.BLOG_DB, items)
+		const saved = await saveBloggersToD1(env.BLOG_DB, normalizedItems)
 		if (saved) return
-		if (await writeSetting('bloggers_list', items)) return
+		if (await writeSetting('bloggers_list', normalizedItems)) return
 	}
-	await writeJsonFile(LOCAL_FILES.bloggers, items)
+	await writeJsonFile(LOCAL_FILES.bloggers, normalizedItems)
 }
 
 export async function getSnippets() {
@@ -212,21 +245,27 @@ export async function getSnippets() {
 	const env = await getContentBindings()
 	if (env?.BLOG_DB) {
 		const result = await getSnippetsFromD1(env.BLOG_DB)
-		if (result && (result.length > 0 || (await isD1ScopeInitialized(env.BLOG_DB, 'snippets')))) return result
+		if (result && (result.length > 0 || (await isD1ScopeInitialized(env.BLOG_DB, 'snippets')))) return normalizeSnippets(result)
 	}
 
-	return readSetting<string[]>('snippets_list', await readJsonFile<string[]>(resolveContentReadPath(FILES.snippets, LOCAL_FILES.snippets), []))
+	return normalizeSnippets(
+		await readSetting<Array<SnippetItem | string>>(
+			'snippets_list',
+			await readJsonFile<Array<SnippetItem | string>>(resolveContentReadPath(FILES.snippets, LOCAL_FILES.snippets), [])
+		)
+	)
 }
 
-export async function saveSnippets(items: string[]) {
+export async function saveSnippets(items: SnippetItem[]) {
 	await ensureLocalContentLayout()
+	const normalizedItems = normalizeSnippets(items)
 	const env = await getContentBindings()
 	if (env?.BLOG_DB) {
-		const saved = await saveSnippetsToD1(env.BLOG_DB, items)
+		const saved = await saveSnippetsToD1(env.BLOG_DB, normalizedItems)
 		if (saved) return
-		if (await writeSetting('snippets_list', items)) return
+		if (await writeSetting('snippets_list', normalizedItems)) return
 	}
-	await writeJsonFile(LOCAL_FILES.snippets, items)
+	await writeJsonFile(LOCAL_FILES.snippets, normalizedItems)
 }
 
 export async function getPictures() {

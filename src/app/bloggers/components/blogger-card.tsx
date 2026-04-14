@@ -8,15 +8,31 @@ import EditableStarRating from '@/components/editable-star-rating'
 import { Blogger, type BloggerStatus } from '../grid-view'
 import { useState } from 'react'
 import AvatarUploadDialog, { type AvatarItem } from './avatar-upload-dialog'
+import { ItemLikeButton } from '@/components/item-like-button'
+import { LikeCountBadge } from '@/components/like-count-badge'
+import type { LikeState } from '@/lib/like-types'
 
 interface BloggerCardProps {
 	blogger: Blogger
 	isEditMode?: boolean
 	onUpdate?: (blogger: Blogger, oldBlogger: Blogger, avatarItem?: AvatarItem) => void
 	onDelete?: () => void
+	likeTargetKey?: string
+	likeState?: LikeState
+	onLikeStateChange?: (state: LikeState) => void
+	readOnlyLike?: boolean
 }
 
-export function BloggerCard({ blogger, isEditMode = false, onUpdate, onDelete }: BloggerCardProps) {
+export function BloggerCard({
+	blogger,
+	isEditMode = false,
+	onUpdate,
+	onDelete,
+	likeTargetKey,
+	likeState,
+	onLikeStateChange,
+	readOnlyLike = false
+}: BloggerCardProps) {
 	const [expanded, setExpanded] = useState(false)
 	const [isEditing, setIsEditing] = useState(false)
 	const { maxSM } = useSize()
@@ -157,6 +173,16 @@ export function BloggerCard({ blogger, isEditMode = false, onUpdate, onDelete }:
 					)}>
 					{localBlogger.description}
 				</p>
+
+				{likeTargetKey && (
+					<div className='mt-4 flex items-center justify-end gap-3'>
+						{readOnlyLike ? (
+							<LikeCountBadge count={likeState?.count ?? 0} likedToday={likeState?.likedToday} />
+						) : (
+							<ItemLikeButton targetKey={likeTargetKey} state={likeState} onStateChange={onLikeStateChange} />
+						)}
+					</div>
+				)}
 			</div>
 
 			{canEdit && showAvatarDialog && (

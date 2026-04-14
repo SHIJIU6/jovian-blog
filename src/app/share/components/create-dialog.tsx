@@ -6,6 +6,7 @@ import { Plus } from 'lucide-react'
 import LogoUploadDialog, { type LogoItem } from './logo-upload-dialog'
 import type { Share } from './share-card'
 import { DialogModal } from '@/components/dialog-modal'
+import { createContentItemId } from '@/lib/content-item-id'
 
 interface CreateDialogProps {
 	share: Share | null
@@ -15,6 +16,7 @@ interface CreateDialogProps {
 
 export default function CreateDialog({ share, onClose, onSave }: CreateDialogProps) {
 	const [formData, setFormData] = useState<Share>({
+		id: createContentItemId('share'),
 		name: '',
 		logo: '',
 		url: '',
@@ -31,6 +33,7 @@ export default function CreateDialog({ share, onClose, onSave }: CreateDialogPro
 			setTagsInput(share.tags.join(', '))
 		} else {
 			setFormData({
+				id: createContentItemId('share'),
 				name: '',
 				logo: '',
 				url: '',

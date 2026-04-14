@@ -5,5 +5,12 @@ export const dynamic = 'force-dynamic'
 
 export async function GET() {
 	const tracks = await listMusicTracks()
-	return NextResponse.json({ tracks })
+	return NextResponse.json(
+		{ tracks },
+		{
+			headers: {
+				'Cache-Control': 'no-store'
+			}
+		}
+	)
 }

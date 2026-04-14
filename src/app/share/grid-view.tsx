@@ -4,15 +4,20 @@ import { useState } from 'react'
 
 import { type LogoItem } from './components/logo-upload-dialog'
 import { ShareCard, type Share } from './components/share-card'
+import { buildLikeTargetKey } from '@/lib/like-target'
+import type { LikeState } from '@/lib/like-types'
 
 interface GridViewProps {
 	shares: Share[]
 	isEditMode?: boolean
 	onUpdate?: (share: Share, oldShare: Share, logoItem?: LogoItem) => void
 	onDelete?: (share: Share) => void
+	getLikeState?: (targetKey: string) => LikeState
+	onLikeStateChange?: (targetKey: string, nextState: LikeState) => void
+	readOnlyLike?: boolean
 }
 
-export default function GridView({ shares, isEditMode = false, onUpdate, onDelete }: GridViewProps) {
+export default function GridView({ shares, isEditMode = false, onUpdate, onDelete, getLikeState, onLikeStateChange, readOnlyLike = false }: GridViewProps) {
 	const [searchTerm, setSearchTerm] = useState('')
 	const [selectedTag, setSelectedTag] = useState<string>('all')
 
@@ -57,9 +62,22 @@ export default function GridView({ shares, isEditMode = false, onUpdate, onDelet
 			</div>
 
 			<div className='grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3'>
-				{filteredShares.map(share => (
-					<ShareCard key={share.url} share={share} isEditMode={isEditMode} onUpdate={onUpdate} onDelete={() => onDelete?.(share)} />
-				))}
+				{filteredShares.map(share => {
+					const likeTargetKey = buildLikeTargetKey(share.id, 'share')
+					return (
+						<ShareCard
+							key={share.id}
+							share={share}
+							isEditMode={isEditMode}
+							onUpdate={onUpdate}
+							onDelete={() => onDelete?.(share)}
+							likeTargetKey={likeTargetKey}
+							likeState={getLikeState?.(likeTargetKey)}
+							onLikeStateChange={nextState => onLikeStateChange?.(likeTargetKey, nextState)}
+							readOnlyLike={readOnlyLike}
+						/>
+					)
+				})}
 			</div>
 
 			{filteredShares.length === 0 && (

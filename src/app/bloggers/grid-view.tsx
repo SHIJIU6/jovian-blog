@@ -4,10 +4,13 @@ import { useState } from 'react'
 
 import { type AvatarItem } from './components/avatar-upload-dialog'
 import { BloggerCard } from './components/blogger-card'
+import { buildLikeTargetKey } from '@/lib/like-target'
+import type { LikeState } from '@/lib/like-types'
 
 export type BloggerStatus = 'recent' | 'disconnected'
 
 export interface Blogger {
+	id: string
 	name: string
 	avatar: string
 	url: string
@@ -21,9 +24,12 @@ interface GridViewProps {
 	isEditMode?: boolean
 	onUpdate?: (blogger: Blogger, oldBlogger: Blogger, avatarItem?: AvatarItem) => void
 	onDelete?: (blogger: Blogger) => void
+	getLikeState?: (targetKey: string) => LikeState
+	onLikeStateChange?: (targetKey: string, nextState: LikeState) => void
+	readOnlyLike?: boolean
 }
 
-export default function GridView({ bloggers, isEditMode = false, onUpdate, onDelete }: GridViewProps) {
+export default function GridView({ bloggers, isEditMode = false, onUpdate, onDelete, getLikeState, onLikeStateChange, readOnlyLike = false }: GridViewProps) {
 	const [searchTerm, setSearchTerm] = useState('')
 	const [selectedCategory, setSelectedCategory] = useState<BloggerStatus>('recent')
 
@@ -65,9 +71,22 @@ export default function GridView({ bloggers, isEditMode = false, onUpdate, onDel
 			</div>
 
 			<div className='grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3'>
-				{filteredBloggers.map(blogger => (
-					<BloggerCard key={blogger.url} blogger={blogger} isEditMode={isEditMode} onUpdate={onUpdate} onDelete={() => onDelete?.(blogger)} />
-				))}
+				{filteredBloggers.map(blogger => {
+					const likeTargetKey = buildLikeTargetKey(blogger.id, 'blogger')
+					return (
+						<BloggerCard
+							key={blogger.id}
+							blogger={blogger}
+							isEditMode={isEditMode}
+							onUpdate={onUpdate}
+							onDelete={() => onDelete?.(blogger)}
+							likeTargetKey={likeTargetKey}
+							likeState={getLikeState?.(likeTargetKey)}
+							onLikeStateChange={nextState => onLikeStateChange?.(likeTargetKey, nextState)}
+							readOnlyLike={readOnlyLike}
+						/>
+					)
+				})}
 			</div>
 
 			{filteredBloggers.length === 0 && (

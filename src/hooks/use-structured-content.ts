@@ -7,6 +7,7 @@ import type { Project } from '@/app/projects/components/project-card'
 import type { Share } from '@/app/share/components/share-card'
 import type { Blogger } from '@/app/bloggers/grid-view'
 import type { Picture } from '@/app/pictures/page'
+import type { SnippetItem } from '@/lib/content-item-id'
 
 const fetcher = async <T,>(url: string): Promise<T> => {
 	const response = await fetch(url, { cache: 'no-store' })
@@ -47,7 +48,7 @@ export function useBloggersContent() {
 }
 
 export function useSnippetsContent() {
-	return useSWR<string[]>('/api/content/snippets', fetcher, {
+	return useSWR<SnippetItem[]>('/api/content/snippets', fetcher, {
 		revalidateOnFocus: false
 	})
 }

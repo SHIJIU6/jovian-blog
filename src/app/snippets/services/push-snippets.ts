@@ -1,5 +1,7 @@
+import type { SnippetItem } from '@/lib/content-item-id'
+
 export type PushSnippetsParams = {
-	snippets: string[]
+	snippets: SnippetItem[]
 }
 
 export async function pushSnippets(params: PushSnippetsParams): Promise<void> {

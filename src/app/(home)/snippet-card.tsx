@@ -33,7 +33,7 @@ export default function SnippetCard() {
 		}
 	}, [index, snippets.length])
 
-	const currentSnippet = useMemo(() => snippets[index] || snippets[0] || '', [index, snippets])
+	const currentSnippet = useMemo(() => snippets[index]?.content || snippets[0]?.content || '', [index, snippets])
 	if (!currentSnippet) return null
 
 	const x =

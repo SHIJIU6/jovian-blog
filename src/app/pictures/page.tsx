@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'motion/react'
 import { toast } from 'sonner'
 import { RandomLayout } from './components/random-layout'
@@ -10,7 +10,8 @@ import type { ImageItem } from '../projects/components/image-upload-dialog'
 import { useRouter } from 'next/navigation'
 import { useManagementMode } from '@/hooks/use-management-mode'
 import { usePicturesContent } from '@/hooks/use-structured-content'
-import PageLikeButton from '@/components/page-like-button'
+import { buildLikeTargetKey, buildPictureLikeTarget } from '@/lib/like-target'
+import { useBatchLikes } from '@/hooks/use-batch-likes'
 
 export interface Picture {
 	id: string
@@ -37,6 +38,21 @@ export default function Page() {
 		setPictures(remotePictures)
 		setOriginalPictures(remotePictures)
 	}, [remotePictures, isEditMode])
+
+	const pictureLikeKeys = useMemo(
+		() =>
+			pictures.flatMap(picture => {
+				if (picture.images && picture.images.length > 0) {
+					return picture.images.map((_, imageIndex) => buildLikeTargetKey(buildPictureLikeTarget(picture.id, imageIndex), 'picture'))
+				}
+				if (picture.image) {
+					return [buildLikeTargetKey(buildPictureLikeTarget(picture.id, 0), 'picture')]
+				}
+				return []
+			}),
+		[pictures]
+	)
+	const { getLikeState, updateLikeState } = useBatchLikes(pictureLikeKeys)
 
 	const handleUploadSubmit = ({ images, description }: { images: ImageItem[]; description: string }) => {
 		const now = new Date().toISOString()
@@ -204,7 +220,15 @@ export default function Page() {
 
 	return (
 		<>
-			<RandomLayout pictures={pictures} isEditMode={isEditMode} onDeleteSingle={handleDeleteSingleImage} onDeleteGroup={handleDeleteGroup} />
+			<RandomLayout
+				pictures={pictures}
+				isEditMode={isEditMode}
+				onDeleteSingle={handleDeleteSingleImage}
+				onDeleteGroup={handleDeleteGroup}
+				getLikeState={getLikeState}
+				onLikeStateChange={updateLikeState}
+				isManagementView={canManage}
+			/>
 
 			{pictures.length === 0 && (
 				<div className='text-secondary flex min-h-screen items-center justify-center text-center text-sm'>
@@ -255,7 +279,6 @@ export default function Page() {
 			</motion.div>
 
 			{isUploadDialogOpen && <UploadDialog onClose={() => setIsUploadDialogOpen(false)} onSubmit={handleUploadSubmit} />}
-			{!isEditMode && <PageLikeButton pageKey='pictures' />}
 		</>
 	)
 }

@@ -5,14 +5,8 @@ import { toast } from 'sonner'
 import { Plus } from 'lucide-react'
 import AvatarUploadDialog, { type AvatarItem } from './avatar-upload-dialog'
 import { DialogModal } from '@/components/dialog-modal'
-
-interface Blogger {
-	name: string
-	avatar: string
-	url: string
-	description: string
-	stars: number
-}
+import { createContentItemId } from '@/lib/content-item-id'
+import type { Blogger } from '../grid-view'
 
 interface CreateDialogProps {
 	blogger: Blogger | null
@@ -22,6 +16,7 @@ interface CreateDialogProps {
 
 export default function CreateDialog({ blogger, onClose, onSave }: CreateDialogProps) {
 	const [formData, setFormData] = useState<Blogger>({
+		id: createContentItemId('blogger'),
 		name: '',
 		avatar: '',
 		url: '',
@@ -35,6 +30,7 @@ export default function CreateDialog({ blogger, onClose, onSave }: CreateDialogP
 			setFormData(blogger)
 		} else {
 			setFormData({
+				id: createContentItemId('blogger'),
 				name: '',
 				avatar: '',
 				url: '',
