@@ -10,6 +10,7 @@ import type { Share } from './components/share-card'
 import type { LogoItem } from './components/logo-upload-dialog'
 import { useManagementMode } from '@/hooks/use-management-mode'
 import { useSharesContent } from '@/hooks/use-structured-content'
+import PageLikeButton from '@/components/page-like-button'
 
 export default function Page() {
 	const { data: remoteShares } = useSharesContent()
@@ -142,6 +143,7 @@ export default function Page() {
 			</motion.div>
 
 			{isCreateDialogOpen && <CreateDialog share={editingShare} onClose={() => setIsCreateDialogOpen(false)} onSave={handleSaveShare} />}
+			{!isEditMode && <PageLikeButton pageKey='shares' />}
 		</>
 	)
 }

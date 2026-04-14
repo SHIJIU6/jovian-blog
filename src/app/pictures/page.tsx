@@ -10,6 +10,7 @@ import type { ImageItem } from '../projects/components/image-upload-dialog'
 import { useRouter } from 'next/navigation'
 import { useManagementMode } from '@/hooks/use-management-mode'
 import { usePicturesContent } from '@/hooks/use-structured-content'
+import PageLikeButton from '@/components/page-like-button'
 
 export interface Picture {
 	id: string
@@ -254,6 +255,7 @@ export default function Page() {
 			</motion.div>
 
 			{isUploadDialogOpen && <UploadDialog onClose={() => setIsUploadDialogOpen(false)} onSubmit={handleUploadSubmit} />}
+			{!isEditMode && <PageLikeButton pageKey='pictures' />}
 		</>
 	)
 }

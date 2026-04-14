@@ -160,9 +160,21 @@ pnpm check
   - `OPENAI_API_KEY`
   - `OPENAI_RESPONSES_MODEL`
 - 可选前台能力：
-  - `NEXT_PUBLIC_LIKE_ENDPOINT`
-  - `NEXT_PUBLIC_SAMPLE_AUDIO`
+  - `NEXT_PUBLIC_LIKE_ENDPOINT`（默认内置为 `/api/likes`，仅在接第三方点赞服务时覆盖）
+  - `NEXT_PUBLIC_SAMPLE_AUDIO`（可选，支持单个 URL 或逗号分隔多个 URL；未配置时本地会自动发现 `public/music/` 下的音频）
   - `BLOG_SLUG_KEY`
+
+## 点赞实现
+
+- 项目现已内置点赞接口 `/api/likes`，无需再额外部署第三方服务才能显示或记录点赞数
+- 点赞按命名空间 key 计数（如 `post:slug`、`page:about`、`site:home`），避免文章和页面之间 slug 冲突
+- 对同一访客在同一天内对同一目标做去重限制
+- 开发环境默认持久化到 `.local-content/runtime/likes/likes.json`
+- 生产环境优先持久化到 Cloudflare D1：`like_daily_votes` 负责去重记录，`like_counters` 负责聚合计数
+- D1 读路径会优先命中聚合计数表，并在发现旧数据只有投票明细时自动回填聚合计数
+- 如果你在 Cloudflare 上部署，需要执行最新迁移以创建/补齐点赞表：
+  - `pnpm db:migrate:local`
+  - `pnpm db:migrate:remote`
 - 本地 MCP：
   - `BLOG_BASE_URL`
   - `BLOG_ADMIN_EMAIL`

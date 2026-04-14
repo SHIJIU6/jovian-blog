@@ -20,6 +20,7 @@ import { Check, PenSquare } from 'lucide-react'
 import { CategoryModal } from './components/category-modal'
 import { useManagementMode } from '@/hooks/use-management-mode'
 import { getBlogStatusLabel } from '@/lib/blog-status'
+import PageLikeButton from '@/components/page-like-button'
 
 type DisplayMode = 'day' | 'week' | 'month' | 'year' | 'category'
 
@@ -518,6 +519,8 @@ export default function BlogPage() {
 				editableItems={editableItems}
 				onAssignCategory={handleAssignCategory}
 			/>
+
+			<PageLikeButton pageKey='blog' />
 		</>
 	)
 }

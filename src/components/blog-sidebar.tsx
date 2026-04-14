@@ -17,10 +17,10 @@ type BlogSidebarProps = {
 	cover?: string
 	summary?: string
 	toc: TocItem[]
-	slug?: string
+	postSlug?: string
 }
 
-export function BlogSidebar({ cover, summary, toc, slug }: BlogSidebarProps) {
+export function BlogSidebar({ cover, summary, toc, postSlug }: BlogSidebarProps) {
 	const { siteContent } = useConfigStore()
 	const summaryInContent = siteContent.summaryInContent ?? false
 
@@ -49,7 +49,7 @@ export function BlogSidebar({ cover, summary, toc, slug }: BlogSidebarProps) {
 
 			<BlogToc toc={toc} delay={INIT_DELAY + ANIMATION_DELAY * 3} />
 
-			<LikeButton slug={slug} delay={(INIT_DELAY + ANIMATION_DELAY * 4) * 1000} />
+			{postSlug && <LikeButton target={postSlug} targetType='post' delay={(INIT_DELAY + ANIMATION_DELAY * 4) * 1000} />}
 
 			<ScrollTopButton delay={INIT_DELAY + ANIMATION_DELAY * 5} />
 		</div>

@@ -9,6 +9,7 @@ import { pushBloggers } from './services/push-bloggers'
 import type { AvatarItem } from './components/avatar-upload-dialog'
 import { useManagementMode } from '@/hooks/use-management-mode'
 import { useBloggersContent } from '@/hooks/use-structured-content'
+import PageLikeButton from '@/components/page-like-button'
 
 export default function Page() {
 	const { data: remoteBloggers } = useBloggersContent()
@@ -141,6 +142,7 @@ export default function Page() {
 			</motion.div>
 
 			{isCreateDialogOpen && <CreateDialog blogger={editingBlogger} onClose={() => setIsCreateDialogOpen(false)} onSave={handleSaveBlogger} />}
+			{!isEditMode && <PageLikeButton pageKey='bloggers' />}
 		</>
 	)
 }

@@ -5,6 +5,7 @@ import { motion } from 'motion/react'
 import { toast } from 'sonner'
 import { Plus, X } from 'lucide-react'
 import { DialogModal } from '@/components/dialog-modal'
+import PageLikeButton from '@/components/page-like-button'
 import { pushSnippets } from './services/push-snippets'
 import { useManagementMode } from '@/hooks/use-management-mode'
 import { useSnippetsContent } from '@/hooks/use-structured-content'
@@ -239,6 +240,8 @@ export default function Page() {
 					</div>
 				</div>
 			</DialogModal>
+
+			{!isEditMode && <PageLikeButton pageKey='snippets' />}
 		</>
 	)
 }

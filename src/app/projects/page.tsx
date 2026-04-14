@@ -9,6 +9,7 @@ import { pushProjects } from './services/push-projects'
 import type { ImageItem } from './components/image-upload-dialog'
 import { useManagementMode } from '@/hooks/use-management-mode'
 import { useProjectsContent } from '@/hooks/use-structured-content'
+import PageLikeButton from '@/components/page-like-button'
 
 export default function Page() {
 	const { data: remoteProjects } = useProjectsContent()
@@ -147,6 +148,7 @@ export default function Page() {
 			</motion.div>
 
 			{isCreateDialogOpen && <CreateDialog project={editingProject} onClose={() => setIsCreateDialogOpen(false)} onSave={handleSaveProject} />}
+			{!isEditMode && <PageLikeButton pageKey='projects' />}
 		</>
 	)
 }

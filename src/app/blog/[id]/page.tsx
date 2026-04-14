@@ -86,7 +86,7 @@ export default function Page() {
 				date={date}
 				summary={blog.config.summary}
 				cover={blog.cover}
-				slug={slug}
+				postSlug={slug}
 			/>
 
 			{canManage && (

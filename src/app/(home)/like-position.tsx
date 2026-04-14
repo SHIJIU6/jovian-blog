@@ -35,7 +35,7 @@ export default function LikePosition() {
 					</>
 				)}
 
-				<LikeButton delay={cardStyles.shareCard.order * ANIMATION_DELAY * 1000} />
+				<LikeButton target='home' targetType='site' delay={cardStyles.shareCard.order * ANIMATION_DELAY * 1000} />
 			</motion.div>
 		</HomeDraggableLayer>
 	)

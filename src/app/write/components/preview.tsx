@@ -22,7 +22,7 @@ export function WritePreview({ form, coverPreviewUrl, onClose, slug }: WritePrev
 					date={previewData.date}
 					summary={form.summary}
 					cover={coverPreviewUrl || undefined}
-					slug={slug}
+					postSlug={slug}
 				/>
 			</div>
 			<motion.button
