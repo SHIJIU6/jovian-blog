@@ -133,13 +133,16 @@ pnpm build
 
 ```bash
 pnpm typecheck
+pnpm check:ai
 pnpm check
 ```
 
 说明：
 
 - `pnpm typecheck` 会先执行 `next typegen`，再做 TypeScript 静态检查
-- `pnpm check` 会顺序执行类型检查和生产构建
+- `pnpm check:ai` 会校验本地 MCP tool 定义与本地 skill 元数据
+- `pnpm check` 会顺序执行类型检查与 AI 相关校验
+- `pnpm build` 继续单独用于生产构建验证；在当前 Windows + Next 16 环境里，这样比把所有步骤硬串成一个命令更稳定
 - 仓库已附带 GitHub Actions CI，推送到 GitHub 后会自动执行上述校验
 
 ## 环境变量
@@ -318,13 +321,24 @@ pnpm run build:cf
 
 ## 本地 MCP 使用
 
-这个项目已经附带一个本地 `stdio MCP` server：
+这个项目已经附带两个本地 `stdio MCP` server：
 
 ```bash
 pnpm mcp:blog
+pnpm mcp:content
 ```
 
-它当前暴露的工具包括：
+内部实现上，`scripts/blog-mcp-server.mjs` 与 `scripts/content-mcp-server.mjs` 现在都是薄启动层；
+真正的 tool 定义分别在：
+
+- `scripts/blog-mcp-definition.mjs`
+- `scripts/content-mcp-definition.mjs`
+
+这样可以直接做本地静态校验，而不必真的启动 MCP 进程。
+
+### `blog-publisher`
+
+文章 MCP 当前暴露的工具包括：
 
 - `create_blog_draft`
 - `publish_blog_post`
@@ -333,10 +347,31 @@ pnpm mcp:blog
 - `search_blog_posts`
 - `delete_blog_post`
 
+### `content-admin`
+
+结构化内容 MCP 当前暴露的工具包括：
+
+- `list_projects` / `get_project` / `create_project` / `update_project` / `delete_project`
+- `list_shares` / `get_share` / `create_share` / `update_share` / `delete_share`
+- `list_bloggers` / `get_blogger` / `create_blogger` / `update_blogger` / `delete_blogger`
+- `list_pictures` / `get_picture` / `create_picture` / `update_picture` / `delete_picture`
+- `list_snippets` / `get_snippet` / `create_snippet` / `update_snippet` / `delete_snippet`
+- `get_site_config`
+- `update_site_meta`
+- `update_site_theme`
+- `update_site_images`
+- `update_site_social_buttons`
+- `update_site_preferences`
+- `update_card_styles`
+- `get_about_page`
+- `update_about_page`
+
 ### Codex 安装本地 MCP
 
 ```bash
 codex mcp add blog-publisher --env BLOG_BASE_URL=http://127.0.0.1:2025 --env BLOG_ADMIN_TOKEN=replace-with-a-long-random-token -- node D:\IDEA\Project\2025-blog-public\scripts\blog-mcp-server.mjs
+
+codex mcp add content-admin --env BLOG_BASE_URL=http://127.0.0.1:2025 --env BLOG_ADMIN_TOKEN=replace-with-a-long-random-token -- node D:\IDEA\Project\2025-blog-public\scripts\content-mcp-server.mjs
 ```
 
 ### Claude Code 安装本地 MCP
@@ -349,6 +384,7 @@ codex mcp add blog-publisher --env BLOG_BASE_URL=http://127.0.0.1:2025 --env BLO
 
 - command: `node`
 - args: `scripts/blog-mcp-server.mjs`
+- 或 `scripts/content-mcp-server.mjs`
 - env:
   - `BLOG_BASE_URL`
   - `BLOG_ADMIN_TOKEN`
@@ -357,7 +393,7 @@ codex mcp add blog-publisher --env BLOG_BASE_URL=http://127.0.0.1:2025 --env BLO
 
 ### 生产环境 + Cloudflare Access 场景
 
-如果你把 `/api/admin/*` 放在 Cloudflare Access 后面，`blog-publisher` MCP 需要两层凭据：
+如果你把 `/api/admin/*` 放在 Cloudflare Access 后面，`blog-publisher` / `content-admin` MCP 都需要两层凭据：
 
 - `CF_ACCESS_CLIENT_ID`
 - `CF_ACCESS_CLIENT_SECRET`
@@ -386,15 +422,29 @@ codex mcp add blog-publisher \
 
 ## Skill
 
-项目附带一个可以继续扩展的 skill：
+项目附带这些可继续扩展的 skill：
 
 - [`skills/discussion-to-blog`](./skills/discussion-to-blog/SKILL.md)
+- [`skills/discussion-to-projects`](./skills/discussion-to-projects/SKILL.md)
+- [`skills/discussion-to-shares`](./skills/discussion-to-shares/SKILL.md)
+- [`skills/discussion-to-bloggers`](./skills/discussion-to-bloggers/SKILL.md)
+- [`skills/discussion-to-pictures`](./skills/discussion-to-pictures/SKILL.md)
+- [`skills/discussion-to-snippets`](./skills/discussion-to-snippets/SKILL.md)
+- [`skills/discussion-to-site-config`](./skills/discussion-to-site-config/SKILL.md)
+- [`skills/discussion-to-about`](./skills/discussion-to-about/SKILL.md)
+
+共享规则与执行模板：
+
+- [`skills/_shared/content-authoring-rules.md`](./skills/_shared/content-authoring-rules.md)
+- [`skills/_shared/content-authoring-playbook.md`](./skills/_shared/content-authoring-playbook.md)
 
 作用：
 
 - 把当前讨论整理成博客草稿结构
 - 再调用 `create_blog_draft`
 - 如果用户明确要求公开，再调用 `publish_blog_post`
+- 把结构化讨论转成项目、资源、博主、图片、短句、站点配置、关于页的 MCP 操作
+- 统一遵守 URL-first 媒体规则，不直接走 `/api/admin/*`
 
 典型话术：
 

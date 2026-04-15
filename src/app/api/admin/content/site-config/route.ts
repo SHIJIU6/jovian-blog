@@ -1,17 +1,15 @@
-import { replaceContentAuthoringItems } from '@/lib/server/admin/structured-authoring'
+import { getAuthoringSiteConfig } from '@/lib/server/admin/structured-authoring'
 import { createUnauthorizedAdminResponse, evaluateAdminRequest } from '@/lib/server/admin/auth'
 import { toAuthoringErrorResponse } from '@/lib/server/admin/route-response'
 
 export const dynamic = 'force-dynamic'
 
-export async function POST(request: Request) {
+export async function GET(request: Request) {
 	const auth = await evaluateAdminRequest(request, process.env.ADMIN_ALLOWLIST)
 	if (!auth.ok) return createUnauthorizedAdminResponse(auth.reason || 'unauthorized')
 
 	try {
-		const payload = await request.json()
-		await replaceContentAuthoringItems('bloggers', payload.bloggers || [], auth.email)
-		return Response.json({ success: true })
+		return Response.json(await getAuthoringSiteConfig())
 	} catch (error) {
 		return toAuthoringErrorResponse(error)
 	}

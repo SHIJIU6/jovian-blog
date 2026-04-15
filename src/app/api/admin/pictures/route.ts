@@ -1,6 +1,6 @@
-import { savePictures } from '@/lib/server/content/structured'
+import { replaceContentAuthoringItems } from '@/lib/server/admin/structured-authoring'
 import { createUnauthorizedAdminResponse, evaluateAdminRequest } from '@/lib/server/admin/auth'
-import { writeAuditLog } from '@/lib/server/admin/audit'
+import { toAuthoringErrorResponse } from '@/lib/server/admin/route-response'
 
 export const dynamic = 'force-dynamic'
 
@@ -8,15 +8,11 @@ export async function POST(request: Request) {
 	const auth = await evaluateAdminRequest(request, process.env.ADMIN_ALLOWLIST)
 	if (!auth.ok) return createUnauthorizedAdminResponse(auth.reason || 'unauthorized')
 
-	const payload = await request.json()
-	await savePictures(payload.pictures || [])
-	await writeAuditLog({
-		actorEmail: auth.email || 'local-dev',
-		action: 'pictures.save',
-		targetType: 'pictures',
-		payload: {
-			count: Array.isArray(payload.pictures) ? payload.pictures.length : 0
-		}
-	})
-	return Response.json({ success: true })
+	try {
+		const payload = await request.json()
+		await replaceContentAuthoringItems('pictures', payload.pictures || [], auth.email)
+		return Response.json({ success: true })
+	} catch (error) {
+		return toAuthoringErrorResponse(error)
+	}
 }

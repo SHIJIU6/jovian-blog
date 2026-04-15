@@ -20,6 +20,7 @@ Use this skill only for `2025-blog-public`. It turns the current thread into a b
 - Prefer the configured local `blog-publisher` MCP server.
 - If MCP is unavailable, misconfigured, or blocked by Cloudflare Access, stop and report the blocker instead of inventing a result.
 - If the user asks to publish to production, ensure the target `BLOG_BASE_URL` is the intended environment before writing.
+- For exact write shapes, publish rules, and stop conditions, read [`./references/blog-authoring-reference.md`](./references/blog-authoring-reference.md).
 
 ## Workflow
 
@@ -39,6 +40,12 @@ Use this skill only for `2025-blog-public`. It turns the current thread into a b
 5. If and only if the user explicitly asked to publish, call `publish_blog_post` with the created slug.
 6. Verify the result with a read tool such as `get_blog_post` or `list_recent_posts`.
 7. Return the resulting slug, status, and any relevant recovery details.
+
+Execution template:
+
+- `read/context -> draft -> optional publish -> verify -> summarize`
+- Never skip verification after a successful write.
+- Never delete a post from this skill unless the user explicitly asked for deletion.
 
 ## Drafting Rules
 
@@ -61,68 +68,6 @@ Use the current conversation as the primary source material. Do not invent facts
 - This skill is for article drafting and publishing only. Do not use it to update snippets, site config, projects, shares, bloggers, or pictures.
 - Do not use `delete_blog_post` from this skill unless the user explicitly asks to delete a post.
 - If the article depends on uploaded media, note that production media requires the `BLOG_MEDIA` binding and may fail separately from article creation.
-
-## Call Pattern
-
-When calling `create_blog_draft`, use one of these two shapes:
-
-### Shape A: Discussion-first
-
-Use when you want the project to generate the Markdown scaffold:
-
-```json
-{
-  "title": "文章标题",
-  "summary": "文章摘要",
-  "discussion": "整理后的讨论正文",
-  "tags": ["标签1", "标签2"],
-  "category": "工具",
-  "sources": [
-    {
-      "title": "来源标题",
-      "url": "https://example.com",
-      "note": "来源说明"
-    }
-  ]
-}
-```
-
-### Shape B: Markdown-first
-
-Use when you already wrote a polished blog article in Markdown:
-
-```json
-{
-  "title": "文章标题",
-  "summary": "文章摘要",
-  "contentMd": "# 标题\n\n正文...",
-  "tags": ["标签1", "标签2"],
-  "category": "工具"
-}
-```
-
-## Publish Rule
-
-Default to draft. Only publish immediately when the user clearly asks for it.
-
-If the user says things like:
-
-- “整理成草稿”
-- “先存到博客”
-- “先放后台”
-
-Then create a draft only.
-
-If the user says things like:
-
-- “直接发布”
-- “发到博客线上”
-- “现在公开”
-
-Then:
-
-1. Create the draft
-2. Call `publish_blog_post` with the returned slug
 
 ## Safety
 

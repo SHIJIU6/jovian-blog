@@ -70,7 +70,7 @@ export async function getProjectsFromD1(db: any): Promise<Project[] | null> {
 	try {
 		const rows = await getAllRows(
 			db,
-			'SELECT name, year, description, image_url, url, tags_json, github_url, npm_url FROM projects ORDER BY sort_order ASC, updated_at DESC, created_at DESC'
+			'SELECT id, name, year, description, image_url, url, tags_json, github_url, npm_url FROM projects ORDER BY sort_order ASC, updated_at DESC, created_at DESC'
 		)
 
 		return rows.map(row => ({
@@ -135,7 +135,7 @@ export async function getSharesFromD1(db: any): Promise<Share[] | null> {
 	try {
 		const rows = await getAllRows(
 			db,
-			'SELECT name, logo_url, url, description, tags_json, stars FROM resources ORDER BY sort_order ASC, updated_at DESC, created_at DESC'
+			'SELECT id, name, logo_url, url, description, tags_json, stars FROM resources ORDER BY sort_order ASC, updated_at DESC, created_at DESC'
 		)
 
 		return rows.map(row => ({
@@ -196,7 +196,7 @@ export async function getBloggersFromD1(db: any): Promise<Blogger[] | null> {
 	try {
 		const rows = await getAllRows(
 			db,
-			'SELECT name, avatar_url, url, description, stars, status FROM bloggers ORDER BY sort_order ASC, updated_at DESC, created_at DESC'
+			'SELECT id, name, avatar_url, url, description, stars, status FROM bloggers ORDER BY sort_order ASC, updated_at DESC, created_at DESC'
 		)
 
 		return rows.map(row => ({
@@ -343,6 +343,343 @@ export async function savePicturesToD1(db: any, items: Picture[]): Promise<boole
 		})
 
 		await runBatch(db, statements)
+		await markD1ScopeInitialized(db, 'pictures')
+		return true
+	} catch {
+		return false
+	}
+}
+
+async function getExistingCreatedAt(db: any, table: string, id: string) {
+	const row = await db.prepare(`SELECT created_at FROM ${table} WHERE id = ? LIMIT 1`).bind(id).first()
+	return getString(row?.created_at)
+}
+
+async function reorderTableByIds(db: any, table: string, ids: string[]) {
+	if (ids.length === 0) return
+	const statements = ids.map((id, index) => db.prepare(`UPDATE ${table} SET sort_order = ? WHERE id = ?`).bind(index, id))
+	await runBatch(db, statements)
+}
+
+async function deleteRowById(db: any, table: string, id: string) {
+	await db.prepare(`DELETE FROM ${table} WHERE id = ?`).bind(id).run()
+}
+
+export async function upsertProjectItemToD1(db: any, project: Project, sortOrder: number): Promise<boolean> {
+	try {
+		const now = new Date().toISOString()
+		const createdAt = (await getExistingCreatedAt(db, 'projects', project.id)) || now
+		const existing = await db.prepare('SELECT id FROM projects WHERE id = ? LIMIT 1').bind(project.id).first()
+
+		if (existing?.id) {
+			await db
+				.prepare(
+					`UPDATE projects
+					 SET name = ?, description = ?, year = ?, image_url = ?, url = ?, github_url = ?, npm_url = ?, tags_json = ?, sort_order = ?, updated_at = ?
+					 WHERE id = ?`
+				)
+				.bind(
+					project.name,
+					project.description || null,
+					project.year || null,
+					project.image || null,
+					project.url || null,
+					project.github || null,
+					project.npm || null,
+					JSON.stringify(project.tags || []),
+					sortOrder,
+					now,
+					project.id
+				)
+				.run()
+		} else {
+			await db
+				.prepare(
+					`INSERT INTO projects (
+						id, name, description, year, image_url, url, github_url, npm_url, tags_json, sort_order, created_at, updated_at
+					) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+				)
+				.bind(
+					project.id,
+					project.name,
+					project.description || null,
+					project.year || null,
+					project.image || null,
+					project.url || null,
+					project.github || null,
+					project.npm || null,
+					JSON.stringify(project.tags || []),
+					sortOrder,
+					createdAt,
+					now
+				)
+				.run()
+		}
+
+		await markD1ScopeInitialized(db, 'projects')
+		return true
+	} catch {
+		return false
+	}
+}
+
+export async function deleteProjectItemFromD1(db: any, id: string): Promise<boolean> {
+	try {
+		await deleteRowById(db, 'projects', id)
+		await markD1ScopeInitialized(db, 'projects')
+		return true
+	} catch {
+		return false
+	}
+}
+
+export async function reorderProjectsInD1(db: any, ids: string[]): Promise<boolean> {
+	try {
+		await reorderTableByIds(db, 'projects', ids)
+		await markD1ScopeInitialized(db, 'projects')
+		return true
+	} catch {
+		return false
+	}
+}
+
+export async function upsertShareItemToD1(db: any, share: Share, sortOrder: number): Promise<boolean> {
+	try {
+		const now = new Date().toISOString()
+		const createdAt = (await getExistingCreatedAt(db, 'resources', share.id)) || now
+		const existing = await db.prepare('SELECT id FROM resources WHERE id = ? LIMIT 1').bind(share.id).first()
+
+		if (existing?.id) {
+			await db
+				.prepare(
+					`UPDATE resources
+					 SET name = ?, description = ?, url = ?, logo_url = ?, stars = ?, tags_json = ?, sort_order = ?, updated_at = ?
+					 WHERE id = ?`
+				)
+				.bind(
+					share.name,
+					share.description || null,
+					share.url,
+					share.logo || null,
+					share.stars || 0,
+					JSON.stringify(share.tags || []),
+					sortOrder,
+					now,
+					share.id
+				)
+				.run()
+		} else {
+			await db
+				.prepare(
+					`INSERT INTO resources (
+						id, name, description, url, logo_url, stars, tags_json, sort_order, created_at, updated_at
+					) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+				)
+				.bind(
+					share.id,
+					share.name,
+					share.description || null,
+					share.url,
+					share.logo || null,
+					share.stars || 0,
+					JSON.stringify(share.tags || []),
+					sortOrder,
+					createdAt,
+					now
+				)
+				.run()
+		}
+
+		await markD1ScopeInitialized(db, 'shares')
+		return true
+	} catch {
+		return false
+	}
+}
+
+export async function deleteShareItemFromD1(db: any, id: string): Promise<boolean> {
+	try {
+		await deleteRowById(db, 'resources', id)
+		await markD1ScopeInitialized(db, 'shares')
+		return true
+	} catch {
+		return false
+	}
+}
+
+export async function reorderSharesInD1(db: any, ids: string[]): Promise<boolean> {
+	try {
+		await reorderTableByIds(db, 'resources', ids)
+		await markD1ScopeInitialized(db, 'shares')
+		return true
+	} catch {
+		return false
+	}
+}
+
+export async function upsertBloggerItemToD1(db: any, blogger: Blogger, sortOrder: number): Promise<boolean> {
+	try {
+		const now = new Date().toISOString()
+		const createdAt = (await getExistingCreatedAt(db, 'bloggers', blogger.id)) || now
+		const existing = await db.prepare('SELECT id FROM bloggers WHERE id = ? LIMIT 1').bind(blogger.id).first()
+
+		if (existing?.id) {
+			await db
+				.prepare(
+					`UPDATE bloggers
+					 SET name = ?, url = ?, avatar_url = ?, description = ?, stars = ?, status = ?, sort_order = ?, updated_at = ?
+					 WHERE id = ?`
+				)
+				.bind(
+					blogger.name,
+					blogger.url,
+					blogger.avatar || null,
+					blogger.description || null,
+					blogger.stars || 0,
+					blogger.status || null,
+					sortOrder,
+					now,
+					blogger.id
+				)
+				.run()
+		} else {
+			await db
+				.prepare(
+					`INSERT INTO bloggers (
+						id, name, url, avatar_url, description, stars, status, sort_order, created_at, updated_at
+					) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+				)
+				.bind(
+					blogger.id,
+					blogger.name,
+					blogger.url,
+					blogger.avatar || null,
+					blogger.description || null,
+					blogger.stars || 0,
+					blogger.status || null,
+					sortOrder,
+					createdAt,
+					now
+				)
+				.run()
+		}
+
+		await markD1ScopeInitialized(db, 'bloggers')
+		return true
+	} catch {
+		return false
+	}
+}
+
+export async function deleteBloggerItemFromD1(db: any, id: string): Promise<boolean> {
+	try {
+		await deleteRowById(db, 'bloggers', id)
+		await markD1ScopeInitialized(db, 'bloggers')
+		return true
+	} catch {
+		return false
+	}
+}
+
+export async function reorderBloggersInD1(db: any, ids: string[]): Promise<boolean> {
+	try {
+		await reorderTableByIds(db, 'bloggers', ids)
+		await markD1ScopeInitialized(db, 'bloggers')
+		return true
+	} catch {
+		return false
+	}
+}
+
+export async function upsertSnippetItemToD1(db: any, snippet: SnippetItem, sortOrder: number): Promise<boolean> {
+	try {
+		const now = new Date().toISOString()
+		const createdAt = (await getExistingCreatedAt(db, 'snippets', snippet.id)) || now
+		const existing = await db.prepare('SELECT id FROM snippets WHERE id = ? LIMIT 1').bind(snippet.id).first()
+
+		if (existing?.id) {
+			await db
+				.prepare('UPDATE snippets SET content = ?, sort_order = ? WHERE id = ?')
+				.bind(snippet.content, sortOrder, snippet.id)
+				.run()
+		} else {
+			await db
+				.prepare('INSERT INTO snippets (id, content, sort_order, created_at) VALUES (?, ?, ?, ?)')
+				.bind(snippet.id, snippet.content, sortOrder, createdAt)
+				.run()
+		}
+
+		await markD1ScopeInitialized(db, 'snippets')
+		return true
+	} catch {
+		return false
+	}
+}
+
+export async function deleteSnippetItemFromD1(db: any, id: string): Promise<boolean> {
+	try {
+		await deleteRowById(db, 'snippets', id)
+		await markD1ScopeInitialized(db, 'snippets')
+		return true
+	} catch {
+		return false
+	}
+}
+
+export async function reorderSnippetsInD1(db: any, ids: string[]): Promise<boolean> {
+	try {
+		await reorderTableByIds(db, 'snippets', ids)
+		await markD1ScopeInitialized(db, 'snippets')
+		return true
+	} catch {
+		return false
+	}
+}
+
+export async function upsertPictureItemToD1(db: any, picture: Picture): Promise<boolean> {
+	try {
+		const now = new Date().toISOString()
+		const createdAt = (await getExistingCreatedAt(db, 'pictures', picture.id)) || now
+		const existing = await db.prepare('SELECT id FROM pictures WHERE id = ? LIMIT 1').bind(picture.id).first()
+		const normalizedImages = Array.isArray(picture.images) && picture.images.length > 0 ? picture.images.filter(Boolean) : picture.image ? [picture.image] : []
+		const primaryImage = normalizedImages[0] || picture.image || null
+
+		if (existing?.id) {
+			await db
+				.prepare('UPDATE pictures SET description = ?, uploaded_at = ?, image_url = ?, images_json = ? WHERE id = ?')
+				.bind(
+					picture.description || null,
+					picture.uploadedAt || createdAt,
+					primaryImage,
+					JSON.stringify(normalizedImages),
+					picture.id
+				)
+				.run()
+		} else {
+			await db
+				.prepare('INSERT INTO pictures (id, description, uploaded_at, image_url, images_json, created_at) VALUES (?, ?, ?, ?, ?, ?)')
+				.bind(
+					picture.id,
+					picture.description || null,
+					picture.uploadedAt || now,
+					primaryImage,
+					JSON.stringify(normalizedImages),
+					createdAt
+				)
+				.run()
+		}
+
+		await markD1ScopeInitialized(db, 'pictures')
+		return true
+	} catch {
+		return false
+	}
+}
+
+export async function deletePictureItemFromD1(db: any, id: string): Promise<boolean> {
+	try {
+		await db.prepare('DELETE FROM picture_items WHERE picture_id = ?').bind(id).run()
+		await deleteRowById(db, 'pictures', id)
 		await markD1ScopeInitialized(db, 'pictures')
 		return true
 	} catch {

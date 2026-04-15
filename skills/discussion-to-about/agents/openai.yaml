@@ -1,0 +1,4 @@
+version: 1
+display_name: Discussion To About
+short_description: Turn the current discussion into about page updates via the local content-admin MCP server.
+default_prompt: Convert the current discussion into about page changes for the 2025-blog-public repository. Use only the local content-admin MCP server, follow read -> mutate -> verify -> summarize, default to Chinese, patch only the requested fields, and stop instead of inventing missing source material.

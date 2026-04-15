@@ -1,0 +1,36 @@
+# Shared Content Authoring Rules
+
+- Use this guidance only for `2025-blog-public`.
+- The only write path is the local `content-admin` MCP server.
+- Do not call `/api/admin/*` directly while using these skills.
+- Default to Chinese unless the user explicitly asks for another language.
+- Follow this fixed execution order:
+  - `read -> resolve id/section -> mutate -> verify -> summarize`
+- Always read before write:
+  - Use the matching `list_*`, `get_*`, `get_site_config`, or `get_about_page` tool first.
+  - On updates and deletes, resolve the exact stable `id` before mutating.
+- Always verify after write:
+  - Use the matching read tool again after every successful write.
+- Respect module boundaries:
+  - Never modify another module from the wrong skill.
+- Prefer the smallest mutation:
+  - Create only what is missing.
+  - Patch only the requested fields.
+  - Do not replace an entire object when a section or field patch is enough.
+- Stop instead of guessing when:
+  - multiple items could match the request
+  - the target item cannot be identified uniquely
+  - required fields for a create request are still missing
+  - the user asks for local-file media in a URL-first module
+- Delete only on explicit user instruction:
+  - If the user says "删除/移除/清空" clearly, deletion is allowed.
+  - If the request is ambiguous, stop and ask for confirmation rather than calling a delete tool.
+- Media is URL-first in this phase:
+  - Only pass public URLs or already-hosted relative paths.
+  - If the user only has a local file, stop and explain that direct upload is not part of this phase.
+- When `position` is supported, it is 1-based.
+- Return format after execution:
+  - what was read
+  - what changed or why it stopped
+  - verification result
+  - stable `id` or `section`

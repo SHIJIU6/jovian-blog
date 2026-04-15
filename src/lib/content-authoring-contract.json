@@ -1,0 +1,272 @@
+{
+  "projects": {
+    "singular": "project",
+    "title": "Project",
+    "labelField": "name",
+    "requiredFields": ["name", "year", "image", "url", "description", "tags"],
+    "searchFields": ["name", "description", "url", "tags"],
+    "mediaFields": ["image"],
+    "supportsPosition": true,
+    "itemSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "description": "Stable item id." },
+        "name": { "type": "string", "description": "Project name." },
+        "year": { "type": "number", "description": "Project year." },
+        "image": { "type": "string", "description": "Public image URL or already-hosted path." },
+        "url": { "type": "string", "description": "Primary project URL." },
+        "description": { "type": "string", "description": "Project description." },
+        "tags": { "type": "array", "items": { "type": "string" }, "description": "Project tags." },
+        "github": { "type": "string", "description": "Optional GitHub URL." },
+        "npm": { "type": "string", "description": "Optional NPM URL." }
+      },
+      "required": ["id", "name", "year", "image", "url", "description", "tags"]
+    },
+    "createSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "description": "Optional stable item id." },
+        "name": { "type": "string", "description": "Project name." },
+        "year": { "type": "number", "description": "Project year." },
+        "image": { "type": "string", "description": "Public image URL or already-hosted path." },
+        "url": { "type": "string", "description": "Primary project URL." },
+        "description": { "type": "string", "description": "Project description." },
+        "tags": { "type": "array", "items": { "type": "string" }, "description": "Project tags." },
+        "github": { "type": "string", "description": "Optional GitHub URL." },
+        "npm": { "type": "string", "description": "Optional NPM URL." },
+        "position": { "type": "number", "description": "Optional 1-based insertion position." }
+      },
+      "required": ["name", "year", "image", "url", "description", "tags"]
+    },
+    "updateSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "description": "Stable item id." },
+        "name": { "type": "string", "description": "Project name." },
+        "year": { "type": "number", "description": "Project year." },
+        "image": { "type": "string", "description": "Public image URL or already-hosted path." },
+        "url": { "type": "string", "description": "Primary project URL." },
+        "description": { "type": "string", "description": "Project description." },
+        "tags": { "type": "array", "items": { "type": "string" }, "description": "Project tags." },
+        "github": { "type": "string", "description": "Optional GitHub URL." },
+        "npm": { "type": "string", "description": "Optional NPM URL." },
+        "position": { "type": "number", "description": "Optional 1-based target position." }
+      },
+      "required": ["id"]
+    }
+  },
+  "shares": {
+    "singular": "share",
+    "title": "Share",
+    "labelField": "name",
+    "requiredFields": ["name", "logo", "url", "description", "tags", "stars"],
+    "searchFields": ["name", "description", "url", "tags"],
+    "mediaFields": ["logo"],
+    "supportsPosition": true,
+    "itemSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "description": "Stable item id." },
+        "name": { "type": "string", "description": "Share name." },
+        "logo": { "type": "string", "description": "Public logo URL or already-hosted path." },
+        "url": { "type": "string", "description": "Primary share URL." },
+        "description": { "type": "string", "description": "Share description." },
+        "tags": { "type": "array", "items": { "type": "string" }, "description": "Share tags." },
+        "stars": { "type": "number", "description": "Share rating from 0 to 5." }
+      },
+      "required": ["id", "name", "logo", "url", "description", "tags", "stars"]
+    },
+    "createSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "description": "Optional stable item id." },
+        "name": { "type": "string", "description": "Share name." },
+        "logo": { "type": "string", "description": "Public logo URL or already-hosted path." },
+        "url": { "type": "string", "description": "Primary share URL." },
+        "description": { "type": "string", "description": "Share description." },
+        "tags": { "type": "array", "items": { "type": "string" }, "description": "Share tags." },
+        "stars": { "type": "number", "description": "Share rating from 0 to 5." },
+        "position": { "type": "number", "description": "Optional 1-based insertion position." }
+      },
+      "required": ["name", "logo", "url", "description", "tags", "stars"]
+    },
+    "updateSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "description": "Stable item id." },
+        "name": { "type": "string", "description": "Share name." },
+        "logo": { "type": "string", "description": "Public logo URL or already-hosted path." },
+        "url": { "type": "string", "description": "Primary share URL." },
+        "description": { "type": "string", "description": "Share description." },
+        "tags": { "type": "array", "items": { "type": "string" }, "description": "Share tags." },
+        "stars": { "type": "number", "description": "Share rating from 0 to 5." },
+        "position": { "type": "number", "description": "Optional 1-based target position." }
+      },
+      "required": ["id"]
+    }
+  },
+  "bloggers": {
+    "singular": "blogger",
+    "title": "Blogger",
+    "labelField": "name",
+    "requiredFields": ["name", "avatar", "url", "description", "stars"],
+    "searchFields": ["name", "description", "url", "status"],
+    "mediaFields": ["avatar"],
+    "supportsPosition": true,
+    "itemSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "description": "Stable item id." },
+        "name": { "type": "string", "description": "Blogger name." },
+        "avatar": { "type": "string", "description": "Public avatar URL or already-hosted path." },
+        "url": { "type": "string", "description": "Primary blogger URL." },
+        "description": { "type": "string", "description": "Blogger description." },
+        "stars": { "type": "number", "description": "Blogger rating from 0 to 5." },
+        "status": {
+          "type": "string",
+          "enum": ["recent", "disconnected"],
+          "description": "Optional blogger status."
+        }
+      },
+      "required": ["id", "name", "avatar", "url", "description", "stars"]
+    },
+    "createSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "description": "Optional stable item id." },
+        "name": { "type": "string", "description": "Blogger name." },
+        "avatar": { "type": "string", "description": "Public avatar URL or already-hosted path." },
+        "url": { "type": "string", "description": "Primary blogger URL." },
+        "description": { "type": "string", "description": "Blogger description." },
+        "stars": { "type": "number", "description": "Blogger rating from 0 to 5." },
+        "status": {
+          "type": "string",
+          "enum": ["recent", "disconnected"],
+          "description": "Optional blogger status."
+        },
+        "position": { "type": "number", "description": "Optional 1-based insertion position." }
+      },
+      "required": ["name", "avatar", "url", "description", "stars"]
+    },
+    "updateSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "description": "Stable item id." },
+        "name": { "type": "string", "description": "Blogger name." },
+        "avatar": { "type": "string", "description": "Public avatar URL or already-hosted path." },
+        "url": { "type": "string", "description": "Primary blogger URL." },
+        "description": { "type": "string", "description": "Blogger description." },
+        "stars": { "type": "number", "description": "Blogger rating from 0 to 5." },
+        "status": {
+          "type": "string",
+          "enum": ["recent", "disconnected"],
+          "description": "Optional blogger status."
+        },
+        "position": { "type": "number", "description": "Optional 1-based target position." }
+      },
+      "required": ["id"]
+    }
+  },
+  "pictures": {
+    "singular": "picture",
+    "title": "Picture Group",
+    "labelField": "id",
+    "requiredFields": ["images"],
+    "searchFields": ["description", "uploadedAt"],
+    "mediaFields": ["images", "image"],
+    "supportsPosition": false,
+    "itemSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "description": "Stable picture group id." },
+        "image": { "type": "string", "description": "First image URL." },
+        "images": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Public image URLs for this picture group."
+        },
+        "description": { "type": "string", "description": "Optional picture group description." },
+        "uploadedAt": { "type": "string", "description": "ISO datetime." }
+      },
+      "required": ["id", "image", "images", "uploadedAt"]
+    },
+    "createSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "description": "Optional stable picture group id." },
+        "images": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Public image URLs for this picture group."
+        },
+        "description": { "type": "string", "description": "Optional picture group description." },
+        "uploadedAt": { "type": "string", "description": "Optional ISO datetime." }
+      },
+      "required": ["images"]
+    },
+    "updateSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "description": "Stable picture group id." },
+        "images": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Public image URLs for this picture group."
+        },
+        "description": { "type": "string", "description": "Optional picture group description." },
+        "uploadedAt": { "type": "string", "description": "Optional ISO datetime." }
+      },
+      "required": ["id"]
+    }
+  },
+  "snippets": {
+    "singular": "snippet",
+    "title": "Snippet",
+    "labelField": "content",
+    "requiredFields": ["content"],
+    "searchFields": ["content"],
+    "mediaFields": [],
+    "supportsPosition": true,
+    "itemSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "description": "Stable item id." },
+        "content": { "type": "string", "description": "Snippet content." }
+      },
+      "required": ["id", "content"]
+    },
+    "createSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "description": "Optional stable item id." },
+        "content": { "type": "string", "description": "Snippet content." },
+        "position": { "type": "number", "description": "Optional 1-based insertion position." }
+      },
+      "required": ["content"]
+    },
+    "updateSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "description": "Stable item id." },
+        "content": { "type": "string", "description": "Snippet content." },
+        "position": { "type": "number", "description": "Optional 1-based target position." }
+      },
+      "required": ["id"]
+    }
+  }
+}

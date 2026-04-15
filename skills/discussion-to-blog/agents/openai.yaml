@@ -1,4 +1,4 @@
 version: 1
 display_name: Discussion To Blog
 short_description: Turn the current discussion into a draft-first blog post for this project via the local blog MCP server.
-default_prompt: Convert the current discussion into a blog post for the 2025-blog-public project, write it through the local blog-publisher MCP server, default to draft unless I explicitly ask to publish, and verify the result after writing.
+default_prompt: Convert the current discussion into a blog post for the 2025-blog-public project. Use only the local blog-publisher MCP server, follow read/context -> draft -> optional publish -> verify -> summarize, default to draft unless I explicitly ask to publish, use concrete dates for time-sensitive claims, and never delete a post unless I explicitly asked for deletion.
