@@ -109,14 +109,14 @@
 		--dock-shadow: var(--dark-dock-shadow, 0 20px 40px -20px rgba(0, 0, 0, 0.52));
 		--code-button-bg: var(--dark-code-button-bg, rgba(9, 19, 30, 0.92));
 		--code-button-border: var(--dark-code-button-border, rgba(255, 255, 255, 0.08));
-		--surface-soft: rgba(255, 255, 255, 0.07);
-		--surface-soft-strong: rgba(255, 255, 255, 0.11);
-		--surface-hover: rgba(255, 255, 255, 0.14);
+		--surface-soft: rgba(255, 255, 255, 0.12);
+		--surface-soft-strong: rgba(255, 255, 255, 0.16);
+		--surface-hover: rgba(255, 255, 255, 0.18);
 		--surface-contrast: color-mix(in srgb, var(--color-brand) 72%, var(--color-brand-secondary) 28%);
-		--surface-input: rgba(255, 255, 255, 0.06);
-		--surface-outline: rgba(255, 255, 255, 0.16);
-		--surface-highlight: rgba(255, 255, 255, 0.12);
-		--surface-dim: rgba(255, 255, 255, 0.08);
+		--surface-input: rgba(255, 255, 255, 0.1);
+		--surface-outline: rgba(255, 255, 255, 0.2);
+		--surface-highlight: rgba(255, 255, 255, 0.15);
+		--surface-dim: rgba(255, 255, 255, 0.12);
 		--text-muted: color-mix(in srgb, var(--color-primary) 76%, var(--color-bg) 24%);
 		--text-faint: color-mix(in srgb, var(--color-primary) 56%, var(--color-bg) 44%);
 		--badge-muted-bg: color-mix(in srgb, var(--color-border) 12%, var(--color-card) 88%);
@@ -129,17 +129,31 @@
 		--theme-overlay: rgba(2, 6, 23, 0.6);
 		--theme-pattern: rgba(255, 255, 255, 0.02);
 		--text-gradient-shadow: rgba(255, 255, 255, 0.12);
-		--card-blur: 24px;
-		--card-border: rgba(255, 255, 255, 0.14);
-		--card-shadow-primary: 0 22px 48px -24px rgba(7, 21, 33, 0.42);
-		--card-shadow-secondary: 0 10px 22px -14px rgba(22, 83, 104, 0.18);
-		--card-glass-highlight: rgba(255, 255, 255, 0.15);
-		--card-glass-fade: rgba(255, 255, 255, 0.015);
-		--button-blur: 16px;
+		--card-blur: 60px;
+		--card-border: rgba(255, 255, 255, 0.15);
+		--card-shadow-primary: 0 28px 64px -28px rgba(0, 0, 0, 0.8);
+		--card-shadow-secondary: 0 12px 28px -16px rgba(59, 130, 246, 0.2);
+		--card-glass-highlight: rgba(255, 255, 255, 0.08);
+		--card-glass-fade: rgba(255, 255, 255, 0.02);
+		--button-blur: 30px;
 		--button-shadow: 0 14px 30px -18px rgba(7, 21, 33, 0.34);
 		--button-highlight: rgba(255, 255, 255, 0.14);
 		--surface-chip-shadow: 0 10px 18px -16px rgba(7, 21, 33, 0.28);
+		--theme-aurora-magenta: var(--dark-aurora-magenta, transparent);
+		--theme-aurora-warm: var(--dark-aurora-warm, transparent);
+		--theme-vignette-top: var(--dark-vignette-top, transparent);
+		--theme-vignette-bottom: var(--dark-vignette-bottom, transparent);
 		color-scheme: dark;
+		background:
+			radial-gradient(ellipse 68% 52% at 14% 12%, color-mix(in srgb, var(--theme-glow-soft) 100%, transparent), transparent 48%),
+			radial-gradient(ellipse 82% 60% at 88% 18%, color-mix(in srgb, var(--theme-glow-strong) 100%, transparent), transparent 52%),
+			radial-gradient(ellipse 86% 64% at 82% 88%, color-mix(in srgb, var(--theme-glow-tertiary) 100%, transparent), transparent 48%),
+			radial-gradient(ellipse 60% 48% at 14% 78%, color-mix(in srgb, var(--theme-aurora-magenta) 100%, transparent), transparent 44%),
+			radial-gradient(ellipse 42% 32% at 50% 48%, color-mix(in srgb, var(--theme-aurora-warm) 100%, transparent), transparent 58%),
+			radial-gradient(ellipse 160% 105% at 50% -18%, transparent 44%, var(--theme-vignette-top) 100%),
+			radial-gradient(ellipse 140% 105% at 50% 118%, transparent 48%, var(--theme-vignette-bottom) 100%),
+			linear-gradient(162deg, var(--theme-bg-top) 0%, var(--theme-bg-mid) 48%, var(--theme-bg-bottom) 100%);
+		background-attachment: fixed;
 	}
 
 	html[data-theme='retro'] {
@@ -270,6 +284,27 @@
 		opacity: 0.7;
 	}
 
+	html[data-theme='dark'] body::before {
+		background-image:
+			linear-gradient(to right, rgba(255, 255, 255, 0.024) 1px, transparent 1px),
+			linear-gradient(to bottom, rgba(255, 255, 255, 0.024) 1px, transparent 1px);
+		background-size: 44px 44px;
+		mask-image: radial-gradient(ellipse 70% 55% at 50% 42%, rgba(0, 0, 0, 0.8), transparent 72%);
+		opacity: 0.7;
+	}
+
+	html[data-theme='dark'] body::after {
+		background:
+			radial-gradient(circle at 18% 24%, color-mix(in srgb, var(--theme-glow-soft) 82%, transparent), transparent 32%),
+			radial-gradient(circle at 84% 30%, color-mix(in srgb, var(--theme-glow-strong) 86%, transparent), transparent 34%),
+			radial-gradient(circle at 72% 86%, color-mix(in srgb, var(--theme-glow-tertiary) 70%, transparent), transparent 30%),
+			radial-gradient(circle at 22% 82%, color-mix(in srgb, var(--theme-aurora-magenta) 82%, transparent), transparent 28%),
+			radial-gradient(ellipse 60% 40% at 50% 50%, color-mix(in srgb, var(--theme-aurora-warm) 90%, transparent), transparent 70%),
+			linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--theme-bg-bottom) 28%, transparent) 100%);
+		opacity: 0.7;
+		mix-blend-mode: screen;
+	}
+
 	* {
 		@apply border-border;
 	}
@@ -372,18 +407,11 @@
 	@apply absolute border p-6;
 	border-radius: var(--card-radius);
 	border-width: var(--card-border-width);
-	background:
-		radial-gradient(circle at 14% 10%, var(--card-glass-highlight) 0%, transparent 34%),
-		linear-gradient(
-			160deg,
-			color-mix(in srgb, var(--color-card) 88%, rgba(255, 255, 255, 0.05)) 0%,
-			color-mix(in srgb, var(--color-card) 95%, transparent) 52%,
-			color-mix(in srgb, var(--color-card) 78%, var(--card-glass-fade) 22%) 100%
-		);
+	background: color-mix(in srgb, var(--color-card) 95%, transparent);
 	box-shadow: var(--card-shadow-primary), var(--card-shadow-secondary);
 	border-color: var(--card-border);
-	backdrop-filter: blur(var(--card-blur)) saturate(148%);
-	-webkit-backdrop-filter: blur(var(--card-blur)) saturate(148%);
+	backdrop-filter: blur(var(--card-blur)) saturate(180%) brightness(0.95);
+	-webkit-backdrop-filter: blur(var(--card-blur)) saturate(180%) brightness(0.95);
 	will-change: background, border-color, box-shadow;
 	contain: layout paint;
 
@@ -396,18 +424,11 @@
 }
 
 .card:hover {
-	background:
-		radial-gradient(circle at 16% 12%, color-mix(in srgb, var(--card-glass-highlight) 92%, transparent) 0%, transparent 36%),
-		linear-gradient(
-			160deg,
-			color-mix(in srgb, var(--color-card) 84%, rgba(255, 255, 255, 0.07)) 0%,
-			color-mix(in srgb, var(--color-card) 94%, transparent) 54%,
-			color-mix(in srgb, var(--color-card) 74%, var(--card-glass-fade) 26%) 100%
-		);
-	border-color: color-mix(in srgb, var(--card-border) 86%, rgba(255, 255, 255, 0.08));
+	background: color-mix(in srgb, var(--color-card) 98%, transparent);
+	border-color: color-mix(in srgb, var(--card-border) 90%, rgba(255, 255, 255, 0.1));
 	box-shadow:
-		0 28px 56px -24px var(--shadow-elevated),
-		0 12px 26px -12px color-mix(in srgb, var(--color-brand) 14%, transparent);
+		0 32px 64px -28px rgba(0, 0, 0, 0.9),
+		0 16px 32px -16px color-mix(in srgb, var(--color-brand) 25%, transparent);
 }
 
 @utility card-rounded {
@@ -466,8 +487,8 @@
 	border-color: var(--surface-outline);
 	border-width: var(--control-border-width);
 	color: var(--color-primary);
-	backdrop-filter: blur(var(--button-blur)) saturate(145%);
-	-webkit-backdrop-filter: blur(var(--button-blur)) saturate(145%);
+	backdrop-filter: blur(var(--button-blur)) saturate(170%) brightness(0.95);
+	-webkit-backdrop-filter: blur(var(--button-blur)) saturate(170%) brightness(0.95);
 	box-shadow:
 		var(--button-shadow),
 		inset 0 1px 0 var(--button-highlight);
@@ -516,8 +537,8 @@
 	border-width: var(--control-border-width);
 	color: var(--color-primary);
 	box-shadow: inset 0 1px 0 var(--surface-highlight);
-	backdrop-filter: blur(calc(var(--button-blur) - 2px)) saturate(140%);
-	-webkit-backdrop-filter: blur(calc(var(--button-blur) - 2px)) saturate(140%);
+	backdrop-filter: blur(calc(var(--button-blur) - 4px)) saturate(165%) brightness(0.95);
+	-webkit-backdrop-filter: blur(calc(var(--button-blur) - 4px)) saturate(165%) brightness(0.95);
 
 	&::placeholder {
 		color: var(--text-faint);
@@ -595,13 +616,13 @@
 
 @media (max-width: 640px) {
 	.card {
-		backdrop-filter: blur(calc(var(--card-blur) * 0.72)) saturate(140%);
-		-webkit-backdrop-filter: blur(calc(var(--card-blur) * 0.72)) saturate(140%);
+		backdrop-filter: blur(calc(var(--card-blur) * 0.7)) saturate(170%) brightness(0.95);
+		-webkit-backdrop-filter: blur(calc(var(--card-blur) * 0.7)) saturate(170%) brightness(0.95);
 	}
 
 	.surface-btn,
 	.surface-input {
-		backdrop-filter: blur(calc(var(--button-blur) * 0.72)) saturate(135%);
-		-webkit-backdrop-filter: blur(calc(var(--button-blur) * 0.72)) saturate(135%);
+		backdrop-filter: blur(calc(var(--button-blur) * 0.7)) saturate(160%) brightness(0.95);
+		-webkit-backdrop-filter: blur(calc(var(--button-blur) * 0.7)) saturate(160%) brightness(0.95);
 	}
 }

@@ -15,6 +15,7 @@ import { usePathname } from 'next/navigation'
 import { useSiteConfigContent } from '@/hooks/use-structured-content'
 import { useThemeMode } from '@/hooks/use-theme-mode'
 import { resolveThemeBackgroundColors } from '@/lib/theme-mode'
+import { CosmicBackground } from '@/components/cosmic-background'
 
 export default function Layout({ children }: PropsWithChildren) {
 	useCenterInit()
@@ -67,7 +68,8 @@ export default function Layout({ children }: PropsWithChildren) {
 					}}
 				/>
 			)}
-			{mounted && mode !== 'retro' && <BlurredBubblesBackground colors={themedBackgroundColors} regenerateKey={regenerateKey} />}
+			{mounted && mode === 'dark' && <CosmicBackground />}
+			{mounted && mode !== 'retro' && mode !== 'dark' && <BlurredBubblesBackground colors={themedBackgroundColors} regenerateKey={regenerateKey} />}
 
 			<main className='relative z-10 h-full'>
 				{children}
