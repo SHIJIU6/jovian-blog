@@ -23,7 +23,7 @@ export default function Layout({ children }: PropsWithChildren) {
 	const { maxSM, init } = useSize()
 	const pathname = usePathname()
 	const isStudio = pathname.startsWith('/studio')
-	const { mode } = useThemeMode()
+	const { mode, mounted } = useThemeMode()
 	const { data } = useSiteConfigContent()
 
 	useEffect(() => {
@@ -67,7 +67,7 @@ export default function Layout({ children }: PropsWithChildren) {
 					}}
 				/>
 			)}
-			<BlurredBubblesBackground colors={themedBackgroundColors} regenerateKey={regenerateKey} />
+			{mounted && mode !== 'retro' && <BlurredBubblesBackground colors={themedBackgroundColors} regenerateKey={regenerateKey} />}
 
 			<main className='relative z-10 h-full'>
 				{children}

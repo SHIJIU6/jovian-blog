@@ -238,3 +238,53 @@
 	border: 1px solid var(--surface-outline);
 	border-radius: 8px;
 }
+
+html[data-theme='retro'] .prose h1,
+html[data-theme='retro'] .prose h2,
+html[data-theme='retro'] .prose h3,
+html[data-theme='retro'] .prose h4 {
+	letter-spacing: 0.01em;
+}
+
+html[data-theme='retro'] .prose code {
+	background: #fff1c6;
+	border-width: var(--control-border-width);
+	box-shadow: 2px 2px 0 rgba(38, 29, 20, 0.78);
+}
+
+html[data-theme='retro'] .prose pre {
+	background: #1f2126;
+	border-color: var(--color-border);
+	border-width: var(--control-border-width);
+	box-shadow:
+		6px 6px 0 rgba(38, 29, 20, 0.92),
+		inset 0 0 0 2px rgba(143, 222, 233, 0.75);
+	border-radius: 18px;
+}
+
+html[data-theme='retro'] .prose img {
+	border-color: var(--color-border);
+	border-width: var(--control-border-width);
+	box-shadow: 6px 6px 0 rgba(38, 29, 20, 0.9);
+	border-radius: 18px;
+}
+
+html[data-theme='retro'] .prose blockquote {
+	border-left: 0;
+	border: var(--control-border-width) solid var(--color-border);
+	background: #fff3cd;
+	box-shadow: 5px 5px 0 rgba(38, 29, 20, 0.86);
+	border-radius: 16px;
+}
+
+html[data-theme='retro'] .prose table {
+	border: var(--control-border-width) solid var(--color-border);
+	border-radius: 18px;
+	overflow: hidden;
+	box-shadow: 6px 6px 0 rgba(38, 29, 20, 0.9);
+}
+
+html[data-theme='retro'] .prose thead th {
+	background: #d8f185;
+	color: #2c2217;
+}

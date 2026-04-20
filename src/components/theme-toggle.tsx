@@ -1,60 +1,75 @@
 'use client'
 
-import { AnimatePresence, motion } from 'motion/react'
-import { MoonStar, SunMedium } from 'lucide-react'
+import { motion } from 'motion/react'
+import { LayoutPanelTop, MoonStar, SunMedium } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { useThemeMode } from '@/hooks/use-theme-mode'
+import type { ThemeMode } from '@/lib/theme-mode'
+
+const themeOptions: Array<{ mode: ThemeMode; label: string; shortLabel: string; icon: typeof SunMedium }> = [
+	{ mode: 'light', label: '晴光', shortLabel: '晴', icon: SunMedium },
+	{ mode: 'retro', label: '回廊', shortLabel: '廊', icon: LayoutPanelTop },
+	{ mode: 'dark', label: '夜色', shortLabel: '夜', icon: MoonStar }
+]
 
 export default function ThemeToggle() {
-	const { isDark, mounted, toggleTheme } = useThemeMode()
+	const { mode, mounted, setThemeMode } = useThemeMode()
 
 	if (!mounted) {
 		return null
 	}
 
 	return (
-		<motion.button
-			type='button'
-			onClick={toggleTheme}
+		<motion.div
 			initial={{ opacity: 0, y: -12, scale: 0.92 }}
 			animate={{ opacity: 1, y: 0, scale: 1 }}
-			whileHover={{ scale: 1.03 }}
-			whileTap={{ scale: 0.97 }}
-			aria-label={isDark ? '切换到浅色主题' : '切换到暗色主题'}
-			title={isDark ? '切换到浅色主题' : '切换到暗色主题'}
-			className='fixed top-[5.5rem] right-6 z-40 flex min-w-[148px] items-center gap-3 rounded-full border px-2 py-2 max-sm:top-[5.5rem] max-sm:right-4 max-sm:min-w-0'
+			className='fixed top-3 right-4 z-40 flex items-center gap-1.5 rounded-full border p-1.5 max-sm:right-3'
 			style={{
 				background: 'var(--surface-soft)',
 				borderColor: 'var(--surface-outline)',
+				borderWidth: 'var(--control-border-width, 1px)',
 				boxShadow: 'var(--dock-shadow)',
-				backdropFilter: 'blur(22px) saturate(150%)',
-				WebkitBackdropFilter: 'blur(22px) saturate(150%)'
+				backdropFilter: 'blur(var(--button-blur, 12px)) saturate(148%)',
+				WebkitBackdropFilter: 'blur(var(--button-blur, 12px)) saturate(148%)'
 			}}>
-			<span
-				className='flex h-11 w-11 items-center justify-center rounded-full'
-				style={{
-					background: 'var(--surface-contrast)',
-					color: 'var(--text-inverse)',
-					boxShadow: 'var(--dock-shadow)'
-				}}>
-				<AnimatePresence mode='wait' initial={false}>
-					{isDark ? (
-						<motion.span key='dark' initial={{ opacity: 0, rotate: 18, scale: 0.72 }} animate={{ opacity: 1, rotate: 0, scale: 1 }} exit={{ opacity: 0, rotate: -18, scale: 0.72 }}>
-							<MoonStar className='h-5 w-5' />
-						</motion.span>
-					) : (
-						<motion.span key='light' initial={{ opacity: 0, rotate: -18, scale: 0.72 }} animate={{ opacity: 1, rotate: 0, scale: 1 }} exit={{ opacity: 0, rotate: 18, scale: 0.72 }}>
-							<SunMedium className='h-5 w-5' />
-						</motion.span>
-					)}
-				</AnimatePresence>
-			</span>
+			{themeOptions.map(option => {
+				const Icon = option.icon
+				const active = mode === option.mode
 
-			<span className='pr-2 text-left max-sm:hidden'>
-				<span className='block text-[10px] uppercase tracking-[0.34em]' style={{ color: 'var(--text-faint)' }}>
-					Theme
-				</span>
-				<span className='font-averia block text-sm leading-tight'>{isDark ? '夜色' : '晴光'}</span>
-			</span>
-		</motion.button>
+				return (
+					<motion.button
+						key={option.mode}
+						type='button'
+						onClick={() => setThemeMode(option.mode)}
+						whileHover={{ y: -1 }}
+						whileTap={{ scale: 0.97 }}
+						aria-pressed={active}
+						aria-label={`切换到${option.label}主题`}
+						title={`切换到${option.label}主题`}
+						className={cn(
+							'flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-medium transition-colors max-sm:h-10 max-sm:w-10 max-sm:justify-center max-sm:px-0',
+							active ? 'text-[var(--text-inverse)]' : 'text-primary'
+						)}
+						style={
+							active
+								? {
+										background: 'var(--surface-contrast)',
+										borderColor: 'color-mix(in srgb, var(--surface-outline) 64%, transparent)',
+										borderWidth: 'var(--control-border-width, 1px)',
+										boxShadow: 'var(--button-shadow)'
+								  }
+								: {
+										background: 'transparent',
+										borderColor: 'transparent',
+										borderWidth: 'var(--control-border-width, 1px)'
+								  }
+						}>
+						<Icon className='h-4 w-4 shrink-0' />
+						<span className='max-sm:hidden'>{option.label}</span>
+						<span className='hidden max-sm:inline'>{option.shortLabel}</span>
+					</motion.button>
+				)
+			})}
+		</motion.div>
 	)
 }

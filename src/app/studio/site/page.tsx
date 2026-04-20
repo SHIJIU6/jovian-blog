@@ -18,6 +18,14 @@ const tabs: { id: TabType; label: string; description: string }[] = [
 	{ id: 'layout', label: '首页布局', description: '首页卡片开关、尺寸与偏移，以及拖拽布局入口。' }
 ]
 
+const studioTabBaseClass =
+	'flex w-full items-center rounded-2xl border border-transparent px-3 py-2.5 text-left text-sm transition-[background,border-color,box-shadow,color] duration-200 [border-width:var(--control-border-width)]'
+
+const studioTabActiveClass =
+	'font-semibold [background:var(--studio-nav-active-bg)] [border-color:var(--studio-nav-active-border)] [box-shadow:var(--studio-nav-active-shadow)] [color:var(--studio-nav-active-text)]'
+
+const studioTabIdleClass = '[color:var(--text-muted)] hover:bg-[var(--studio-nav-hover-bg)]'
+
 export default function StudioSitePage() {
 	const { data } = useSiteConfigContent()
 	const { setSiteContent, setCardStyles, regenerateBubbles } = useConfigStore()
@@ -188,11 +196,7 @@ export default function StudioSitePage() {
 								key={tab.id}
 								type='button'
 								onClick={() => setActiveTab(tab.id)}
-								className={`flex w-full items-center rounded-2xl px-3 py-2.5 text-left text-sm transition-all ${
-									activeTab === tab.id
-										? 'border bg-[linear-gradient(to_right_bottom,var(--color-border)_60%,var(--color-card)_100%)] text-primary font-medium'
-										: 'text-secondary hover:bg-white/40'
-								}`}>
+								className={`${studioTabBaseClass} ${activeTab === tab.id ? studioTabActiveClass : studioTabIdleClass}`}>
 								{tab.label}
 							</button>
 						))}

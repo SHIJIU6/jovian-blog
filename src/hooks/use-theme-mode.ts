@@ -1,30 +1,37 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { THEME_STORAGE_KEY, type ThemeMode } from '@/lib/theme-mode'
+import {
+	DEFAULT_THEME_MODE,
+	THEME_MODES,
+	THEME_STORAGE_KEY,
+	getThemeColorScheme,
+	normalizeThemeMode,
+	type ThemeMode
+} from '@/lib/theme-mode'
 
 function readThemeFromDocument(): ThemeMode {
 	if (typeof document === 'undefined') {
-		return 'light'
+		return DEFAULT_THEME_MODE
 	}
 
-	return document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light'
+	return normalizeThemeMode(document.documentElement.dataset.theme, DEFAULT_THEME_MODE)
 }
 
 function applyTheme(mode: ThemeMode, persist = true) {
 	const root = document.documentElement
 	root.dataset.theme = mode
-	root.style.colorScheme = mode
+	root.style.colorScheme = getThemeColorScheme(mode)
 
 	if (persist) {
 		window.localStorage.setItem(THEME_STORAGE_KEY, mode)
 	}
 
-	window.dispatchEvent(new CustomEvent('themechange', { detail: mode }))
+	window.dispatchEvent(new CustomEvent<ThemeMode>('themechange', { detail: mode }))
 }
 
 export function useThemeMode() {
-	const [mode, setMode] = useState<ThemeMode>('light')
+	const [mode, setMode] = useState<ThemeMode>(DEFAULT_THEME_MODE)
 	const [mounted, setMounted] = useState(false)
 
 	useEffect(() => {
@@ -38,18 +45,19 @@ export function useThemeMode() {
 		const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
 		const handleMediaChange = () => {
 			if (window.localStorage.getItem(THEME_STORAGE_KEY)) return
-			const nextMode: ThemeMode = mediaQuery.matches ? 'dark' : 'light'
+			const nextMode: ThemeMode = DEFAULT_THEME_MODE
 			applyTheme(nextMode, false)
 			setMode(nextMode)
 		}
 		const handleStorage = (event: StorageEvent) => {
 			if (event.key !== THEME_STORAGE_KEY) return
-			const nextMode: ThemeMode = event.newValue === 'dark' ? 'dark' : 'light'
+			const nextMode = normalizeThemeMode(event.newValue, DEFAULT_THEME_MODE)
 			applyTheme(nextMode, false)
 			setMode(nextMode)
 		}
-		const handleThemeChange = () => {
-			sync()
+		const handleThemeChange = (event: Event) => {
+			const customEvent = event as CustomEvent<ThemeMode>
+			setMode(normalizeThemeMode(customEvent.detail, readThemeFromDocument()))
 		}
 
 		mediaQuery.addEventListener('change', handleMediaChange)
@@ -68,11 +76,18 @@ export function useThemeMode() {
 		setMode(nextMode)
 	}
 
+	const cycleTheme = () => {
+		const index = THEME_MODES.indexOf(mode)
+		const nextMode = THEME_MODES[(index + 1 + THEME_MODES.length) % THEME_MODES.length]
+		setThemeMode(nextMode)
+	}
+
 	return {
 		mode,
 		isDark: mode === 'dark',
+		isRetro: mode === 'retro',
 		mounted,
 		setThemeMode,
-		toggleTheme: () => setThemeMode(mode === 'dark' ? 'light' : 'dark')
+		toggleTheme: cycleTheme
 	}
 }

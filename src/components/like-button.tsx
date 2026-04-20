@@ -135,6 +135,7 @@ export default function LikeButton({ target, targetType = 'post', delay, classNa
 	}, [targetKey, liked, likedToday, fetchedState?.count, mutate])
 
 	const count = typeof fetchedState?.count === 'number' ? fetchedState.count : null
+	const countLabel = typeof count === 'number' ? (count > 99 ? '99+' : String(count)) : null
 
 	if (!show || !targetKey) {
 		return null
@@ -149,7 +150,7 @@ export default function LikeButton({ target, targetType = 'post', delay, classNa
 			aria-label='Like this item'
 			onClick={handleLike}
 			disabled={likedToday}
-			className={clsx('card heartbeat-container relative overflow-visible rounded-full p-3', className)}>
+			className={clsx('card heartbeat-container relative z-20 isolate overflow-visible rounded-full p-3 [contain:none]', className)}>
 			<AnimatePresence>
 				{particles.map(particle => (
 					<motion.div
@@ -169,15 +170,18 @@ export default function LikeButton({ target, targetType = 'post', delay, classNa
 				))}
 			</AnimatePresence>
 
-			{typeof count === 'number' && (
+			{countLabel !== null && (
 				<motion.span
 					initial={{ scale: 0.4 }}
 					animate={{ scale: 1 }}
+					title={`${count} 次喜欢`}
 					className={cn(
-						'absolute -top-2 left-9 min-w-6 rounded-full px-1.5 py-1 text-center text-xs tabular-nums',
-						liked ? 'bg-rose-400 text-white' : 'surface-chip'
+						'pointer-events-none absolute -top-2.5 -right-3 z-30 inline-flex h-7 min-w-[1.9rem] items-center justify-center rounded-full border px-2 text-center text-[11px] leading-none font-semibold whitespace-nowrap tabular-nums shadow-[0_12px_20px_-14px_var(--shadow-elevated)]',
+						liked
+							? 'border-rose-300/70 bg-rose-400 text-white'
+							: '[background:var(--badge-muted-bg)] [border-color:var(--surface-outline)] [color:var(--badge-muted-text)]'
 					)}>
-					{count}
+					{countLabel}
 				</motion.span>
 			)}
 			<motion.div animate={justLiked ? { scale: [1, 1.4, 1], rotate: [0, -10, 10, 0] } : {}} transition={{ duration: 0.6, ease: 'easeOut' }}>

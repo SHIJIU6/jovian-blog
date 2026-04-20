@@ -237,7 +237,14 @@ export default function MusicCard() {
 					</div>
 				</div>
 
-				<button onClick={togglePlayPause} className='flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--surface-soft-strong)] transition-opacity hover:opacity-80'>
+				<button
+					onClick={togglePlayPause}
+					className='flex h-10 w-10 shrink-0 items-center justify-center rounded-full border bg-[var(--surface-soft-strong)] transition-opacity hover:opacity-80'
+					style={{
+						borderColor: 'var(--surface-outline)',
+						borderWidth: 'var(--control-border-width, 1px)',
+						boxShadow: 'var(--surface-chip-shadow)'
+					}}>
 					{isPlaying ? <Pause className='text-brand h-4 w-4' /> : <PlaySVG className='text-brand ml-1 h-4 w-4' />}
 				</button>
 			</Card>

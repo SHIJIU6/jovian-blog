@@ -65,6 +65,19 @@
 		--button-shadow: 0 16px 30px -24px var(--shadow-elevated);
 		--button-highlight: rgba(255, 255, 255, 0.22);
 		--surface-chip-shadow: 0 8px 18px -16px var(--shadow-elevated);
+		--card-radius: 40px;
+		--card-radius-squircle: 64px;
+		--card-border-width: 1px;
+		--control-border-width: 1px;
+		--theme-topbar-height: 0px;
+		--theme-topbar-bg: transparent;
+		--theme-topbar-border: transparent;
+		--theme-topbar-shadow: none;
+		--studio-nav-hover-bg: var(--surface-hover);
+		--studio-nav-active-bg: linear-gradient(to right bottom, var(--color-border) 60%, var(--color-card) 100%);
+		--studio-nav-active-border: var(--color-border);
+		--studio-nav-active-shadow: none;
+		--studio-nav-active-text: var(--color-primary);
 		@apply text-primary h-full leading-tight;
 		scroll-behavior: smooth;
 		color-scheme: light;
@@ -129,6 +142,85 @@
 		color-scheme: dark;
 	}
 
+	html[data-theme='retro'] {
+		--color-brand: var(--retro-color-brand);
+		--color-primary: var(--retro-color-primary);
+		--color-secondary: var(--retro-color-secondary);
+		--color-brand-secondary: var(--retro-color-brand-secondary);
+		--color-bg: var(--retro-color-bg);
+		--color-border: var(--retro-color-border);
+		--color-card: var(--retro-color-card);
+		--color-article: var(--retro-color-article);
+		--theme-bg-top: var(--retro-bg-top, var(--color-bg));
+		--theme-bg-mid: var(--retro-bg-mid, var(--color-bg));
+		--theme-bg-bottom: var(--retro-bg-bottom, var(--color-bg));
+		--theme-glow-strong: var(--retro-glow-strong, transparent);
+		--theme-glow-soft: var(--retro-glow-soft, transparent);
+		--theme-glow-tertiary: var(--retro-glow-tertiary, transparent);
+		--shadow-elevated: var(--retro-shadow-elevated, rgba(33, 24, 14, 0.94));
+		--image-shadow: var(--retro-image-shadow, 6px 6px 0 rgba(38, 29, 20, 0.92));
+		--dock-shadow: var(--retro-dock-shadow, 5px 5px 0 rgba(38, 29, 20, 0.92));
+		--code-button-bg: var(--retro-code-button-bg, #ffe9b5);
+		--code-button-border: var(--retro-code-button-border, #261d14);
+		--surface-soft: #fff5dc;
+		--surface-soft-strong: #8fdee9;
+		--surface-hover: #cceef4;
+		--surface-contrast: #ffc861;
+		--surface-input: #fffdf4;
+		--surface-outline: rgba(38, 29, 20, 0.84);
+		--surface-highlight: rgba(255, 255, 255, 0.36);
+		--surface-dim: #f3e7a9;
+		--text-muted: rgba(44, 34, 23, 0.76);
+		--text-faint: rgba(44, 34, 23, 0.54);
+		--text-inverse: #2c2217;
+		--badge-muted-bg: #c8edf2;
+		--badge-muted-text: #2c2217;
+		--badge-danger-bg: #f7b8b9;
+		--badge-danger-text: #7b2d2e;
+		--badge-warning-bg: #d7f07e;
+		--badge-warning-text: #355200;
+		--divider-color: rgba(38, 29, 20, 0.18);
+		--theme-overlay: rgba(255, 248, 224, 0.9);
+		--theme-pattern: rgba(60, 43, 27, 0.08);
+		--text-gradient-shadow: rgba(255, 255, 255, 0.18);
+		--card-blur: 0px;
+		--card-border: #261d14;
+		--card-shadow-primary: 6px 6px 0 0 rgba(33, 24, 14, 0.94);
+		--card-shadow-secondary: 0 0 0 0 rgba(0, 0, 0, 0);
+		--card-glass-highlight: rgba(143, 222, 233, 0.58);
+		--card-glass-fade: rgba(255, 245, 214, 0.9);
+		--button-blur: 0px;
+		--button-shadow: 4px 4px 0 0 rgba(33, 24, 14, 0.94);
+		--button-highlight: rgba(255, 255, 255, 0.18);
+		--surface-chip-shadow: 3px 3px 0 0 rgba(33, 24, 14, 0.9);
+		--card-radius: 24px;
+		--card-radius-squircle: 28px;
+		--card-border-width: 3px;
+		--control-border-width: 2.5px;
+		--theme-topbar-height: 52px;
+		--theme-topbar-bg: #ff8b39;
+		--theme-topbar-border: #261d14;
+		--theme-topbar-shadow: 0 3px 0 0 #261d14;
+		--studio-nav-hover-bg: #fff1cf;
+		--studio-nav-active-bg: linear-gradient(180deg, #93deea 0%, #7fd7e5 100%);
+		--studio-nav-active-border: #261d14;
+		--studio-nav-active-shadow: 4px 4px 0 0 rgba(33, 24, 14, 0.92);
+		--studio-nav-active-text: #1f1810;
+		color-scheme: light;
+	}
+
+	html::before {
+		content: '';
+		position: fixed;
+		inset: 0 0 auto;
+		height: var(--theme-topbar-height);
+		z-index: 4;
+		pointer-events: none;
+		background: var(--theme-topbar-bg);
+		border-bottom: var(--card-border-width) solid var(--theme-topbar-border);
+		box-shadow: var(--theme-topbar-shadow);
+	}
+
 	body {
 		@apply h-full bg-none;
 		position: relative;
@@ -160,6 +252,22 @@
 			radial-gradient(circle at 82% 44%, color-mix(in srgb, var(--theme-glow-strong) 64%, transparent), transparent 32%),
 			linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--theme-bg-bottom) 18%, transparent) 100%);
 		opacity: 0.56;
+	}
+
+	html[data-theme='retro'] body::before {
+		background-image: radial-gradient(circle at 1px 1px, rgba(60, 43, 27, 0.22) 1px, transparent 1.2px);
+		background-size: 18px 18px;
+		mask-image: none;
+		opacity: 0.14;
+	}
+
+	html[data-theme='retro'] body::after {
+		background:
+			radial-gradient(circle at 16% 20%, rgba(255, 196, 96, 0.26), transparent 28%),
+			radial-gradient(circle at 82% 28%, rgba(143, 222, 233, 0.22), transparent 24%),
+			radial-gradient(circle at 70% 84%, rgba(214, 240, 125, 0.16), transparent 20%),
+			linear-gradient(180deg, transparent 0%, rgba(250, 232, 174, 0.25) 100%);
+		opacity: 0.7;
 	}
 
 	* {
@@ -261,7 +369,9 @@
 }
 
 @utility card {
-	@apply absolute rounded-[40px] border p-6;
+	@apply absolute border p-6;
+	border-radius: var(--card-radius);
+	border-width: var(--card-border-width);
 	background:
 		radial-gradient(circle at 14% 10%, var(--card-glass-highlight) 0%, transparent 34%),
 		linear-gradient(
@@ -274,13 +384,13 @@
 	border-color: var(--card-border);
 	backdrop-filter: blur(var(--card-blur)) saturate(148%);
 	-webkit-backdrop-filter: blur(var(--card-blur)) saturate(148%);
-	will-change: transform;
+	will-change: background, border-color, box-shadow;
 	contain: layout paint;
 
 	&.squircle {
 		@supports (corner-shape: squircle) {
 			corner-shape: squircle;
-			@apply rounded-[64px];
+			border-radius: var(--card-radius-squircle);
 		}
 	}
 }
@@ -298,15 +408,14 @@
 	box-shadow:
 		0 28px 56px -24px var(--shadow-elevated),
 		0 12px 26px -12px color-mix(in srgb, var(--color-brand) 14%, transparent);
-	transform: translateY(-2px);
 }
 
 @utility card-rounded {
-	@apply rounded-[40px];
+	border-radius: var(--card-radius);
 
 	@supports (corner-shape: squircle) {
 		corner-shape: squircle;
-		@apply rounded-[64px];
+		border-radius: var(--card-radius-squircle);
 	}
 }
 
@@ -341,6 +450,7 @@
 	@apply btn-rounded flex items-center gap-2 border-[1.5px] px-4 py-2 text-sm font-medium text-white;
 	background: linear-gradient(135deg, var(--color-brand) 0%, var(--color-brand-secondary) 100%);
 	border-color: color-mix(in srgb, var(--color-brand) 70%, transparent);
+	border-width: var(--control-border-width);
 	box-shadow:
 		0 18px 38px -24px color-mix(in srgb, var(--color-brand) 55%, transparent),
 		inset 0 1px 0 rgba(255, 255, 255, 0.26);
@@ -354,6 +464,7 @@
 	@apply rounded-xl border px-4 py-2 text-sm;
 	background: var(--surface-soft);
 	border-color: var(--surface-outline);
+	border-width: var(--control-border-width);
 	color: var(--color-primary);
 	backdrop-filter: blur(var(--button-blur)) saturate(145%);
 	-webkit-backdrop-filter: blur(var(--button-blur)) saturate(145%);
@@ -378,6 +489,7 @@
 	@apply rounded-xl border px-4 py-2 text-sm;
 	background: var(--badge-warning-bg);
 	border-color: color-mix(in srgb, var(--badge-warning-text) 24%, transparent);
+	border-width: var(--control-border-width);
 	color: var(--badge-warning-text);
 
 	&:hover {
@@ -389,6 +501,7 @@
 	@apply rounded-xl border px-4 py-2 text-sm;
 	background: var(--badge-danger-bg);
 	border-color: color-mix(in srgb, var(--badge-danger-text) 24%, transparent);
+	border-width: var(--control-border-width);
 	color: var(--badge-danger-text);
 
 	&:hover {
@@ -400,6 +513,7 @@
 	@apply rounded-lg border px-3 py-2 text-sm;
 	background: var(--surface-input);
 	border-color: var(--surface-outline);
+	border-width: var(--control-border-width);
 	color: var(--color-primary);
 	box-shadow: inset 0 1px 0 var(--surface-highlight);
 	backdrop-filter: blur(calc(var(--button-blur) - 2px)) saturate(140%);
@@ -421,6 +535,7 @@
 	@apply inline-flex items-center justify-center rounded-full border px-2.5 py-1 text-xs font-medium;
 	background: var(--badge-muted-bg);
 	border-color: var(--surface-outline);
+	border-width: var(--control-border-width);
 	color: var(--badge-muted-text);
 	box-shadow:
 		var(--surface-chip-shadow),
@@ -431,6 +546,7 @@
 	@apply inline-flex items-center justify-center rounded-full border px-2.5 py-1 text-xs font-medium;
 	background: var(--badge-warning-bg);
 	border-color: color-mix(in srgb, var(--badge-warning-text) 18%, transparent);
+	border-width: var(--control-border-width);
 	color: var(--badge-warning-text);
 }
 
@@ -438,6 +554,7 @@
 	@apply inline-flex items-center justify-center rounded-full border px-2.5 py-1 text-xs font-medium;
 	background: var(--badge-danger-bg);
 	border-color: color-mix(in srgb, var(--badge-danger-text) 18%, transparent);
+	border-width: var(--control-border-width);
 	color: var(--badge-danger-text);
 }
 

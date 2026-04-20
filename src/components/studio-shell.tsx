@@ -4,6 +4,14 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 
+const studioNavBaseClass =
+	'flex w-full items-center rounded-2xl border border-transparent px-3 py-2.5 text-sm transition-[background,border-color,box-shadow,color] duration-200 [border-width:var(--control-border-width)]'
+
+const studioNavActiveClass =
+	'font-semibold [background:var(--studio-nav-active-bg)] [border-color:var(--studio-nav-active-border)] [box-shadow:var(--studio-nav-active-shadow)] [color:var(--studio-nav-active-text)]'
+
+const studioNavIdleClass = '[color:var(--text-muted)] hover:bg-[var(--studio-nav-hover-bg)]'
+
 const studioLinks = [
 	{ href: '/studio', label: '概览' },
 	{ href: '/studio/site', label: '站点配置' },
@@ -38,12 +46,7 @@ export function StudioShell({ children }: Readonly<{ children: React.ReactNode }
 								<Link
 									key={item.href}
 									href={item.href}
-									className={cn(
-										'flex items-center rounded-2xl px-3 py-2.5 text-sm transition-all',
-										active
-											? 'border bg-[linear-gradient(to_right_bottom,var(--color-border)_60%,var(--color-card)_100%)] text-primary font-medium'
-											: 'text-secondary hover:bg-[var(--surface-hover)]'
-									)}>
+									className={cn(studioNavBaseClass, active ? studioNavActiveClass : studioNavIdleClass)}>
 									{item.label}
 								</Link>
 							)

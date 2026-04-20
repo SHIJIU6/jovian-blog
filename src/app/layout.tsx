@@ -5,7 +5,7 @@ import type { CSSProperties } from 'react'
 import Layout from '@/layout'
 import Head from '@/layout/head'
 import { getSiteConfig } from '@/lib/server/content/structured'
-import { buildThemeBootScript, buildThemeCssVariables } from '@/lib/theme-mode'
+import { DEFAULT_THEME_MODE, buildThemeBootScript, buildThemeCssVariables } from '@/lib/theme-mode'
 
 export async function generateMetadata(): Promise<Metadata> {
 	const { siteContent } = await getSiteConfig()
@@ -37,7 +37,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
 	} as CSSProperties
 
 	return (
-		<html lang='en' suppressHydrationWarning data-theme='light' style={htmlStyle}>
+		<html lang='en' suppressHydrationWarning data-theme={DEFAULT_THEME_MODE} style={htmlStyle}>
 			<Head faviconHref={faviconHref} />
 
 			<body>

@@ -59,8 +59,9 @@ const list = [
 const extraSize = 8
 const glassPillStyle = {
 	background: 'linear-gradient(180deg, var(--surface-soft-strong) 0%, color-mix(in srgb, var(--surface-soft) 84%, transparent) 100%)',
-	boxShadow: '0 16px 30px -22px var(--shadow-elevated), inset 0 1px 0 rgba(255, 255, 255, 0.18)',
-	borderColor: 'var(--surface-outline)'
+	boxShadow: 'var(--button-shadow)',
+	borderColor: 'var(--surface-outline)',
+	borderWidth: 'var(--control-border-width, 1px)'
 }
 
 export default function NavCard() {
@@ -200,7 +201,6 @@ export default function NavCard() {
 						{form === 'full' && (
 							<span className='font-averia mt-1 max-w-[11rem] min-w-0 text-2xl leading-tight font-medium [overflow-wrap:anywhere]'>{siteContent.meta.title}</span>
 						)}
-						{form === 'full' && <span className='text-brand mt-2 text-xs font-medium'>(开发中)</span>}
 						{form === 'compact' && <span className='font-averia max-w-[140px] min-w-0 truncate text-lg leading-none font-medium'>{siteContent.meta.title}</span>}
 					</Link>
 
