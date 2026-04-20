@@ -49,21 +49,21 @@ export default function GridView({ bloggers, isEditMode = false, onUpdate, onDel
 					placeholder='搜索博主...'
 					value={searchTerm}
 					onChange={e => setSearchTerm(e.target.value)}
-					className='focus:ring-brand mx-auto block w-full max-w-md rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:outline-none'
+					className='surface-input mx-auto block w-full max-w-md px-4 py-2'
 				/>
 
 				<div className='flex flex-wrap justify-center gap-2'>
 					<button
 						onClick={() => setSelectedCategory('recent')}
 						className={`rounded-full px-4 py-1.5 text-sm transition-colors ${
-							selectedCategory === 'recent' ? 'bg-brand text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+							selectedCategory === 'recent' ? 'bg-brand text-white' : 'bg-[var(--surface-soft-strong)] text-secondary hover:bg-[var(--surface-hover)]'
 						}`}>
 						近期更新
 					</button>
 					<button
 						onClick={() => setSelectedCategory('disconnected')}
 						className={`rounded-full px-4 py-1.5 text-sm transition-colors ${
-							selectedCategory === 'disconnected' ? 'bg-brand text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+							selectedCategory === 'disconnected' ? 'bg-brand text-white' : 'bg-[var(--surface-soft-strong)] text-secondary hover:bg-[var(--surface-hover)]'
 						}`}>
 						长期失联
 					</button>
@@ -90,7 +90,7 @@ export default function GridView({ bloggers, isEditMode = false, onUpdate, onDel
 			</div>
 
 			{filteredBloggers.length === 0 && (
-				<div className='mt-12 text-center text-gray-500'>
+				<div className='text-secondary mt-12 text-center'>
 					<p>没有找到相关博主</p>
 				</div>
 			)}

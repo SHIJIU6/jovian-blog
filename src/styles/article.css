@@ -8,7 +8,6 @@
 	overflow: hidden;
 }
 
-/* Headings */
 .prose h1,
 .prose h2,
 .prose h3 {
@@ -22,12 +21,15 @@
 		@apply text-brand/60;
 	}
 }
+
 .prose h1 {
 	font-size: 1.75rem;
 }
+
 .prose h2 {
 	font-size: 1.25rem;
 }
+
 .prose h3 {
 	font-size: 1rem;
 	font-weight: 600;
@@ -37,24 +39,27 @@
 		@apply text-brand/60;
 	}
 }
+
 .prose h4 {
 	font-size: 0.85rem;
 	font-weight: 500;
+
 	&::before {
 		content: '### ';
 		@apply text-brand/60;
 	}
 }
+
 .prose h5 {
 	font-size: 0.75rem;
 	font-weight: 500;
+
 	&::before {
 		content: '#### ';
 		@apply text-brand/60;
 	}
 }
 
-/* Paragraph */
 .prose p {
 	margin: 1.25em 0;
 }
@@ -65,33 +70,34 @@
 	margin: 0 0.25em;
 }
 
-/* Links */
 .prose a {
 	text-decoration: underline;
 	text-underline-offset: 2px;
-	color: var(--color-blue-500);
+	color: color-mix(in srgb, var(--color-brand) 64%, var(--color-brand-secondary) 36%);
 	font-weight: 500;
 }
+
 .prose a:hover {
 	opacity: 0.9;
 }
 
-/* Lists */
 .prose ul,
 .prose ol {
 	margin: 0.75em 0 0.75em 1.25em;
 }
+
 .prose ul {
 	list-style-type: square;
 }
+
 .prose ol {
 	list-style-type: lower-roman;
 }
+
 .prose li {
 	margin: 0.35em 0;
 }
 
-/* Task Lists */
 .prose li.task-list-item {
 	list-style-type: none;
 	margin-left: -1.25em;
@@ -100,23 +106,28 @@
 	align-items: flex-start;
 	gap: 0.5em;
 }
+
 .prose li.task-list-item input[type='checkbox'] {
 	margin-top: 0.5em;
 	cursor: default;
 	flex-shrink: 0;
 }
 
-/* Code */
 .prose code {
-	@apply bg-brand-secondary/8;
-	border: 1px solid rgba(0, 0, 0, 0.06);
+	background: color-mix(in srgb, var(--color-brand-secondary) 12%, var(--surface-input) 88%);
+	border: 1px solid var(--surface-outline);
 	padding: 0.15em 0.4em;
 	border-radius: 6px;
 	font-size: 0.9em;
 	font-family: var(--font-mono);
 }
+
 .prose pre {
-	border: 1px solid rgba(0, 0, 0, 0.06);
+	background: color-mix(in srgb, var(--surface-input) 82%, var(--color-bg) 18%);
+	border: 1px solid var(--surface-outline);
+	box-shadow:
+		0 26px 40px -32px var(--shadow-elevated),
+		inset 0 1px 0 var(--surface-highlight);
 	padding: 1rem 1.25rem;
 	border-radius: 12px;
 	overflow: auto;
@@ -125,6 +136,7 @@
 	width: 100%;
 	display: block;
 }
+
 .prose pre code {
 	background: transparent !important;
 	border: 0;
@@ -133,7 +145,6 @@
 	tab-size: 2;
 }
 
-/* Code Block with Copy Button */
 .prose .code-block-wrapper {
 	position: relative;
 	margin: 1em 0 2em;
@@ -153,12 +164,15 @@
 	width: 32px;
 	height: 32px;
 	padding: 0;
-	background: rgba(255, 255, 255, 0.9);
-	border: 1px solid rgba(0, 0, 0, 0.1);
+	background: var(--code-button-bg);
+	border: 1px solid var(--code-button-border);
+	color: var(--color-primary);
 	border-radius: 6px;
 	cursor: pointer;
 	opacity: 0;
-	transition: opacity 0.2s, background 0.2s;
+	transition:
+		opacity 0.2s,
+		background 0.2s;
 	z-index: 10;
 }
 
@@ -167,64 +181,60 @@
 }
 
 .prose .code-block-copy-btn:hover {
-	background: rgba(255, 255, 255, 1);
-	border-color: rgba(0, 0, 0, 0.15);
+	background: color-mix(in srgb, var(--code-button-bg) 84%, var(--color-border) 16%);
 }
 
 .prose .code-block-copy-btn:active {
 	transform: scale(0.95);
 }
 
-/* Images */
 .prose img {
 	max-width: 40%;
 	margin: 1.5em auto;
 	height: auto;
 	border-radius: 12px;
-	border: 1px solid rgba(0, 0, 0, 0.1);
+	border: 1px solid var(--surface-outline);
 
 	@apply max-sm:max-w-full;
 }
 
-/* Blockquote */
 .prose blockquote {
 	border-left: 3px solid var(--color-brand);
-	background: rgba(0, 0, 0, 0.03);
+	background: color-mix(in srgb, var(--surface-dim) 88%, transparent);
 	margin: 1em 0;
 	padding: 0.75em 1em;
 	border-radius: 8px;
 }
 
-/* HR */
 .prose hr {
 	border: 0;
-	border-top: 1px solid rgba(0, 0, 0, 0.08);
+	border-top: 1px solid var(--divider-color);
 	margin: 1.5em 0;
 }
 
-/* Tables */
 .prose table {
 	width: 100%;
 	border-collapse: collapse;
 	font-size: 0.95em;
 	margin: 1em 0;
 }
+
 .prose th,
 .prose td {
-	border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+	border-bottom: 1px solid var(--divider-color);
 	padding: 0.5em 0.6em;
 	text-align: left;
 }
+
 .prose thead th {
 	font-weight: 600;
 }
 
-/* Anchor offset for in-page headings */
 .prose [id] {
 	scroll-margin-top: 100px;
 }
 
 .prose iframe {
-	border: 1px solid rgba(0, 0, 0, 0.08);
+	border: 1px solid var(--surface-outline);
 	border-radius: 8px;
 }

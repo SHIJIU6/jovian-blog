@@ -10,8 +10,11 @@ import { useSize, useSizeInit } from '@/hooks/use-size'
 import { useConfigStore } from '@/app/(home)/stores/config-store'
 import { ScrollTopButton } from '@/components/scroll-top-button'
 import MusicCard from '@/components/music-card'
+import ThemeToggle from '@/components/theme-toggle'
 import { usePathname } from 'next/navigation'
 import { useSiteConfigContent } from '@/hooks/use-structured-content'
+import { useThemeMode } from '@/hooks/use-theme-mode'
+import { resolveThemeBackgroundColors } from '@/lib/theme-mode'
 
 export default function Layout({ children }: PropsWithChildren) {
 	useCenterInit()
@@ -20,6 +23,7 @@ export default function Layout({ children }: PropsWithChildren) {
 	const { maxSM, init } = useSize()
 	const pathname = usePathname()
 	const isStudio = pathname.startsWith('/studio')
+	const { mode } = useThemeMode()
 	const { data } = useSiteConfigContent()
 
 	useEffect(() => {
@@ -32,6 +36,7 @@ export default function Layout({ children }: PropsWithChildren) {
 	const currentBackgroundImageId = siteContent.currentBackgroundImageId
 	const currentBackgroundImage =
 		currentBackgroundImageId && currentBackgroundImageId.trim() ? backgroundImages.find(item => item.id === currentBackgroundImageId) : null
+	const themedBackgroundColors = resolveThemeBackgroundColors(siteContent.backgroundColors, siteContent.theme, mode)
 
 	return (
 		<>
@@ -62,10 +67,11 @@ export default function Layout({ children }: PropsWithChildren) {
 					}}
 				/>
 			)}
-			<BlurredBubblesBackground colors={siteContent.backgroundColors} regenerateKey={regenerateKey} />
+			<BlurredBubblesBackground colors={themedBackgroundColors} regenerateKey={regenerateKey} />
 
 			<main className='relative z-10 h-full'>
 				{children}
+				{!isStudio && <ThemeToggle />}
 				{!isStudio && <NavCard />}
 
 				{!isStudio && !maxSM && cardStyles.musicCard?.enabled !== false && <MusicCard />}

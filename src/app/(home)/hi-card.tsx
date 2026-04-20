@@ -64,7 +64,7 @@ export default function HiCard() {
 						<img
 							src={avatarSrc}
 							className='rounded-full object-cover'
-							style={{ height: avatarSize, width: avatarSize, boxShadow: '0 16px 32px -5px #E2D9CE' }}
+							style={{ height: avatarSize, width: avatarSize, boxShadow: 'var(--image-shadow)' }}
 						/>
 						{showHat && (
 							<div

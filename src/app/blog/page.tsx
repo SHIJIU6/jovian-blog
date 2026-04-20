@@ -301,7 +301,9 @@ export default function BlogPage() {
 								onClick={() => setDisplayMode(option.value as DisplayMode)}
 								className={cn(
 									'btn-rounded px-3 py-1.5 text-xs font-medium transition-all',
-									displayMode === option.value ? 'bg-brand text-white shadow-sm' : 'text-secondary hover:text-brand hover:bg-white/60'
+									displayMode === option.value
+										? 'bg-[var(--surface-contrast)] text-[var(--text-inverse)] shadow-sm'
+										: 'text-secondary hover:text-brand hover:bg-[var(--surface-hover)]'
 								)}>
 								{option.label}
 							</motion.button>
@@ -323,7 +325,7 @@ export default function BlogPage() {
 							<div className='mb-3 flex items-center justify-between gap-3 text-base'>
 								<div className='flex items-center gap-3'>
 									<div className='font-medium'>{getGroupLabel(groupKey)}</div>
-									<div className='h-2 w-2 rounded-full bg-[#D9D9D9]'></div>
+									<div className='h-2 w-2 rounded-full bg-[var(--divider-color)]'></div>
 									<div className='text-secondary text-sm'>{group.items.length} 篇文章</div>
 								</div>
 								{isManageMode &&
@@ -338,7 +340,7 @@ export default function BlogPage() {
 													'rounded-lg border px-3 py-1 text-xs transition-colors',
 													groupAllSelected
 														? 'border-brand/40 bg-brand/10 text-brand hover:bg-brand/20'
-														: 'text-secondary hover:border-brand/40 hover:text-brand border-transparent bg-white/60 hover:bg-white/80'
+														: 'surface-chip text-secondary hover:border-brand/40 hover:text-brand'
 												)}>
 												{groupAllSelected ? '取消全选' : '全选该分组'}
 											</motion.button>
@@ -361,7 +363,7 @@ export default function BlogPage() {
 												isManageMode
 													? cn(
 															'rounded-lg border px-3',
-															isSelected ? 'border-brand/60 bg-brand/5' : 'hover:border-brand/40 border-transparent hover:bg-white/60'
+															isSelected ? 'border-brand/60 bg-brand/5' : 'border-transparent hover:border-brand/40 hover:bg-[var(--surface-hover)]'
 														)
 													: 'cursor-pointer'
 											)}>
@@ -369,7 +371,7 @@ export default function BlogPage() {
 												<span
 													className={cn(
 														'flex h-4 w-4 items-center justify-center rounded-full border text-[10px] font-semibold',
-														isSelected ? 'border-brand bg-brand text-white' : 'border-[#D9D9D9] text-transparent'
+														isSelected ? 'border-brand bg-brand text-white' : 'border-[var(--surface-outline)] text-transparent'
 													)}>
 													<Check />
 												</span>
@@ -397,9 +399,9 @@ export default function BlogPage() {
 															#{tag}
 														</span>
 													))}
-													{tags.length > 0 && <span className='h-3 w-px bg-black/10' aria-hidden='true' />}
+													{tags.length > 0 && <span className='h-3 w-px bg-[var(--divider-color)]' aria-hidden='true' />}
 													{hasRead && <span className='text-secondary'>已阅读</span>}
-													<span className='inline-flex items-center justify-center rounded-full border bg-white/60 px-2 py-0.5 text-[11px] text-gray-600'>
+													<span className='surface-chip px-2 py-0.5 text-[11px]'>
 														{getBlogStatusLabel(it.status, it.hidden)}
 													</span>
 													<LikeCountBadge count={likeState.count} likedToday={likeState.likedToday} className='px-2 py-0.5 text-[11px]' />
@@ -412,9 +414,9 @@ export default function BlogPage() {
 															#{tag}
 														</span>
 													))}
-													{tags.length > 0 && <span className='h-4 w-px bg-black/10' aria-hidden='true' />}
+													{tags.length > 0 && <span className='h-4 w-px bg-[var(--divider-color)]' aria-hidden='true' />}
 													{hasRead && <span className='text-secondary text-xs'>已阅读</span>}
-													<span className='inline-flex items-center justify-center rounded-full border bg-white/60 px-2 py-0.5 text-[11px] text-gray-600'>
+													<span className='surface-chip px-2 py-0.5 text-[11px]'>
 														{getBlogStatusLabel(it.status, it.hidden)}
 													</span>
 													<LikeCountBadge count={likeState.count} likedToday={likeState.likedToday} className='px-2 py-0.5 text-[11px]' />
@@ -423,12 +425,12 @@ export default function BlogPage() {
 													<div className='flex items-center gap-2'>
 														<Link
 															href={`/blog/${encodeURIComponent(it.slug)}`}
-															className='inline-flex items-center justify-center rounded-full border bg-white/60 px-2.5 py-1 text-xs text-gray-600 transition-colors hover:border-brand/30 hover:text-brand'>
+															className='surface-chip px-2.5 py-1 transition-colors hover:border-brand/30 hover:text-brand'>
 															查看
 														</Link>
 														<Link
 															href={`/studio/write/${encodeURIComponent(it.slug)}`}
-															className='inline-flex items-center justify-center rounded-full border bg-white/60 px-2.5 py-1 text-xs text-gray-600 transition-colors hover:border-brand/30 hover:text-brand'>
+															className='surface-chip px-2.5 py-1 transition-colors hover:border-brand/30 hover:text-brand'>
 															编辑
 														</Link>
 													</div>
@@ -474,7 +476,7 @@ export default function BlogPage() {
 							whileTap={{ scale: 0.95 }}
 							onClick={() => setCategoryModalOpen(true)}
 							disabled={saving}
-							className='rounded-xl border bg-white/60 px-4 py-2 text-sm transition-colors hover:bg-white/80'>
+							className='surface-btn px-4'>
 							分类
 						</motion.button>
 					)}
@@ -483,14 +485,14 @@ export default function BlogPage() {
 						whileTap={{ scale: 0.95 }}
 						onClick={handleCancel}
 						disabled={saving}
-						className='rounded-xl border bg-white/60 px-6 py-2 text-sm'>
+						className='surface-btn px-6'>
 						取消
 					</motion.button>
 					<motion.button
 						whileHover={{ scale: 1.05 }}
 						whileTap={{ scale: 0.95 }}
 						onClick={selectedCount === editableItems.length ? handleDeselectAll : handleSelectAll}
-						className='rounded-xl border bg-white/60 px-4 py-2 text-sm transition-colors hover:bg-white/80'>
+						className='surface-btn px-4'>
 						{selectedCount === editableItems.length ? '取消全选' : '全选'}
 					</motion.button>
 					<motion.button
@@ -498,7 +500,7 @@ export default function BlogPage() {
 						whileTap={{ scale: 0.95 }}
 						onClick={handleOfflineSelected}
 						disabled={selectedCount === 0}
-						className='rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-700 transition-colors disabled:opacity-60'>
+						className='warning-btn px-4 disabled:opacity-60'>
 						下线(已选:{selectedCount}篇)
 					</motion.button>
 					<motion.button
@@ -506,7 +508,7 @@ export default function BlogPage() {
 						whileTap={{ scale: 0.95 }}
 						onClick={handleDeleteSelected}
 						disabled={selectedCount === 0}
-						className='rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-600 transition-colors disabled:opacity-60'>
+						className='danger-btn px-4 disabled:opacity-60'>
 						删除(已选:{selectedCount}篇)
 					</motion.button>
 					<motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => void handleSave()} disabled={saving} className='brand-btn px-6'>

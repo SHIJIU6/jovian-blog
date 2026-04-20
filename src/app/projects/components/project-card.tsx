@@ -88,7 +88,7 @@ export function ProjectCard({
 				<div className='absolute top-3 right-3 z-10 flex gap-2'>
 					{isEditing ? (
 						<>
-							<button onClick={handleCancel} className='rounded-lg px-2 py-1.5 text-xs text-gray-400 transition-colors hover:text-gray-600'>
+							<button onClick={handleCancel} className='text-secondary hover:text-primary rounded-lg px-2 py-1.5 text-xs transition-colors'>
 								取消
 							</button>
 							<button onClick={() => setIsEditing(false)} className='rounded-lg px-2 py-1.5 text-xs text-blue-400 transition-colors hover:text-blue-600'>
@@ -149,11 +149,11 @@ export function ProjectCard({
 								value={localProject.tags.join(', ')}
 								onChange={e => handleTagsChange(e.target.value)}
 								placeholder='标签，用逗号分隔'
-								className='bg-secondary/10 border-secondary/20 w-full rounded-lg border px-2 py-1 text-xs focus:outline-none'
+								className='surface-input w-full px-2 py-1 text-xs'
 							/>
 						) : (
 							localProject.tags.map(tag => (
-								<span key={tag} className='text-secondary bg-card rounded-lg px-2 py-1 text-xs'>
+								<span key={tag} className='surface-chip text-secondary rounded-lg px-2 py-1'>
 									{tag}
 								</span>
 							))
@@ -179,21 +179,21 @@ export function ProjectCard({
 							value={localProject.url}
 							onChange={e => handleFieldChange('url', e.target.value)}
 							placeholder='网站 URL'
-							className='bg-secondary/10 border-secondary/20 flex-1 rounded-lg border px-3 py-1.5 text-sm focus:outline-none'
+							className='surface-input flex-1 px-3 py-1.5'
 						/>
 						<input
 							type='url'
 							value={localProject.github || ''}
 							onChange={e => handleFieldChange('github', e.target.value || undefined)}
 							placeholder='GitHub URL（可选）'
-							className='bg-secondary/10 border-secondary/20 flex-1 rounded-lg border px-3 py-1.5 text-sm focus:outline-none'
+							className='surface-input flex-1 px-3 py-1.5'
 						/>
 						<input
 							type='url'
 							value={localProject.npm || ''}
 							onChange={e => handleFieldChange('npm', e.target.value || undefined)}
 							placeholder='NPM URL（可选）'
-							className='bg-secondary/10 border-secondary/20 flex-1 rounded-lg border px-3 py-1.5 text-sm focus:outline-none'
+							className='surface-input flex-1 px-3 py-1.5'
 						/>
 					</>
 				) : (
@@ -202,7 +202,7 @@ export function ProjectCard({
 							href={localProject.url}
 							target='_blank'
 							rel='noopener noreferrer'
-							className='bg-card hover:bg-bg rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors'>
+							className='surface-btn rounded-lg px-3 py-1.5 font-medium'>
 							Website
 						</Link>
 						{localProject.github && (
@@ -210,7 +210,7 @@ export function ProjectCard({
 								href={localProject.github}
 								target='_blank'
 								rel='noopener noreferrer'
-								className='bg-card hover:bg-bg rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors'>
+								className='surface-btn rounded-lg px-3 py-1.5 font-medium'>
 								GitHub
 							</Link>
 						)}
@@ -219,7 +219,7 @@ export function ProjectCard({
 								href={localProject.npm}
 								target='_blank'
 								rel='noopener noreferrer'
-								className='bg-card hover:bg-bg rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors'>
+								className='surface-btn rounded-lg px-3 py-1.5 font-medium'>
 								NPM
 							</Link>
 						)}

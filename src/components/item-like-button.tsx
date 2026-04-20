@@ -80,7 +80,7 @@ export function ItemLikeButton({ targetKey, state, onStateChange, className }: I
 			disabled={liked || submitting}
 			aria-pressed={liked}
 			className={clsx(
-				'inline-flex items-center gap-1.5 rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-medium text-rose-600 transition-colors hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-90',
+				'danger-chip inline-flex items-center gap-1.5 transition-colors disabled:cursor-not-allowed disabled:opacity-90',
 				className
 			)}>
 			<Heart className={clsx('h-3.5 w-3.5', liked ? 'fill-current' : 'fill-transparent')} />

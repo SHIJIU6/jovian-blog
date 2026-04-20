@@ -72,8 +72,8 @@ export default function Home() {
 
 			{editing && (
 				<div className='pointer-events-none fixed inset-x-0 top-0 z-50 flex justify-center pt-6'>
-					<div className='pointer-events-auto flex items-center gap-3 rounded-2xl bg-white/80 px-4 py-2 shadow-lg backdrop-blur'>
-						<span className='text-xs text-gray-600'>正在编辑首页布局，拖拽卡片调整位置</span>
+					<div className='pointer-events-auto flex items-center gap-3 rounded-2xl px-4 py-2 shadow-lg backdrop-blur-xl' style={{ background: 'var(--surface-soft)' }}>
+						<span className='text-secondary text-xs'>正在编辑首页布局，拖拽卡片调整位置</span>
 						<div className='flex gap-2'>
 							<motion.button
 								type='button'
@@ -81,7 +81,7 @@ export default function Home() {
 								whileTap={{ scale: 0.95 }}
 								onClick={handleCancel}
 								disabled={isPersistingLayout}
-								className='rounded-xl border bg-white px-3 py-1 text-xs font-medium text-gray-700'>
+								className='surface-btn px-3 py-1 text-xs font-medium'>
 								取消
 							</motion.button>
 							<motion.button

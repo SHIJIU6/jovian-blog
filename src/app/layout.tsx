@@ -1,9 +1,11 @@
 import '@/styles/globals.css'
 
 import type { Metadata } from 'next'
+import type { CSSProperties } from 'react'
 import Layout from '@/layout'
 import Head from '@/layout/head'
 import { getSiteConfig } from '@/lib/server/content/structured'
+import { buildThemeBootScript, buildThemeCssVariables } from '@/lib/theme-mode'
 
 export async function generateMetadata(): Promise<Metadata> {
 	const { siteContent } = await getSiteConfig()
@@ -31,28 +33,17 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
 	const faviconHref = siteContent.faviconUrl || '/favicon.png'
 	const htmlStyle = {
 		cursor: 'url(/images/cursor.svg) 2 1, auto',
-		'--color-brand': theme.colorBrand,
-		'--color-primary': theme.colorPrimary,
-		'--color-secondary': theme.colorSecondary,
-		'--color-brand-secondary': theme.colorBrandSecondary,
-		'--color-bg': theme.colorBg,
-		'--color-border': theme.colorBorder,
-		'--color-card': theme.colorCard,
-		'--color-article': theme.colorArticle
-	}
+		...buildThemeCssVariables(theme)
+	} as CSSProperties
 
 	return (
-		<html lang='en' suppressHydrationWarning style={htmlStyle}>
+		<html lang='en' suppressHydrationWarning data-theme='light' style={htmlStyle}>
 			<Head faviconHref={faviconHref} />
 
 			<body>
 				<script
 					dangerouslySetInnerHTML={{
-						__html: `
-					if (/windows|win32/i.test(navigator.userAgent)) {
-						document.documentElement.classList.add('windows');
-					}
-		      `
+						__html: buildThemeBootScript()
 					}}
 				/>
 

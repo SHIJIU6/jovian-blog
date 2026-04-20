@@ -3,6 +3,7 @@ import parse, { type HTMLReactParserOptions, Element, type DOMNode } from 'html-
 import { renderMarkdown, type TocItem } from '@/lib/markdown-renderer'
 import { MarkdownImage } from '@/components/markdown-image'
 import { CodeBlock } from '@/components/code-block'
+import { useThemeMode } from '@/hooks/use-theme-mode'
 
 type MarkdownRenderResult = {
 	content: ReactElement | null
@@ -14,6 +15,7 @@ export function useMarkdownRender(markdown: string): MarkdownRenderResult {
 	const [content, setContent] = useState<ReactElement | null>(null)
 	const [toc, setToc] = useState<TocItem[]>([])
 	const [loading, setLoading] = useState<boolean>(true)
+	const { mode } = useThemeMode()
 
 	useEffect(() => {
 		let cancelled = false
@@ -21,7 +23,7 @@ export function useMarkdownRender(markdown: string): MarkdownRenderResult {
 		async function render() {
 			setLoading(true)
 			try {
-				const { html, toc } = await renderMarkdown(markdown)
+				const { html, toc } = await renderMarkdown(markdown, mode)
 				if (!cancelled) {
 					// Extract pre elements and replace with placeholders before parsing
 					const codeBlocks: Array<{ placeholder: string; code: string; preHtml: string }> = []
@@ -100,7 +102,7 @@ export function useMarkdownRender(markdown: string): MarkdownRenderResult {
 		return () => {
 			cancelled = true
 		}
-	}, [markdown])
+	}, [markdown, mode])
 
 	return { content, toc, loading }
 }

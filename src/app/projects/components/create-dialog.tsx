@@ -92,8 +92,8 @@ export default function CreateDialog({ project, onClose, onSave }: CreateDialogP
 								</div>
 							</>
 						) : (
-							<div className='flex h-16 w-16 items-center justify-center rounded-xl bg-gray-200'>
-								<Plus className='h-6 w-6 text-gray-500' />
+							<div className='flex h-16 w-16 items-center justify-center rounded-xl bg-[var(--surface-soft-strong)]'>
+								<Plus className='text-secondary h-6 w-6' />
 							</div>
 						)}
 					</div>
@@ -111,7 +111,7 @@ export default function CreateDialog({ project, onClose, onSave }: CreateDialogP
 								value={formData.year}
 								onChange={e => setFormData({ ...formData, year: parseInt(e.target.value) || 0 })}
 								placeholder='年份'
-								className='text-secondary w-20 rounded border border-gray-300 px-2 py-1 text-xs focus:outline-none'
+								className='surface-input text-secondary w-20 px-2 py-1 text-xs'
 							/>
 							<input
 								type='url'
@@ -130,11 +130,11 @@ export default function CreateDialog({ project, onClose, onSave }: CreateDialogP
 						value={tagsInput}
 						onChange={e => handleTagsChange(e.target.value)}
 						placeholder='标签，用逗号分隔（如：React, Vue）'
-						className='w-full rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:outline-none'
+						className='surface-input w-full px-3 py-2'
 					/>
 					<div className='mt-2 flex flex-wrap gap-1.5'>
 						{formData.tags.map(tag => (
-							<span key={tag} className='rounded-full bg-secondary/10 px-2.5 py-0.5 text-xs text-gray-600'>
+							<span key={tag} className='surface-chip px-2.5 py-0.5'>
 								{tag}
 							</span>
 						))}
@@ -155,20 +155,20 @@ export default function CreateDialog({ project, onClose, onSave }: CreateDialogP
 						value={formData.github || ''}
 						onChange={e => setFormData({ ...formData, github: e.target.value || undefined })}
 						placeholder='GitHub URL（可选）'
-						className='w-full rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:outline-none'
+						className='surface-input w-full px-3 py-2'
 					/>
 					<input
 						type='url'
 						value={formData.npm || ''}
 						onChange={e => setFormData({ ...formData, npm: e.target.value || undefined })}
 						placeholder='NPM URL（可选）'
-						className='w-full rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:outline-none'
+						className='surface-input w-full px-3 py-2'
 					/>
 				</div>
 			</div>
 
 			<div className='mt-6 flex gap-3'>
-				<button onClick={onClose} className='flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm transition-colors hover:bg-gray-50'>
+				<button onClick={onClose} className='surface-btn flex-1 px-4'>
 					取消
 				</button>
 				<button onClick={handleSubmit} className='brand-btn flex-1 justify-center px-4'>

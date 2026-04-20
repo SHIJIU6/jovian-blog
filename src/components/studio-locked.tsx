@@ -9,7 +9,7 @@ export function StudioLocked({ reason }: { reason?: string }) {
 						线上建议使用 Cloudflare Access 保护 `/studio/*`。应用层会优先读取 D1 `admins` 表判断角色；若管理员表尚未初始化，再回退到
 						`ADMIN_ALLOWLIST`。
 					</p>
-					<div className='rounded-2xl border bg-white/50 px-4 py-3 text-sm text-gray-600'>
+					<div className='rounded-2xl border bg-[var(--surface-soft)] px-4 py-3 text-sm text-secondary'>
 						当前状态：{reason || 'unauthorized'}
 					</div>
 					<ul className='text-secondary list-inside list-disc space-y-1 text-sm leading-7'>

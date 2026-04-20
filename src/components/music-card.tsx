@@ -232,12 +232,12 @@ export default function MusicCard() {
 				<div className='min-w-0 flex-1'>
 					<div className='text-secondary truncate text-sm'>{tracks[currentIndex]?.name || '背景音乐'}</div>
 
-					<div className='mt-1 h-2 rounded-full bg-white/60'>
+					<div className='mt-1 h-2 rounded-full bg-[var(--surface-soft-strong)]'>
 						<div className='bg-linear h-full rounded-full transition-all duration-300' style={{ width: `${progress}%` }} />
 					</div>
 				</div>
 
-				<button onClick={togglePlayPause} className='flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white transition-opacity hover:opacity-80'>
+				<button onClick={togglePlayPause} className='flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--surface-soft-strong)] transition-opacity hover:opacity-80'>
 					{isPlaying ? <Pause className='text-brand h-4 w-4' /> : <PlaySVG className='text-brand ml-1 h-4 w-4' />}
 				</button>
 			</Card>

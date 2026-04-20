@@ -57,6 +57,11 @@ const list = [
 ]
 
 const extraSize = 8
+const glassPillStyle = {
+	background: 'linear-gradient(180deg, var(--surface-soft-strong) 0%, color-mix(in srgb, var(--surface-soft) 84%, transparent) 100%)',
+	boxShadow: '0 16px 30px -22px var(--shadow-elevated), inset 0 1px 0 rgba(255, 255, 255, 0.18)',
+	borderColor: 'var(--surface-outline)'
+}
 
 export default function NavCard() {
 	const pathname = usePathname()
@@ -189,7 +194,7 @@ export default function NavCard() {
 							alt='avatar'
 							width={form === 'compact' ? 32 : 40}
 							height={form === 'compact' ? 32 : 40}
-							style={{ boxShadow: ' 0 12px 20px -5px #E2D9CE' }}
+							style={{ boxShadow: 'var(--image-shadow)' }}
 							className='rounded-full object-cover'
 						/>
 						{form === 'full' && (
@@ -215,46 +220,49 @@ export default function NavCard() {
 											stiffness: 400,
 											damping: 30
 										}}
-										style={{ backgroundImage: 'linear-gradient(to right bottom, var(--color-border) 60%, var(--color-card) 100%)' }}
+										style={glassPillStyle}
 									/>
 								)}
 
-								{list.map((item, index) => (
-									<Link
-										key={item.href}
-										ref={element => {
-											itemRefs.current[item.href] = element
-										}}
-										href={item.href}
-										className={cn(
-											'text-secondary text-md relative z-10 flex items-center gap-3 rounded-full px-5 py-3 transition-all',
-											form === 'icons' ? 'p-0' : 'w-full',
-											form === 'compact' && 'w-auto gap-2 px-2.5 py-1.5 text-[13px] whitespace-nowrap border border-transparent hover:bg-white/40',
-											form === 'full' &&
-												(index === hoveredIndex
-													? 'border bg-[linear-gradient(to_right_bottom,var(--color-border)_60%,var(--color-card)_100%)]'
-													: 'border border-transparent hover:bg-white/40')
-										)}
-										onMouseEnter={() => setHoveredIndex(index)}>
-										<div className={cn('flex h-7 w-7 items-center justify-center', form === 'compact' && 'h-5 w-5')}>
-											{hoveredIndex == index ? (
-												<item.iconActive className={cn('text-brand absolute h-7 w-7', form === 'compact' && 'h-5 w-5')} />
-											) : (
-												<item.icon className={cn('absolute h-7 w-7', form === 'compact' && 'h-5 w-5')} />
+								{list.map((item, index) => {
+									const emphasized = form === 'full' ? index === hoveredIndex : form === 'compact' ? index === hoveredIndex || activeIndex === index : false
+
+									return (
+										<Link
+											key={item.href}
+											ref={element => {
+												itemRefs.current[item.href] = element
+											}}
+											href={item.href}
+											className={cn(
+												'text-secondary text-md relative z-10 flex items-center gap-3 rounded-full px-5 py-3 transition-all',
+												form === 'icons' ? 'p-0' : 'w-full',
+												form === 'compact' && 'w-auto gap-2 border border-transparent px-2.5 py-1.5 text-[13px] whitespace-nowrap hover:bg-[var(--surface-hover)]',
+												form === 'full' &&
+													(index === hoveredIndex ? 'border' : 'border border-transparent hover:bg-[var(--surface-hover)]')
 											)}
-										</div>
-										{form !== 'icons' && (
-											<span
-												className={clsx(
-													'min-w-0 [overflow-wrap:anywhere]',
-													form === 'compact' && 'truncate',
-													(index == hoveredIndex || activeIndex === index) && 'text-primary font-medium'
-												)}>
-												{item.label}
-											</span>
-										)}
-									</Link>
-								))}
+											style={emphasized ? glassPillStyle : undefined}
+											onMouseEnter={() => setHoveredIndex(index)}>
+											<div className={cn('flex h-7 w-7 items-center justify-center', form === 'compact' && 'h-5 w-5')}>
+												{hoveredIndex == index ? (
+													<item.iconActive className={cn('text-brand absolute h-7 w-7', form === 'compact' && 'h-5 w-5')} />
+												) : (
+													<item.icon className={cn('absolute h-7 w-7', form === 'compact' && 'h-5 w-5')} />
+												)}
+											</div>
+											{form !== 'icons' && (
+												<span
+													className={clsx(
+														'min-w-0 [overflow-wrap:anywhere]',
+														form === 'compact' && 'truncate',
+														(index == hoveredIndex || activeIndex === index) && 'text-primary font-medium'
+													)}>
+													{item.label}
+												</span>
+											)}
+										</Link>
+									)
+								})}
 							</div>
 						</>
 					)}

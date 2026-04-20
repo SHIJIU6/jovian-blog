@@ -37,14 +37,14 @@ export default function GridView({ shares, isEditMode = false, onUpdate, onDelet
 					placeholder='搜索资源...'
 					value={searchTerm}
 					onChange={e => setSearchTerm(e.target.value)}
-					className='focus:ring-brand mx-auto block w-full max-w-md rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:outline-none'
+					className='surface-input mx-auto block w-full max-w-md px-4 py-2'
 				/>
 
 				<div className='flex flex-wrap justify-center gap-2'>
 					<button
 						onClick={() => setSelectedTag('all')}
 						className={`rounded-full px-4 py-1.5 text-sm transition-colors ${
-							selectedTag === 'all' ? 'bg-brand text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+							selectedTag === 'all' ? 'bg-brand text-white' : 'bg-[var(--surface-soft-strong)] text-secondary hover:bg-[var(--surface-hover)]'
 						}`}>
 						全部
 					</button>
@@ -53,7 +53,7 @@ export default function GridView({ shares, isEditMode = false, onUpdate, onDelet
 							key={tag}
 							onClick={() => setSelectedTag(tag)}
 							className={`rounded-full px-4 py-1.5 text-sm transition-colors ${
-								selectedTag === tag ? 'bg-brand text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+								selectedTag === tag ? 'bg-brand text-white' : 'bg-[var(--surface-soft-strong)] text-secondary hover:bg-[var(--surface-hover)]'
 							}`}>
 							{tag}
 						</button>
@@ -81,7 +81,7 @@ export default function GridView({ shares, isEditMode = false, onUpdate, onDelet
 			</div>
 
 			{filteredShares.length === 0 && (
-				<div className='mt-12 text-center text-gray-500'>
+				<div className='text-secondary mt-12 text-center'>
 					<p>没有找到相关资源</p>
 				</div>
 			)}

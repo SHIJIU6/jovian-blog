@@ -40,7 +40,9 @@ export function StudioShell({ children }: Readonly<{ children: React.ReactNode }
 									href={item.href}
 									className={cn(
 										'flex items-center rounded-2xl px-3 py-2.5 text-sm transition-all',
-										active ? 'border bg-[linear-gradient(to_right_bottom,var(--color-border)_60%,var(--color-card)_100%)] text-primary font-medium' : 'text-secondary hover:bg-white/40'
+										active
+											? 'border bg-[linear-gradient(to_right_bottom,var(--color-border)_60%,var(--color-card)_100%)] text-primary font-medium'
+											: 'text-secondary hover:bg-[var(--surface-hover)]'
 									)}>
 									{item.label}
 								</Link>

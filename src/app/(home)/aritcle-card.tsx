@@ -45,7 +45,7 @@ export default function ArticleCard() {
 						{blog.cover ? (
 							<img src={blog.cover} alt='cover' className='h-12 w-12 shrink-0 rounded-xl border object-cover' />
 						) : (
-							<div className='text-secondary grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-white/60'>+</div>
+							<div className='text-secondary grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-[var(--surface-soft-strong)]'>+</div>
 						)}
 						<div className='min-w-0 flex-1 overflow-hidden'>
 							<h3 className={cn('text-sm leading-5 font-medium [overflow-wrap:anywhere]', compact ? 'line-clamp-1' : 'line-clamp-2')}>

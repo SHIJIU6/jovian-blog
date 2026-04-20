@@ -174,8 +174,8 @@ export default function LikeButton({ target, targetType = 'post', delay, classNa
 					initial={{ scale: 0.4 }}
 					animate={{ scale: 1 }}
 					className={cn(
-						'absolute -top-2 left-9 min-w-6 rounded-full px-1.5 py-1 text-center text-xs text-white tabular-nums',
-						liked ? 'bg-rose-400' : 'bg-gray-300'
+						'absolute -top-2 left-9 min-w-6 rounded-full px-1.5 py-1 text-center text-xs tabular-nums',
+						liked ? 'bg-rose-400 text-white' : 'surface-chip'
 					)}>
 					{count}
 				</motion.span>

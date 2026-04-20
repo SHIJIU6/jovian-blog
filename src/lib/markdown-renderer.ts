@@ -1,5 +1,6 @@
 import { marked } from 'marked'
 import type { Tokens } from 'marked'
+import type { ThemeMode } from '@/lib/theme-mode'
 
 export type TocItem = { id: string; text: string; level: number }
 
@@ -56,7 +57,7 @@ async function loadKatex() {
 	}
 }
 
-export async function renderMarkdown(markdown: string): Promise<MarkdownRenderResult> {
+export async function renderMarkdown(markdown: string, themeMode: ThemeMode = 'light'): Promise<MarkdownRenderResult> {
 	// Load optional renderers first so they apply on the FIRST lex/parse pass.
 	// (If we lex before registering extensions, math tokens won't ever be produced on a cold refresh.)
 	const codeBlockMap = new Map<string, { html: string; original: string }>()
@@ -211,7 +212,7 @@ export async function renderMarkdown(markdown: string): Promise<MarkdownRenderRe
 				try {
 					const html = await shiki.codeToHtml(originalCode, {
 						lang: codeToken.lang || 'text',
-						theme: 'one-light'
+						theme: themeMode === 'dark' ? 'github-dark' : 'one-light'
 					})
 					codeBlockMap.set(key, { html, original: originalCode })
 					codeToken.text = key

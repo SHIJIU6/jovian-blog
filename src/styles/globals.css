@@ -7,6 +7,7 @@
 
 @utility scrollbar-none {
 	scrollbar-width: none;
+
 	&::-webkit-scrollbar {
 		display: none;
 	}
@@ -14,27 +15,173 @@
 
 @layer base {
 	html {
-		@apply text-primary bg-bg h-full leading-tight;
+		--color-brand: var(--light-color-brand);
+		--color-primary: var(--light-color-primary);
+		--color-secondary: var(--light-color-secondary);
+		--color-brand-secondary: var(--light-color-brand-secondary);
+		--color-bg: var(--light-color-bg);
+		--color-border: var(--light-color-border);
+		--color-card: var(--light-color-card);
+		--color-article: var(--light-color-article);
+		--theme-bg-top: var(--light-bg-top, var(--color-bg));
+		--theme-bg-mid: var(--light-bg-mid, var(--color-bg));
+		--theme-bg-bottom: var(--light-bg-bottom, var(--color-bg));
+		--theme-glow-strong: var(--light-glow-strong, transparent);
+		--theme-glow-soft: var(--light-glow-soft, transparent);
+		--theme-glow-tertiary: var(--light-glow-tertiary, transparent);
+		--shadow-elevated: var(--light-shadow-elevated, rgba(15, 23, 42, 0.18));
+		--image-shadow: var(--light-image-shadow, 0 20px 40px -18px rgba(0, 0, 0, 0.18));
+		--dock-shadow: var(--light-dock-shadow, 0 20px 40px -20px rgba(0, 0, 0, 0.18));
+		--code-button-bg: var(--light-code-button-bg, rgba(255, 255, 255, 0.92));
+		--code-button-border: var(--light-code-button-border, rgba(0, 0, 0, 0.08));
+		--surface-soft: color-mix(in srgb, var(--color-card) 82%, var(--color-border) 18%);
+		--surface-soft-strong: color-mix(in srgb, var(--color-border) 74%, var(--color-card) 26%);
+		--surface-hover: color-mix(in srgb, var(--color-border) 82%, transparent);
+		--surface-contrast: color-mix(in srgb, var(--color-primary) 72%, var(--color-brand) 28%);
+		--surface-input: color-mix(in srgb, var(--color-card) 86%, var(--color-bg) 14%);
+		--surface-outline: color-mix(in srgb, var(--color-border) 58%, transparent);
+		--surface-highlight: color-mix(in srgb, var(--color-border) 66%, transparent);
+		--surface-dim: color-mix(in srgb, var(--color-primary) 9%, var(--color-card) 91%);
+		--text-muted: color-mix(in srgb, var(--color-primary) 70%, var(--color-bg) 30%);
+		--text-faint: color-mix(in srgb, var(--color-primary) 50%, var(--color-bg) 50%);
+		--text-inverse: #f8fbff;
+		--badge-muted-bg: color-mix(in srgb, var(--color-card) 76%, var(--color-border) 24%);
+		--badge-muted-text: color-mix(in srgb, var(--color-primary) 72%, var(--color-bg) 28%);
+		--badge-danger-bg: color-mix(in srgb, #fb7185 14%, var(--color-card));
+		--badge-danger-text: color-mix(in srgb, #dc2626 74%, var(--color-primary) 26%);
+		--badge-warning-bg: color-mix(in srgb, #fbbf24 18%, var(--color-card));
+		--badge-warning-text: color-mix(in srgb, #b45309 70%, var(--color-primary) 30%);
+		--divider-color: color-mix(in srgb, var(--color-primary) 14%, transparent);
+		--theme-overlay: rgba(247, 249, 252, 0.55);
+		--theme-pattern: rgba(38, 55, 67, 0.06);
+		--text-gradient-shadow: rgba(0, 0, 0, 0.16);
+		--card-blur: 14px;
+		--card-border: color-mix(in srgb, var(--color-border) 82%, transparent);
+		--card-shadow-primary: 0 34px 52px -36px var(--shadow-elevated);
+		--card-shadow-secondary: 0 18px 24px -18px color-mix(in srgb, var(--color-brand-secondary) 16%, transparent);
+		--card-glass-highlight: rgba(255, 255, 255, 0.22);
+		--card-glass-fade: rgba(255, 255, 255, 0.02);
+		--button-blur: 12px;
+		--button-shadow: 0 16px 30px -24px var(--shadow-elevated);
+		--button-highlight: rgba(255, 255, 255, 0.22);
+		--surface-chip-shadow: 0 8px 18px -16px var(--shadow-elevated);
+		@apply text-primary h-full leading-tight;
 		scroll-behavior: smooth;
+		color-scheme: light;
+		background:
+			radial-gradient(circle at 12% 16%, color-mix(in srgb, var(--theme-glow-soft) 96%, transparent), transparent 30%),
+			radial-gradient(circle at 84% 18%, color-mix(in srgb, var(--theme-glow-strong) 88%, transparent), transparent 34%),
+			radial-gradient(circle at 42% 86%, color-mix(in srgb, var(--theme-glow-tertiary) 78%, transparent), transparent 40%),
+			linear-gradient(155deg, var(--theme-bg-top) 0%, var(--theme-bg-mid) 48%, var(--theme-bg-bottom) 100%);
+		background-attachment: fixed;
+	}
+
+	html[data-theme='dark'] {
+		--color-brand: var(--dark-color-brand);
+		--color-primary: var(--dark-color-primary);
+		--color-secondary: var(--dark-color-secondary);
+		--color-brand-secondary: var(--dark-color-brand-secondary);
+		--color-bg: var(--dark-color-bg);
+		--color-border: var(--dark-color-border);
+		--color-card: var(--dark-color-card);
+		--color-article: var(--dark-color-article);
+		--theme-bg-top: var(--dark-bg-top, var(--color-bg));
+		--theme-bg-mid: var(--dark-bg-mid, var(--color-bg));
+		--theme-bg-bottom: var(--dark-bg-bottom, var(--color-bg));
+		--theme-glow-strong: var(--dark-glow-strong, transparent);
+		--theme-glow-soft: var(--dark-glow-soft, transparent);
+		--theme-glow-tertiary: var(--dark-glow-tertiary, transparent);
+		--shadow-elevated: var(--dark-shadow-elevated, rgba(0, 0, 0, 0.58));
+		--image-shadow: var(--dark-image-shadow, 0 24px 48px -20px rgba(0, 0, 0, 0.58));
+		--dock-shadow: var(--dark-dock-shadow, 0 20px 40px -20px rgba(0, 0, 0, 0.52));
+		--code-button-bg: var(--dark-code-button-bg, rgba(9, 19, 30, 0.92));
+		--code-button-border: var(--dark-code-button-border, rgba(255, 255, 255, 0.08));
+		--surface-soft: rgba(255, 255, 255, 0.07);
+		--surface-soft-strong: rgba(255, 255, 255, 0.11);
+		--surface-hover: rgba(255, 255, 255, 0.14);
+		--surface-contrast: color-mix(in srgb, var(--color-brand) 72%, var(--color-brand-secondary) 28%);
+		--surface-input: rgba(255, 255, 255, 0.06);
+		--surface-outline: rgba(255, 255, 255, 0.16);
+		--surface-highlight: rgba(255, 255, 255, 0.12);
+		--surface-dim: rgba(255, 255, 255, 0.08);
+		--text-muted: color-mix(in srgb, var(--color-primary) 76%, var(--color-bg) 24%);
+		--text-faint: color-mix(in srgb, var(--color-primary) 56%, var(--color-bg) 44%);
+		--badge-muted-bg: color-mix(in srgb, var(--color-border) 12%, var(--color-card) 88%);
+		--badge-muted-text: color-mix(in srgb, var(--color-primary) 82%, var(--color-bg) 18%);
+		--badge-danger-bg: color-mix(in srgb, #fb7185 18%, var(--color-card));
+		--badge-danger-text: #ffb9c8;
+		--badge-warning-bg: color-mix(in srgb, #fbbf24 14%, var(--color-card));
+		--badge-warning-text: #ffd78d;
+		--divider-color: color-mix(in srgb, var(--color-border) 24%, transparent);
+		--theme-overlay: rgba(2, 6, 23, 0.6);
+		--theme-pattern: rgba(255, 255, 255, 0.02);
+		--text-gradient-shadow: rgba(255, 255, 255, 0.12);
+		--card-blur: 24px;
+		--card-border: rgba(255, 255, 255, 0.14);
+		--card-shadow-primary: 0 22px 48px -24px rgba(7, 21, 33, 0.42);
+		--card-shadow-secondary: 0 10px 22px -14px rgba(22, 83, 104, 0.18);
+		--card-glass-highlight: rgba(255, 255, 255, 0.15);
+		--card-glass-fade: rgba(255, 255, 255, 0.015);
+		--button-blur: 16px;
+		--button-shadow: 0 14px 30px -18px rgba(7, 21, 33, 0.34);
+		--button-highlight: rgba(255, 255, 255, 0.14);
+		--surface-chip-shadow: 0 10px 18px -16px rgba(7, 21, 33, 0.28);
+		color-scheme: dark;
 	}
 
 	body {
 		@apply h-full bg-none;
+		position: relative;
+		min-height: 100%;
 	}
+
+	body::before {
+		content: '';
+		position: fixed;
+		inset: 0;
+		z-index: 0;
+		pointer-events: none;
+		background-image:
+			linear-gradient(to right, var(--theme-pattern) 1px, transparent 1px),
+			linear-gradient(to bottom, var(--theme-pattern) 1px, transparent 1px);
+		background-size: 28px 28px;
+		mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.48), transparent 72%);
+		opacity: 0.58;
+	}
+
+	body::after {
+		content: '';
+		position: fixed;
+		inset: 0;
+		z-index: 0;
+		pointer-events: none;
+		background:
+			radial-gradient(circle at 16% 82%, color-mix(in srgb, var(--theme-glow-soft) 72%, transparent), transparent 36%),
+			radial-gradient(circle at 82% 44%, color-mix(in srgb, var(--theme-glow-strong) 64%, transparent), transparent 32%),
+			linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--theme-bg-bottom) 18%, transparent) 100%);
+		opacity: 0.56;
+	}
+
 	* {
 		@apply border-border;
 	}
 
 	input:focus,
-	textarea:focus {
+	textarea:focus,
+	select:focus {
 		outline: none;
 	}
+
 	input:placeholder-shown {
 		text-overflow: ellipsis;
 	}
 
 	button {
 		@apply cursor-pointer;
+	}
+
+	main {
+		isolation: isolate;
 	}
 
 	.range-track {
@@ -48,7 +195,7 @@
 	.range-track::-webkit-slider-runnable-track {
 		height: 6px;
 		border-radius: 9999px;
-		background: linear-gradient(90deg, 0%, color-mix(in srgb, var(--color-brand) 50%, transparent) 100%);
+		background: linear-gradient(90deg, var(--color-brand) 0%, color-mix(in srgb, var(--color-brand) 50%, transparent) 100%);
 	}
 
 	.range-track::-moz-range-track {
@@ -79,24 +226,56 @@
 
 	.windows {
 		@apply scrollbar-none;
+
 		* {
 			@apply scrollbar-none;
 		}
 	}
 
-	/* Sonner Toaster styles */
 	html li[data-sonner-toast][data-styled='true'] {
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
-		@apply bg-white/40! backdrop-blur;
+		box-shadow: 0 18px 40px -26px var(--shadow-elevated) !important;
+		background: var(--surface-soft) !important;
+		border-color: var(--surface-outline) !important;
+		color: var(--color-primary) !important;
+		-webkit-backdrop-filter: blur(20px);
+		@apply backdrop-blur-xl;
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		html,
+		body,
+		.card,
+		button,
+		a,
+		input,
+		textarea,
+		select {
+			transition:
+				background-color 0.32s ease,
+				border-color 0.32s ease,
+				color 0.22s ease,
+				box-shadow 0.32s ease,
+				opacity 0.32s ease;
+		}
 	}
 }
 
 @utility card {
-	@apply bg-card absolute rounded-[40px] border p-6;
-	box-shadow:
-		0 40px 50px -32px rgba(0, 0, 0, 0.05),
-		inset 0 0 20 rgba(255, 255, 255, 0.25);
-	backdrop-filter: blur(4px);
+	@apply absolute rounded-[40px] border p-6;
+	background:
+		radial-gradient(circle at 14% 10%, var(--card-glass-highlight) 0%, transparent 34%),
+		linear-gradient(
+			160deg,
+			color-mix(in srgb, var(--color-card) 88%, rgba(255, 255, 255, 0.05)) 0%,
+			color-mix(in srgb, var(--color-card) 95%, transparent) 52%,
+			color-mix(in srgb, var(--color-card) 78%, var(--card-glass-fade) 22%) 100%
+		);
+	box-shadow: var(--card-shadow-primary), var(--card-shadow-secondary);
+	border-color: var(--card-border);
+	backdrop-filter: blur(var(--card-blur)) saturate(148%);
+	-webkit-backdrop-filter: blur(var(--card-blur)) saturate(148%);
+	will-change: transform;
+	contain: layout paint;
 
 	&.squircle {
 		@supports (corner-shape: squircle) {
@@ -106,8 +285,25 @@
 	}
 }
 
+.card:hover {
+	background:
+		radial-gradient(circle at 16% 12%, color-mix(in srgb, var(--card-glass-highlight) 92%, transparent) 0%, transparent 36%),
+		linear-gradient(
+			160deg,
+			color-mix(in srgb, var(--color-card) 84%, rgba(255, 255, 255, 0.07)) 0%,
+			color-mix(in srgb, var(--color-card) 94%, transparent) 54%,
+			color-mix(in srgb, var(--color-card) 74%, var(--card-glass-fade) 26%) 100%
+		);
+	border-color: color-mix(in srgb, var(--card-border) 86%, rgba(255, 255, 255, 0.08));
+	box-shadow:
+		0 28px 56px -24px var(--shadow-elevated),
+		0 12px 26px -12px color-mix(in srgb, var(--color-brand) 14%, transparent);
+	transform: translateY(-2px);
+}
+
 @utility card-rounded {
 	@apply rounded-[40px];
+
 	@supports (corner-shape: squircle) {
 		corner-shape: squircle;
 		@apply rounded-[64px];
@@ -115,31 +311,134 @@
 }
 
 @utility text-linear {
-	background: linear-gradient(to right bottom, #0003 0%, #aaa1), linear-gradient(to right bottom, var(--color-brand) 40%, var(--color-brand-secondary));
+	background:
+		linear-gradient(to right bottom, var(--text-gradient-shadow) 0%, transparent 42%),
+		linear-gradient(to right bottom, var(--color-brand) 34%, var(--color-brand-secondary));
 	-webkit-background-clip: text;
 	-webkit-text-fill-color: transparent;
 	background-clip: text;
 }
 
 @utility bg-linear {
-	background: linear-gradient(to right bottom, var(--color-brand) 0%, var(--color-brand-secondary));
+	background: linear-gradient(135deg, var(--color-brand) 0%, var(--color-brand-secondary) 100%);
 	color: white;
 }
 
 @utility shadow {
-	box-shadow: 0 40px 50px -32px rgba(0, 0, 0, 0.05);
+	box-shadow: 0 32px 56px -40px var(--shadow-elevated);
 }
 
 @utility btn-rounded {
 	@apply rounded-xl;
+
 	@supports (corner-shape: squircle) {
 		corner-shape: squircle;
 		@apply rounded-2xl;
 	}
 }
+
 @utility brand-btn {
-	@apply bg-brand btn-rounded flex items-center gap-2 border-[1.5px] px-4 py-2 text-sm font-medium text-white;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+	@apply btn-rounded flex items-center gap-2 border-[1.5px] px-4 py-2 text-sm font-medium text-white;
+	background: linear-gradient(135deg, var(--color-brand) 0%, var(--color-brand-secondary) 100%);
+	border-color: color-mix(in srgb, var(--color-brand) 70%, transparent);
+	box-shadow:
+		0 18px 38px -24px color-mix(in srgb, var(--color-brand) 55%, transparent),
+		inset 0 1px 0 rgba(255, 255, 255, 0.26);
+
+	&:hover {
+		filter: saturate(1.05) brightness(1.02);
+	}
+}
+
+@utility surface-btn {
+	@apply rounded-xl border px-4 py-2 text-sm;
+	background: var(--surface-soft);
+	border-color: var(--surface-outline);
+	color: var(--color-primary);
+	backdrop-filter: blur(var(--button-blur)) saturate(145%);
+	-webkit-backdrop-filter: blur(var(--button-blur)) saturate(145%);
+	box-shadow:
+		var(--button-shadow),
+		inset 0 1px 0 var(--button-highlight);
+
+	&:hover {
+		background: var(--surface-hover);
+		box-shadow:
+			0 22px 40px -26px var(--shadow-elevated),
+			inset 0 1px 0 rgba(255, 255, 255, 0.24);
+	}
+
+	&:disabled {
+		cursor: not-allowed;
+		opacity: 0.6;
+	}
+}
+
+@utility warning-btn {
+	@apply rounded-xl border px-4 py-2 text-sm;
+	background: var(--badge-warning-bg);
+	border-color: color-mix(in srgb, var(--badge-warning-text) 24%, transparent);
+	color: var(--badge-warning-text);
+
+	&:hover {
+		background: color-mix(in srgb, var(--badge-warning-bg) 82%, var(--badge-warning-text) 18%);
+	}
+}
+
+@utility danger-btn {
+	@apply rounded-xl border px-4 py-2 text-sm;
+	background: var(--badge-danger-bg);
+	border-color: color-mix(in srgb, var(--badge-danger-text) 24%, transparent);
+	color: var(--badge-danger-text);
+
+	&:hover {
+		background: color-mix(in srgb, var(--badge-danger-bg) 82%, var(--badge-danger-text) 18%);
+	}
+}
+
+@utility surface-input {
+	@apply rounded-lg border px-3 py-2 text-sm;
+	background: var(--surface-input);
+	border-color: var(--surface-outline);
+	color: var(--color-primary);
+	box-shadow: inset 0 1px 0 var(--surface-highlight);
+	backdrop-filter: blur(calc(var(--button-blur) - 2px)) saturate(140%);
+	-webkit-backdrop-filter: blur(calc(var(--button-blur) - 2px)) saturate(140%);
+
+	&::placeholder {
+		color: var(--text-faint);
+	}
+
+	&:focus {
+		border-color: color-mix(in srgb, var(--color-brand) 44%, var(--surface-outline));
+		box-shadow:
+			inset 0 1px 0 var(--surface-highlight),
+			0 0 0 4px color-mix(in srgb, var(--color-brand) 14%, transparent);
+	}
+}
+
+@utility surface-chip {
+	@apply inline-flex items-center justify-center rounded-full border px-2.5 py-1 text-xs font-medium;
+	background: var(--badge-muted-bg);
+	border-color: var(--surface-outline);
+	color: var(--badge-muted-text);
+	box-shadow:
+		var(--surface-chip-shadow),
+		inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+@utility warning-chip {
+	@apply inline-flex items-center justify-center rounded-full border px-2.5 py-1 text-xs font-medium;
+	background: var(--badge-warning-bg);
+	border-color: color-mix(in srgb, var(--badge-warning-text) 18%, transparent);
+	color: var(--badge-warning-text);
+}
+
+@utility danger-chip {
+	@apply inline-flex items-center justify-center rounded-full border px-2.5 py-1 text-xs font-medium;
+	background: var(--badge-danger-bg);
+	border-color: color-mix(in srgb, var(--badge-danger-text) 18%, transparent);
+	color: var(--badge-danger-text);
 }
 
 @utility no-spinner {
@@ -174,5 +473,18 @@
 .heartbeat-container:hover {
 	.heartbeat {
 		animation: heartbeat-frame 0.8s ease-in-out;
+	}
+}
+
+@media (max-width: 640px) {
+	.card {
+		backdrop-filter: blur(calc(var(--card-blur) * 0.72)) saturate(140%);
+		-webkit-backdrop-filter: blur(calc(var(--card-blur) * 0.72)) saturate(140%);
+	}
+
+	.surface-btn,
+	.surface-input {
+		backdrop-filter: blur(calc(var(--button-blur) * 0.72)) saturate(135%);
+		-webkit-backdrop-filter: blur(calc(var(--button-blur) * 0.72)) saturate(135%);
 	}
 }

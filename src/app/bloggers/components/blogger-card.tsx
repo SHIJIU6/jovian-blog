@@ -71,7 +71,7 @@ export function BloggerCard({
 				<div className='absolute top-3 right-3 z-10 flex gap-2'>
 					{isEditing ? (
 						<>
-							<button onClick={handleCancel} className='rounded-lg px-2 py-1.5 text-xs text-gray-400 transition-colors hover:text-gray-600'>
+							<button onClick={handleCancel} className='text-secondary hover:text-primary rounded-lg px-2 py-1.5 text-xs transition-colors'>
 								取消
 							</button>
 							<button onClick={() => setIsEditing(false)} className='rounded-lg px-2 py-1.5 text-xs text-blue-400 transition-colors hover:text-blue-600'>
@@ -148,7 +148,7 @@ export function BloggerCard({
 								type='button'
 								onClick={() => handleFieldChange('status', status)}
 								className={`rounded-full px-3 py-1 text-xs transition-colors ${
-									(localBlogger.status ?? 'recent') === status ? 'bg-brand text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+									(localBlogger.status ?? 'recent') === status ? 'bg-brand text-white' : 'bg-[var(--surface-soft-strong)] text-secondary hover:bg-[var(--surface-hover)]'
 								}`}>
 								{status === 'recent' ? '近期更新' : '长期失联'}
 							</button>
@@ -167,7 +167,7 @@ export function BloggerCard({
 						}
 					}}
 					className={cn(
-						'mt-3 text-sm leading-relaxed text-gray-600 transition-all duration-300 focus:outline-none',
+						'text-secondary mt-3 text-sm leading-relaxed transition-all duration-300 focus:outline-none',
 						canEdit ? 'cursor-text' : 'cursor-pointer',
 						!canEdit && (expanded ? 'line-clamp-none' : 'line-clamp-3')
 					)}>

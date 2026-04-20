@@ -15,7 +15,7 @@ export function LikeCountBadge({ count, likedToday = false, className, soft = fa
 		<span
 			className={clsx(
 				'inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium tabular-nums',
-				soft ? 'border-white/50 bg-white/55 text-gray-700 backdrop-blur' : 'border-rose-200 bg-rose-50 text-rose-600',
+				soft ? 'surface-chip backdrop-blur' : 'danger-chip',
 				className
 			)}>
 			<Heart className={clsx('h-3.5 w-3.5', likedToday ? 'fill-current' : 'fill-transparent')} />
