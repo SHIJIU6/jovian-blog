@@ -269,10 +269,24 @@
 	}
 
 	html[data-theme='retro'] body::before {
-		background-image: radial-gradient(circle at 1px 1px, rgba(60, 43, 27, 0.22) 1px, transparent 1.2px);
-		background-size: 18px 18px;
+		background-image:
+			url('/images/patterns/retro-ornaments-primary.svg'),
+			url('/images/patterns/retro-ornaments-secondary.svg'),
+			radial-gradient(circle at 1px 1px, rgba(60, 43, 27, 0.24) 1px, transparent 1.2px);
+		background-position:
+			0 0,
+			156px 84px,
+			0 0;
+		background-repeat:
+			repeat,
+			repeat,
+			repeat;
+		background-size:
+			720px 320px,
+			680px 300px,
+			18px 18px;
 		mask-image: none;
-		opacity: 0.14;
+		opacity: 0.48;
 	}
 
 	html[data-theme='retro'] body::after {
@@ -281,7 +295,7 @@
 			radial-gradient(circle at 82% 28%, rgba(143, 222, 233, 0.22), transparent 24%),
 			radial-gradient(circle at 70% 84%, rgba(214, 240, 125, 0.16), transparent 20%),
 			linear-gradient(180deg, transparent 0%, rgba(250, 232, 174, 0.25) 100%);
-		opacity: 0.7;
+		opacity: 0.54;
 	}
 
 	html[data-theme='dark'] body::before {
