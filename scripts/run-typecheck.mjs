@@ -50,6 +50,7 @@ async function ensureArtifactsAreStable(attempts = 8, intervalMs = 200) {
 	await ensureNextTypegenArtifacts(ROOT)
 }
 
+runLocalCommand('node', ['scripts/generate-music-manifest.mjs'])
 runLocalCommand(resolveLocalBin('next'), ['typegen'])
 await waitForTypesDirToSettle()
 await ensureArtifactsAreStable()

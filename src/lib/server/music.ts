@@ -5,6 +5,10 @@ import { getProjectRoot } from './project-root'
 import { getLocalContentPath } from './local-content'
 import generatedMusicManifest from '@/generated/music-manifest.json'
 
+type GeneratedMusicManifest = {
+	tracks?: unknown[]
+}
+
 const PUBLIC_MUSIC_DIR = path.join(getProjectRoot(), 'public', 'music')
 const LOCAL_MUSIC_DIR = getLocalContentPath('media', 'music')
 const MUSIC_EXTENSIONS = new Set(['.mp3', '.m4a', '.wav', '.ogg'])
@@ -97,10 +101,12 @@ async function listTracksFromR2() {
 }
 
 export async function listMusicTracks(): Promise<MusicTrack[]> {
-	const generatedPublicTracks = Array.isArray(generatedMusicManifest?.tracks)
-		? generatedMusicManifest.tracks.filter(
-				(track): track is MusicTrack => Boolean(track && typeof track.name === 'string' && typeof track.url === 'string' && typeof track.source === 'string')
-			)
+	const manifest = generatedMusicManifest as GeneratedMusicManifest
+	const generatedPublicTracks = Array.isArray(manifest.tracks)
+		? manifest.tracks.filter((track): track is MusicTrack => {
+				const candidate = track as Partial<MusicTrack> | null
+				return Boolean(candidate && typeof candidate.name === 'string' && typeof candidate.url === 'string' && typeof candidate.source === 'string')
+			})
 		: []
 
 	const [publicTracks, localTracks, r2Tracks] = await Promise.all([
