@@ -55,3 +55,22 @@ next-env.d.ts
 
 #vscode
 .history/
+
+# local IDE / agent configuration
+.claude/
+.codex/
+
+# local diagnostics and temporary runtime files
+gcm-diagnose.log
+*.pid
+*.tmp
+*.temp
+*.bak
+*.backup
+*.local
+
+# generated application artifacts
+/src/generated/
+/cloudflare-env.d.ts
+
+
