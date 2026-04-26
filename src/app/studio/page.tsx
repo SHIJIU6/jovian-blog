@@ -17,6 +17,16 @@ const sections = [
 		href: '/studio/projects'
 	},
 	{
+		title: '资源分享',
+		description: '维护推荐分享和资源卡片，进入后可直接添加新资源。',
+		href: '/studio/share'
+	},
+	{
+		title: '博客博主',
+		description: '维护优秀博主列表，进入后可直接添加新博主。',
+		href: '/studio/bloggers'
+	},
+	{
 		title: '审计与访问',
 		description: '查看后台写操作记录，确认当前权限来源，并为后续角色化管理做准备。',
 		href: '/studio/audit'
@@ -26,6 +36,9 @@ const sections = [
 const quickActions = [
 	{ label: '写新文章', href: '/studio/write' },
 	{ label: '文章管理', href: '/studio/blog' },
+	{ label: '添加项目', href: '/studio/projects' },
+	{ label: '添加资源', href: '/studio/share' },
+	{ label: '添加博主', href: '/studio/bloggers' },
 	{ label: '首页配置', href: '/studio/site' },
 	{ label: '审计日志', href: '/studio/audit' },
 	{ label: '返回前台', href: '/' }

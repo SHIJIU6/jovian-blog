@@ -11,7 +11,7 @@ import { createContentItemId } from '@/lib/content-item-id'
 interface CreateDialogProps {
 	share: Share | null
 	onClose: () => void
-	onSave: (share: Share) => void
+	onSave: (share: Share, logoItem?: LogoItem) => void
 }
 
 export default function CreateDialog({ share, onClose, onSave }: CreateDialogProps) {
@@ -25,6 +25,7 @@ export default function CreateDialog({ share, onClose, onSave }: CreateDialogPro
 		stars: 3
 	})
 	const [showLogoDialog, setShowLogoDialog] = useState(false)
+	const [selectedLogoItem, setSelectedLogoItem] = useState<LogoItem | undefined>()
 	const [tagsInput, setTagsInput] = useState('')
 
 	useEffect(() => {
@@ -43,10 +44,12 @@ export default function CreateDialog({ share, onClose, onSave }: CreateDialogPro
 			})
 			setTagsInput('')
 		}
+		setSelectedLogoItem(undefined)
 	}, [share])
 
 	const handleLogoSubmit = (logo: LogoItem) => {
 		const logoUrl = logo.type === 'url' ? logo.url : logo.previewUrl
+		setSelectedLogoItem(logo)
 		setFormData({ ...formData, logo: logoUrl })
 	}
 
@@ -60,17 +63,7 @@ export default function CreateDialog({ share, onClose, onSave }: CreateDialogPro
 	}
 
 	const handleSubmit = () => {
-		if (!formData.name.trim() || !formData.logo.trim() || !formData.url.trim() || !formData.description.trim()) {
-			toast.error('请填写所有必填项')
-			return
-		}
-
-		if (formData.tags.length === 0) {
-			toast.error('请至少添加一个标签')
-			return
-		}
-
-		onSave(formData)
+		onSave(formData, selectedLogoItem)
 		onClose()
 		toast.success(share ? '更新成功' : '添加成功')
 	}
@@ -103,7 +96,7 @@ export default function CreateDialog({ share, onClose, onSave }: CreateDialogPro
 							className='w-full text-lg font-bold focus:outline-none'
 						/>
 						<input
-							type='url'
+							type='text'
 							value={formData.url}
 							onChange={e => setFormData({ ...formData, url: e.target.value })}
 							placeholder='https://example.com'

@@ -20,9 +20,12 @@ async function uploadAsset(file: File, folder: string) {
 	return response.json() as Promise<{ url: string }>
 }
 
-export async function pushShares(params: PushSharesParams): Promise<void> {
+export async function pushShares(params: PushSharesParams): Promise<Share[]> {
 	const { shares, logoItems } = params
-	let nextShares = [...shares]
+	let nextShares = shares.map(share => ({
+		...share,
+		logo: share.logo?.startsWith('blob:') ? '' : share.logo
+	}))
 
 	if (logoItems?.size) {
 		for (const [shareId, logoItem] of logoItems.entries()) {
@@ -44,4 +47,7 @@ export async function pushShares(params: PushSharesParams): Promise<void> {
 		const payload = await response.json().catch(() => ({}))
 		throw new Error(payload.error || '保存失败')
 	}
+
+	const payload = (await response.json().catch(() => ({}))) as { items?: Share[] }
+	return payload.items || nextShares
 }

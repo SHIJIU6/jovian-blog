@@ -99,7 +99,7 @@ export default function AvatarUploadDialog({ currentAvatar, onClose, onSubmit }:
 				<div>
 					<label className='text-secondary mb-2 block text-sm font-medium'>图片 URL</label>
 					<input
-						type='url'
+						type='text'
 						value={urlInput}
 						onChange={e => {
 							setUrlInput(e.target.value)

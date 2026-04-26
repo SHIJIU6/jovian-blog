@@ -13,11 +13,12 @@ import { useSnippetsContent } from '@/hooks/use-structured-content'
 import { buildLikeTargetKey } from '@/lib/like-target'
 import { createContentItemId, type SnippetItem } from '@/lib/content-item-id'
 import { useBatchLikes } from '@/hooks/use-batch-likes'
+import { useAutoLoadMore } from '@/hooks/use-auto-load-more'
 
 const getRandomSnippet = (list: SnippetItem[]) => (list.length === 0 ? null : list[Math.floor(Math.random() * list.length)] || null)
 
 export default function Page() {
-	const { data: remoteSnippets, mutate } = useSnippetsContent()
+	const { data: remoteSnippets, mutate, hasMore, loadMore, isLoadingMore } = useSnippetsContent()
 	const [snippets, setSnippets] = useState<SnippetItem[]>([])
 	const [originalSnippets, setOriginalSnippets] = useState<SnippetItem[]>([])
 	const [currentSnippetId, setCurrentSnippetId] = useState('')
@@ -54,6 +55,7 @@ export default function Page() {
 
 	const snippetLikeKeys = useMemo(() => snippets.map(item => buildLikeTargetKey(item.id, 'snippet')).filter(Boolean), [snippets])
 	const { getLikeState, updateLikeState } = useBatchLikes(snippetLikeKeys)
+	useAutoLoadMore({ hasMore, isLoading: isLoadingMore || isEditMode, enabled: !isEditMode, loadMore })
 	const currentSnippet = useMemo(() => snippets.find(item => item.id === currentSnippetId) || snippets[0] || null, [snippets, currentSnippetId])
 	const currentLikeTargetKey = currentSnippet ? buildLikeTargetKey(currentSnippet.id, 'snippet') : ''
 
@@ -197,6 +199,8 @@ export default function Page() {
 					</div>
 				</div>
 			)}
+
+			{hasMore && !isEditMode && <div className='text-secondary pb-8 text-center text-sm'>{isLoadingMore ? '加载更多短句中...' : '继续向下滚动加载更多'}</div>}
 
 			<motion.div initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} className='absolute top-4 right-6 flex gap-3 max-sm:hidden'>
 				{isEditMode ? (

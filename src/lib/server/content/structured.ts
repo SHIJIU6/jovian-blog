@@ -24,6 +24,7 @@ import {
 	saveSnippetsToD1
 } from './structured-d1'
 import { normalizeBloggerId, normalizeProjectId, normalizeShareId, normalizeSnippetItems, type SnippetItem } from '@/lib/content-item-id'
+import type { PaginatedResponse, PaginationParams } from '@/lib/pagination'
 
 const ROOT = getProjectRoot()
 
@@ -86,6 +87,23 @@ function normalizeBloggers(items: Blogger[]) {
 
 function normalizeSnippets(items: Array<SnippetItem | string>) {
 	return normalizeSnippetItems(items).filter(item => item.content)
+}
+
+type StructuredListOptions = Partial<Pick<PaginationParams, 'limit' | 'offset' | 'page' | 'pageSize'>>
+
+function sliceByOptions<T>(items: T[], options: StructuredListOptions = {}) {
+	if (typeof options.limit !== 'number') return items
+	return items.slice(options.offset || 0, (options.offset || 0) + options.limit)
+}
+
+async function getPagedItems<T>(params: PaginationParams, loader: (options: StructuredListOptions) => Promise<T[]>): Promise<PaginatedResponse<T>> {
+	const items = await loader({ limit: params.pageSize + 1, offset: params.offset })
+	return {
+		items: items.slice(0, params.pageSize),
+		page: params.page,
+		pageSize: params.pageSize,
+		hasMore: items.length > params.pageSize
+	}
 }
 
 async function readSetting<T>(key: string, fallback: T): Promise<T> {
@@ -167,17 +185,24 @@ export async function saveAboutData(value: AboutData) {
 	await writeJsonFile(LOCAL_FILES.about, value)
 }
 
-export async function getProjects() {
+export async function getProjects(options: StructuredListOptions = {}) {
 	await ensureLocalContentLayout()
 	const env = await getContentBindings()
 	if (env?.BLOG_DB) {
-		const result = await getProjectsFromD1(env.BLOG_DB)
+		const result = await getProjectsFromD1(env.BLOG_DB, options)
 		if (result && (result.length > 0 || (await isD1ScopeInitialized(env.BLOG_DB, 'projects')))) return normalizeProjects(result)
 	}
 
-	return normalizeProjects(
+	return sliceByOptions(
+		normalizeProjects(
 		await readSetting<Project[]>('projects_list', await readJsonFile<Project[]>(resolveContentReadPath(FILES.projects, LOCAL_FILES.projects), []))
+		),
+		options
 	)
+}
+
+export async function getPaginatedProjects(params: PaginationParams) {
+	return getPagedItems(params, getProjects)
 }
 
 export async function saveProjects(items: Project[]) {
@@ -192,15 +217,19 @@ export async function saveProjects(items: Project[]) {
 	await writeJsonFile(LOCAL_FILES.projects, normalizedItems)
 }
 
-export async function getShares() {
+export async function getShares(options: StructuredListOptions = {}) {
 	await ensureLocalContentLayout()
 	const env = await getContentBindings()
 	if (env?.BLOG_DB) {
-		const result = await getSharesFromD1(env.BLOG_DB)
+		const result = await getSharesFromD1(env.BLOG_DB, options)
 		if (result && (result.length > 0 || (await isD1ScopeInitialized(env.BLOG_DB, 'shares')))) return normalizeShares(result)
 	}
 
-	return normalizeShares(await readSetting<Share[]>('shares_list', await readJsonFile<Share[]>(resolveContentReadPath(FILES.shares, LOCAL_FILES.shares), [])))
+	return sliceByOptions(normalizeShares(await readSetting<Share[]>('shares_list', await readJsonFile<Share[]>(resolveContentReadPath(FILES.shares, LOCAL_FILES.shares), []))), options)
+}
+
+export async function getPaginatedShares(params: PaginationParams) {
+	return getPagedItems(params, getShares)
 }
 
 export async function saveShares(items: Share[]) {
@@ -215,17 +244,24 @@ export async function saveShares(items: Share[]) {
 	await writeJsonFile(LOCAL_FILES.shares, normalizedItems)
 }
 
-export async function getBloggers() {
+export async function getBloggers(options: StructuredListOptions = {}) {
 	await ensureLocalContentLayout()
 	const env = await getContentBindings()
 	if (env?.BLOG_DB) {
-		const result = await getBloggersFromD1(env.BLOG_DB)
+		const result = await getBloggersFromD1(env.BLOG_DB, options)
 		if (result && (result.length > 0 || (await isD1ScopeInitialized(env.BLOG_DB, 'bloggers')))) return normalizeBloggers(result)
 	}
 
-	return normalizeBloggers(
+	return sliceByOptions(
+		normalizeBloggers(
 		await readSetting<Blogger[]>('bloggers_list', await readJsonFile<Blogger[]>(resolveContentReadPath(FILES.bloggers, LOCAL_FILES.bloggers), []))
+		),
+		options
 	)
+}
+
+export async function getPaginatedBloggers(params: PaginationParams) {
+	return getPagedItems(params, getBloggers)
 }
 
 export async function saveBloggers(items: Blogger[]) {
@@ -240,20 +276,27 @@ export async function saveBloggers(items: Blogger[]) {
 	await writeJsonFile(LOCAL_FILES.bloggers, normalizedItems)
 }
 
-export async function getSnippets() {
+export async function getSnippets(options: StructuredListOptions = {}) {
 	await ensureLocalContentLayout()
 	const env = await getContentBindings()
 	if (env?.BLOG_DB) {
-		const result = await getSnippetsFromD1(env.BLOG_DB)
+		const result = await getSnippetsFromD1(env.BLOG_DB, options)
 		if (result && (result.length > 0 || (await isD1ScopeInitialized(env.BLOG_DB, 'snippets')))) return normalizeSnippets(result)
 	}
 
-	return normalizeSnippets(
+	return sliceByOptions(
+		normalizeSnippets(
 		await readSetting<Array<SnippetItem | string>>(
 			'snippets_list',
 			await readJsonFile<Array<SnippetItem | string>>(resolveContentReadPath(FILES.snippets, LOCAL_FILES.snippets), [])
 		)
+		),
+		options
 	)
+}
+
+export async function getPaginatedSnippets(params: PaginationParams) {
+	return getPagedItems(params, getSnippets)
 }
 
 export async function saveSnippets(items: SnippetItem[]) {
@@ -268,15 +311,19 @@ export async function saveSnippets(items: SnippetItem[]) {
 	await writeJsonFile(LOCAL_FILES.snippets, normalizedItems)
 }
 
-export async function getPictures() {
+export async function getPictures(options: StructuredListOptions = {}) {
 	await ensureLocalContentLayout()
 	const env = await getContentBindings()
 	if (env?.BLOG_DB) {
-		const result = await getPicturesFromD1(env.BLOG_DB)
+		const result = await getPicturesFromD1(env.BLOG_DB, options)
 		if (result && (result.length > 0 || (await isD1ScopeInitialized(env.BLOG_DB, 'pictures')))) return result
 	}
 
-	return readSetting<Picture[]>('pictures_list', await readJsonFile<Picture[]>(resolveContentReadPath(FILES.pictures, LOCAL_FILES.pictures), []))
+	return sliceByOptions(await readSetting<Picture[]>('pictures_list', await readJsonFile<Picture[]>(resolveContentReadPath(FILES.pictures, LOCAL_FILES.pictures), [])), options)
+}
+
+export async function getPaginatedPictures(params: PaginationParams) {
+	return getPagedItems(params, getPictures)
 }
 
 export async function savePictures(items: Picture[]) {

@@ -12,6 +12,7 @@ import { useManagementMode } from '@/hooks/use-management-mode'
 import { usePicturesContent } from '@/hooks/use-structured-content'
 import { buildLikeTargetKey, buildPictureLikeTarget } from '@/lib/like-target'
 import { useBatchLikes } from '@/hooks/use-batch-likes'
+import { useAutoLoadMore } from '@/hooks/use-auto-load-more'
 
 export interface Picture {
 	id: string
@@ -22,7 +23,7 @@ export interface Picture {
 }
 
 export default function Page() {
-	const { data: remotePictures } = usePicturesContent()
+	const { data: remotePictures, mutate: mutatePictures, hasMore, loadMore, isLoadingMore } = usePicturesContent()
 	const [pictures, setPictures] = useState<Picture[]>([])
 	const [originalPictures, setOriginalPictures] = useState<Picture[]>([])
 	const [isEditMode, setIsEditMode] = useState(false)
@@ -53,6 +54,7 @@ export default function Page() {
 		[pictures]
 	)
 	const { getLikeState, updateLikeState } = useBatchLikes(pictureLikeKeys)
+	useAutoLoadMore({ hasMore, isLoading: isLoadingMore || isEditMode, enabled: !isEditMode, loadMore })
 
 	const handleUploadSubmit = ({ images, description }: { images: ImageItem[]; description: string }) => {
 		const now = new Date().toISOString()
@@ -179,12 +181,14 @@ export default function Page() {
 		setIsSaving(true)
 
 		try {
-			await pushPictures({
+			const savedPictures = await pushPictures({
 				pictures,
 				imageItems
 			})
 
-			setOriginalPictures(pictures)
+			await mutatePictures(savedPictures, { revalidate: false })
+			setPictures(savedPictures)
+			setOriginalPictures(savedPictures)
 			setImageItems(new Map())
 			setIsEditMode(false)
 			toast.success('保存成功！')
@@ -235,6 +239,8 @@ export default function Page() {
 					{canManage ? '还没有上传图片，点击右上角「编辑」后即可开始上传。' : '当前还没有公开图片内容。'}
 				</div>
 			)}
+
+			{hasMore && !isEditMode && <div className='text-secondary pointer-events-none fixed bottom-8 left-1/2 z-30 -translate-x-1/2 rounded-full bg-white/70 px-4 py-2 text-center text-sm backdrop-blur'>{isLoadingMore ? '加载更多图片中...' : '继续向下滚动加载更多'}</div>}
 
 			<motion.div initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} className='absolute top-4 right-6 flex gap-3 max-sm:hidden'>
 				{isEditMode ? (

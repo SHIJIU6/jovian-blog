@@ -4,6 +4,19 @@ import { writeAuditLog } from '@/lib/server/admin/audit'
 
 export const dynamic = 'force-dynamic'
 
+function normalizePostSlug(value: unknown) {
+	const raw = typeof value === 'string' ? value.trim() : ''
+	const normalized = raw
+		.toLowerCase()
+		.replace(/[^a-z0-9\u4e00-\u9fa5._-]+/g, '-')
+		.replace(/^-+|-+$/g, '')
+	return normalized || `post-${Date.now()}`
+}
+
+function normalizePostText(value: unknown, fallback = '') {
+	return typeof value === 'string' ? value : fallback
+}
+
 export async function POST(request: Request) {
 	const auth = await evaluateAdminRequest(request, process.env.ADMIN_ALLOWLIST)
 	if (!auth.ok) return createUnauthorizedAdminResponse(auth.reason || 'unauthorized')
@@ -29,12 +42,15 @@ export async function POST(request: Request) {
 		return Response.json({ success: true })
 	}
 
+	const slug = normalizePostSlug(payload.slug || payload.title)
+	const title = normalizePostText(payload.title, '未命名文章') || '未命名文章'
+	const contentMd = normalizePostText(payload.contentMd)
 	const result = await savePost({
-		slug: payload.slug,
-		title: payload.title,
-		summary: payload.summary,
-		contentMd: payload.contentMd,
-		tags: payload.tags || [],
+		slug,
+		title,
+		summary: normalizePostText(payload.summary),
+		contentMd,
+		tags: Array.isArray(payload.tags) ? payload.tags : [],
 		category: payload.category,
 		coverUrl: payload.coverUrl,
 		hidden: payload.hidden,
@@ -45,14 +61,14 @@ export async function POST(request: Request) {
 		actorEmail: auth.email || 'local-dev',
 		action: 'post.save',
 		targetType: 'post',
-		targetId: payload.slug,
+		targetId: slug,
 		payload: {
-			title: payload.title,
+			title,
 			hidden: Boolean(payload.hidden),
 			status: payload.status,
 			tagCount: Array.isArray(payload.tags) ? payload.tags.length : 0,
 			hasCover: Boolean(payload.coverUrl),
-			contentLength: typeof payload.contentMd === 'string' ? payload.contentMd.length : 0
+			contentLength: contentMd.length
 		}
 	})
 

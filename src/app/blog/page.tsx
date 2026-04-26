@@ -23,11 +23,13 @@ import { getBlogStatusLabel } from '@/lib/blog-status'
 import { LikeCountBadge } from '@/components/like-count-badge'
 import { buildLikeTargetKey } from '@/lib/like-target'
 import { useBatchLikes } from '@/hooks/use-batch-likes'
+import { useAutoLoadMore } from '@/hooks/use-auto-load-more'
+import { CommentBoard } from '@/components/comment-board'
 
 type DisplayMode = 'day' | 'week' | 'month' | 'year' | 'category'
 
 export default function BlogPage() {
-	const { items, loading } = useBlogIndex()
+	const { items, loading, hasMore, loadMore, isLoadingMore } = useBlogIndex()
 	const { categories: categoriesFromServer } = useCategories()
 	const { isRead } = useReadArticles()
 	const { siteContent } = useConfigStore()
@@ -37,7 +39,7 @@ export default function BlogPage() {
 	const [editableItems, setEditableItems] = useState<BlogIndexItem[]>([])
 	const [selectedSlugs, setSelectedSlugs] = useState<Set<string>>(new Set())
 	const [saving, setSaving] = useState(false)
-	const [displayMode, setDisplayMode] = useState<DisplayMode>('year')
+	const [displayMode, setDisplayMode] = useState<DisplayMode>('month')
 	const [categoryModalOpen, setCategoryModalOpen] = useState(false)
 	const [categoryList, setCategoryList] = useState<string[]>([])
 	const [newCategory, setNewCategory] = useState('')
@@ -54,6 +56,7 @@ export default function BlogPage() {
 	const displayItems = isManageMode ? editableItems : items
 	const postLikeKeys = useMemo(() => displayItems.map(item => buildLikeTargetKey(item.slug, 'post')).filter(Boolean), [displayItems])
 	const { getLikeState } = useBatchLikes(postLikeKeys)
+	useAutoLoadMore({ hasMore, isLoading: isLoadingMore, loadMore })
 
 	const { groupedItems, groupKeys, getGroupLabel } = useMemo(() => {
 		const sorted = [...displayItems].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
@@ -421,15 +424,16 @@ export default function BlogPage() {
 													</span>
 													<LikeCountBadge count={likeState.count} likedToday={likeState.likedToday} className='px-2 py-0.5 text-[11px]' />
 												</div>
-												{canManage && (
-													<div className='flex items-center gap-2'>
-														<Link
-															href={`/blog/${encodeURIComponent(it.slug)}`}
-															className='surface-chip px-2.5 py-1 transition-colors hover:border-brand/30 hover:text-brand'>
-															查看
-														</Link>
-														<Link
-															href={`/studio/write/${encodeURIComponent(it.slug)}`}
+								{canManage && (
+									<div className='flex items-center gap-2'>
+										<Link
+											href={`/blog/${encodeURIComponent(it.slug)}`}
+											className='surface-chip px-2.5 py-1 transition-colors hover:border-brand/30 hover:text-brand'>
+											查看
+										</Link>
+										<CommentBoard targetType='post' targetId={it.slug} title={`${it.title || it.slug} 留言`} adminMode className='px-2 py-0.5 text-[11px] leading-4' />
+										<Link
+											href={`/studio/write/${encodeURIComponent(it.slug)}`}
 															className='surface-chip px-2.5 py-1 transition-colors hover:border-brand/30 hover:text-brand'>
 															编辑
 														</Link>
@@ -463,6 +467,7 @@ export default function BlogPage() {
 			<div className='pt-12'>
 				{!loading && items.length === 0 && <div className='text-secondary py-6 text-center text-sm'>暂无文章</div>}
 				{loading && <div className='text-secondary py-6 text-center text-sm'>加载中...</div>}
+				{hasMore && <div className='text-secondary py-6 text-center text-sm'>{isLoadingMore ? '加载更多文章中...' : '继续向下滚动加载更多'}</div>}
 			</div>
 
 			{canManage && (

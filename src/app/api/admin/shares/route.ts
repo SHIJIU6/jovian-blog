@@ -10,8 +10,8 @@ export async function POST(request: Request) {
 
 	try {
 		const payload = await request.json()
-		await replaceContentAuthoringItems('shares', payload.shares || [], auth.email)
-		return Response.json({ success: true })
+		const result = await replaceContentAuthoringItems('shares', payload.shares || [], auth.email)
+		return Response.json({ success: true, ...result })
 	} catch (error) {
 		return toAuthoringErrorResponse(error)
 	}

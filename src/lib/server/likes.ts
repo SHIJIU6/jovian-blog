@@ -250,6 +250,18 @@ async function incrementLikeCounterInD1(db: any, targetKey: string, timestamp: s
 	await backfillLikeCounterInD1(db, targetKey, timestamp)
 }
 
+async function hasLikeVoteInD1(db: any, targetKey: string, fingerprint: string, voteDate: string): Promise<boolean | null> {
+	try {
+		const row = await db
+			.prepare(`SELECT 1 as found FROM ${D1_VOTE_TABLE} WHERE target_key = ? AND client_fingerprint = ? AND vote_date = ? LIMIT 1`)
+			.bind(targetKey, fingerprint, voteDate)
+			.first()
+		return Boolean(row?.found)
+	} catch {
+		return null
+	}
+}
+
 async function getLikeCountFromD1(db: any, targetKey: string): Promise<number | null> {
 	try {
 		const row = await db.prepare(`SELECT total_count as totalCount FROM ${D1_COUNTER_TABLE} WHERE target_key = ? LIMIT 1`).bind(targetKey).first()
@@ -353,19 +365,25 @@ async function getLikeStatesFromD1(db: any, targetKeysInput: string[], fingerpri
 async function registerLikeInD1(db: any, targetKey: string, fingerprint: string, voteDate: string): Promise<LikeMutationResult | null> {
 	try {
 		const now = new Date().toISOString()
+		const hadVote = await hasLikeVoteInD1(db, targetKey, fingerprint, voteDate)
+		if (hadVote === null) return null
+
 		const insertResult = await db
 			.prepare(`INSERT OR IGNORE INTO ${D1_VOTE_TABLE} (target_key, client_fingerprint, vote_date, created_at) VALUES (?, ?, ?, ?)`)
 			.bind(targetKey, fingerprint, voteDate, now)
 			.run()
+		const hasNewVote = !hadVote
 
-		if (Number(insertResult?.meta?.changes || 0) > 0) {
+		if (hasNewVote) {
 			try {
-				await incrementLikeCounterInD1(db, targetKey, now)
+				await backfillLikeCounterInD1(db, targetKey, now)
 			} catch (error) {
 				if (!isMissingTableError(error, D1_COUNTER_TABLE)) {
 					return null
 				}
 			}
+		} else if (Number(insertResult?.meta?.changes || 0) > 0) {
+			await backfillLikeCounterInD1(db, targetKey, now).catch(() => undefined)
 		}
 
 		const state = await getLikeStateFromD1(db, targetKey, fingerprint, voteDate)
@@ -373,7 +391,7 @@ async function registerLikeInD1(db: any, targetKey: string, fingerprint: string,
 
 		return {
 			...state,
-			reason: Number(insertResult?.meta?.changes || 0) > 0 ? undefined : 'rate_limited'
+			reason: hasNewVote ? undefined : 'rate_limited'
 		}
 	} catch {
 		return null

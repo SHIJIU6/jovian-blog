@@ -111,12 +111,18 @@ export function ShareCard({
 			<div>
 				<div className='mb-4 flex items-center gap-4'>
 					<div className='group relative'>
-						<img
-							src={localShare.logo}
-							alt={localShare.name}
-							className={cn('h-16 w-16 rounded-xl object-cover', canEdit && 'cursor-pointer')}
-							onClick={() => canEdit && setShowLogoDialog(true)}
-						/>
+						{localShare.logo ? (
+							<img
+								src={localShare.logo}
+								alt={localShare.name || '资源图标'}
+								className={cn('h-16 w-16 rounded-xl object-cover', canEdit && 'cursor-pointer')}
+								onClick={() => canEdit && setShowLogoDialog(true)}
+							/>
+						) : (
+							<button type='button' onClick={() => canEdit && setShowLogoDialog(true)} className={cn('flex h-16 w-16 items-center justify-center rounded-xl bg-[var(--surface-soft-strong)] text-xs text-secondary', canEdit && 'cursor-pointer')}>
+								图标
+							</button>
+						)}
 						{canEdit && (
 							<div className='ev pointer-events-none absolute inset-0 flex items-center justify-center rounded-xl bg-black/40 opacity-0 transition-opacity group-hover:opacity-100'>
 								<span className='text-xs text-white'>更换</span>

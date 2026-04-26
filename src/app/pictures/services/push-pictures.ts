@@ -20,7 +20,7 @@ async function uploadAsset(file: File, folder: string) {
 	return response.json() as Promise<{ url: string }>
 }
 
-export async function pushPictures(params: PushPicturesParams): Promise<void> {
+export async function pushPictures(params: PushPicturesParams): Promise<Picture[]> {
 	const { pictures, imageItems } = params
 
 	let updatedPictures = [...pictures]
@@ -62,4 +62,7 @@ export async function pushPictures(params: PushPicturesParams): Promise<void> {
 		const payload = await response.json().catch(() => ({}))
 		throw new Error(payload.error || '保存失败')
 	}
+
+	const payload = (await response.json().catch(() => ({}))) as { items?: Picture[] }
+	return payload.items || updatedPictures
 }

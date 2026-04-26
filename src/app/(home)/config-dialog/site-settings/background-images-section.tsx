@@ -54,7 +54,9 @@ export function BackgroundImagesSection({ formData, setFormData, backgroundImage
 
 	const handleBackgroundUrlSubmit = () => {
 		if (!backgroundUrlInput.trim()) {
-			toast.error('请输入图片 URL')
+			handleClearBackgroundImage()
+			setBackgroundUrlInput('')
+			toast.success('已清空背景图片')
 			return
 		}
 

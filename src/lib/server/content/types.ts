@@ -15,6 +15,15 @@ export type ContentPostDetail = ContentPostListItem & {
 export type ContentListOptions = {
 	includeHidden?: boolean
 	limit?: number
+	offset?: number
+}
+
+export type PaginatedResult<T> = {
+	items: T[]
+	page: number
+	pageSize: number
+	total?: number
+	hasMore: boolean
 }
 
 export type ContentBindings = {

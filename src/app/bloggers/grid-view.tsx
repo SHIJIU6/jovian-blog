@@ -27,9 +27,10 @@ interface GridViewProps {
 	getLikeState?: (targetKey: string) => LikeState
 	onLikeStateChange?: (targetKey: string, nextState: LikeState) => void
 	readOnlyLike?: boolean
+	className?: string
 }
 
-export default function GridView({ bloggers, isEditMode = false, onUpdate, onDelete, getLikeState, onLikeStateChange, readOnlyLike = false }: GridViewProps) {
+export default function GridView({ bloggers, isEditMode = false, onUpdate, onDelete, getLikeState, onLikeStateChange, readOnlyLike = false, className = 'mx-auto w-full max-w-7xl px-6 pt-24 pb-12' }: GridViewProps) {
 	const [searchTerm, setSearchTerm] = useState('')
 	const [selectedCategory, setSelectedCategory] = useState<BloggerStatus>('recent')
 
@@ -42,7 +43,7 @@ export default function GridView({ bloggers, isEditMode = false, onUpdate, onDel
 	})
 
 	return (
-		<div className='mx-auto w-full max-w-7xl px-6 pt-24 pb-12'>
+		<div className={className}>
 			<div className='mb-8 space-y-4'>
 				<input
 					type='text'

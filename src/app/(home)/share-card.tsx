@@ -63,8 +63,8 @@ export default function ShareCard() {
 
 				<Link href='/share' className='mt-2 block min-w-0 space-y-2 overflow-hidden'>
 					<div className='flex min-w-0 items-center gap-3'>
-						<div className='relative h-12 w-12 shrink-0 overflow-hidden rounded-xl'>
-							<img src={randomItem.logo} alt={randomItem.name} className='h-full w-full object-contain' />
+						<div className='relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[var(--surface-soft-strong)]'>
+							{randomItem.logo ? <img src={randomItem.logo} alt={randomItem.name || '推荐资源'} className='h-full w-full object-contain' /> : <span className='text-[10px] text-secondary'>资源</span>}
 						</div>
 						<h3 className={cn('min-w-0 text-sm leading-5 font-medium [overflow-wrap:anywhere]', compact ? 'line-clamp-1' : 'line-clamp-2')}>{randomItem.name}</h3>
 					</div>

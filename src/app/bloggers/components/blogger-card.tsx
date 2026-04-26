@@ -94,12 +94,18 @@ export function BloggerCard({
 			<div>
 				<div className='mb-4 flex items-center gap-4'>
 					<div className='group relative'>
-						<img
-							src={localBlogger.avatar}
-							alt={localBlogger.name}
-							className={cn('h-16 w-16 rounded-full object-cover', canEdit && 'cursor-pointer')}
-							onClick={() => canEdit && setShowAvatarDialog(true)}
-						/>
+						{localBlogger.avatar ? (
+							<img
+								src={localBlogger.avatar}
+								alt={localBlogger.name || '博主头像'}
+								className={cn('h-16 w-16 rounded-full object-cover', canEdit && 'cursor-pointer')}
+								onClick={() => canEdit && setShowAvatarDialog(true)}
+							/>
+						) : (
+							<button type='button' onClick={() => canEdit && setShowAvatarDialog(true)} className={cn('flex h-16 w-16 items-center justify-center rounded-full bg-[var(--surface-soft-strong)] text-xs text-secondary', canEdit && 'cursor-pointer')}>
+								头像
+							</button>
+						)}
 						{canEdit && (
 							<div className='ev pointer-events-none absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 transition-opacity group-hover:opacity-100'>
 								<span className='text-xs text-white'>更换</span>

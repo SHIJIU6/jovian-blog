@@ -294,14 +294,6 @@ function normalizeProjectInput(input: unknown, current?: Project): Project {
 	const explicitId = readOptionalStringField(source, 'id', current?.id)
 	const id = normalizeProjectId({ id: explicitId, name, url, description })
 
-	requireNonEmpty(name, 'name')
-	requireNonEmpty(image, 'image')
-	requireNonEmpty(url, 'url')
-	requireNonEmpty(description, 'description')
-	if (tags.length === 0) {
-		throw new ContentAuthoringError('tags 至少需要一项')
-	}
-
 	return { id, name, year, image, url, description, tags, github, npm }
 }
 
@@ -315,14 +307,6 @@ function normalizeShareInput(input: unknown, current?: Share): Share {
 	const stars = readNumberField(source, 'stars', current?.stars || 0, 'stars', { min: 0, max: 5 })
 	const explicitId = readOptionalStringField(source, 'id', current?.id)
 	const id = normalizeShareId({ id: explicitId, name, url, description })
-
-	requireNonEmpty(name, 'name')
-	requireNonEmpty(logo, 'logo')
-	requireNonEmpty(url, 'url')
-	requireNonEmpty(description, 'description')
-	if (tags.length === 0) {
-		throw new ContentAuthoringError('tags 至少需要一项')
-	}
 
 	return { id, name, logo, url, description, tags, stars }
 }
@@ -347,11 +331,6 @@ function normalizeBloggerInput(input: unknown, current?: Blogger): Blogger {
 	const explicitId = readOptionalStringField(source, 'id', current?.id)
 	const id = normalizeBloggerId({ id: explicitId, name, url, description })
 
-	requireNonEmpty(name, 'name')
-	requireNonEmpty(avatar, 'avatar')
-	requireNonEmpty(url, 'url')
-	requireNonEmpty(description, 'description')
-
 	return { id, name, avatar, url, description, stars, status }
 }
 
@@ -361,20 +340,16 @@ function normalizePictureInput(input: unknown, current?: Picture): Picture {
 	const explicitImages = hasOwn(source, 'images') ? normalizeStringArray(source.images) : currentImages
 	const imageFallback = hasOwn(source, 'image') ? normalizeString(source.image) : current?.image || ''
 	const normalizedImages = explicitImages.length > 0 ? explicitImages : imageFallback ? [imageFallback] : []
-	if (normalizedImages.length === 0) {
-		throw new ContentAuthoringError('images 至少需要一项')
-	}
-
 	const description = hasOwn(source, 'description') ? readOptionalStringField(source, 'description') : current?.description
 	const uploadedAt = readStringField(source, 'uploadedAt', current?.uploadedAt || new Date().toISOString())
 	const explicitId = readOptionalStringField(source, 'id', current?.id)
-	const id = ensureContentItemId('picture', explicitId || current?.id, uploadedAt, normalizedImages[0])
+	const id = ensureContentItemId('picture', explicitId || current?.id, uploadedAt, normalizedImages[0] || description || 'empty')
 
 	return {
 		id,
 		description,
 		uploadedAt: uploadedAt || new Date().toISOString(),
-		image: normalizedImages[0],
+		image: normalizedImages[0] || '',
 		images: normalizedImages
 	}
 }
@@ -382,7 +357,6 @@ function normalizePictureInput(input: unknown, current?: Picture): Picture {
 function normalizeSnippetInput(input: unknown, current?: SnippetItem): SnippetItem {
 	const source = asRecord(input)
 	const content = readStringField(source, 'content', current?.content || '')
-	requireNonEmpty(content, 'content')
 	const explicitId = readOptionalStringField(source, 'id', current?.id)
 	const id = current?.id || explicitId || createContentItemId('snippet')
 	return { id, content }
@@ -747,7 +721,7 @@ function normalizeSiteImageItems(value: unknown, kind: 'art' | 'background', fal
 		.map(item => {
 			const source = asRecord(item)
 			const url = readStringField(source, 'url')
-			requireNonEmpty(url, `${kind} image url`)
+			if (kind !== 'background') requireNonEmpty(url, `${kind} image url`)
 			return {
 				id: readOptionalStringField(source, 'id') || createContentItemId(kind),
 				url
@@ -1068,7 +1042,6 @@ export async function updateAuthoringAboutPage(input: unknown, actorEmail?: Acto
 		content: readStringField(source, 'content', current.content)
 	}
 
-	requireNonEmpty(about.title, 'title')
 	await saveAboutData(about)
 	await writeAuditLog({
 		actorEmail: actorEmail || 'local-dev',

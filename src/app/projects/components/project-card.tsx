@@ -83,7 +83,7 @@ export function ProjectCard({
 		<motion.div
 			initial={{ opacity: 0, scale: 0.9 }}
 			{...(maxSM ? { animate: { opacity: 1, scale: 1 } } : { whileInView: { opacity: 1, scale: 1 } })}
-			className='card relative flex flex-col gap-4'>
+			className='card !relative flex flex-col gap-4'>
 			{isEditMode && (
 				<div className='absolute top-3 right-3 z-10 flex gap-2'>
 					{isEditing ? (
@@ -110,12 +110,18 @@ export function ProjectCard({
 
 			<div className='flex items-start gap-4'>
 				<div className='group relative'>
-					<img
-						src={localProject.image}
-						alt={localProject.name}
-						className={cn('h-16 w-16 shrink-0 rounded-xl object-cover', canEdit && 'cursor-pointer')}
-						onClick={() => canEdit && setShowImageDialog(true)}
-					/>
+					{localProject.image ? (
+						<img
+							src={localProject.image}
+							alt={localProject.name || '项目图片'}
+							className={cn('h-16 w-16 shrink-0 rounded-xl object-cover', canEdit && 'cursor-pointer')}
+							onClick={() => canEdit && setShowImageDialog(true)}
+						/>
+					) : (
+						<button type='button' onClick={() => canEdit && setShowImageDialog(true)} className={cn('flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-[var(--surface-soft-strong)] text-xs text-secondary', canEdit && 'cursor-pointer')}>
+							图片
+						</button>
+					)}
 					{canEdit && (
 						<div className='pointer-events-none absolute inset-0 flex items-center justify-center rounded-xl bg-black/40 opacity-0 transition-opacity group-hover:opacity-100'>
 							<span className='text-xs text-white'>更换</span>
@@ -175,21 +181,21 @@ export function ProjectCard({
 				{canEdit ? (
 					<>
 						<input
-							type='url'
+							type='text'
 							value={localProject.url}
 							onChange={e => handleFieldChange('url', e.target.value)}
 							placeholder='网站 URL'
 							className='surface-input flex-1 px-3 py-1.5'
 						/>
 						<input
-							type='url'
+							type='text'
 							value={localProject.github || ''}
 							onChange={e => handleFieldChange('github', e.target.value || undefined)}
 							placeholder='GitHub URL（可选）'
 							className='surface-input flex-1 px-3 py-1.5'
 						/>
 						<input
-							type='url'
+							type='text'
 							value={localProject.npm || ''}
 							onChange={e => handleFieldChange('npm', e.target.value || undefined)}
 							placeholder='NPM URL（可选）'

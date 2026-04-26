@@ -10,6 +10,7 @@ import { useReadArticles } from '@/hooks/use-read-articles'
 import LiquidGrass from '@/components/liquid-grass'
 import { useManagementMode } from '@/hooks/use-management-mode'
 import { normalizeRouteSlug } from '@/lib/route-slug'
+import { CommentBoard } from '@/components/comment-board'
 
 export default function Page() {
 	const params = useParams() as { id?: string | string[] }
@@ -100,6 +101,10 @@ export default function Page() {
 					编辑
 				</motion.button>
 			)}
+
+			<div className='mx-auto w-full max-w-[980px] px-6 pb-6 max-sm:px-4'>
+				<CommentBoard targetType='post' targetId={slug} title='文章留言板' />
+			</div>
 
 			{slug === 'liquid-grass' && <LiquidGrass />}
 		</>

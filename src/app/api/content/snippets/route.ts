@@ -1,7 +1,17 @@
-import { getSnippets } from '@/lib/server/content/structured'
+import { getPaginatedSnippets } from '@/lib/server/content/structured'
+import { normalizePagination } from '@/lib/pagination'
 
 export const dynamic = 'force-dynamic'
 
-export async function GET() {
-	return Response.json(await getSnippets())
+export async function GET(request: Request) {
+	const url = new URL(request.url)
+	return Response.json(
+		await getPaginatedSnippets(
+			normalizePagination({
+				page: url.searchParams.get('page'),
+				pageSize: url.searchParams.get('pageSize'),
+				limit: url.searchParams.get('limit')
+			})
+		)
+	)
 }

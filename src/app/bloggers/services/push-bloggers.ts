@@ -20,9 +20,12 @@ async function uploadAsset(file: File, folder: string) {
 	return response.json() as Promise<{ url: string }>
 }
 
-export async function pushBloggers(params: PushBloggersParams): Promise<void> {
+export async function pushBloggers(params: PushBloggersParams): Promise<Blogger[]> {
 	const { bloggers, avatarItems } = params
-	let nextBloggers = [...bloggers]
+	let nextBloggers = bloggers.map(blogger => ({
+		...blogger,
+		avatar: blogger.avatar?.startsWith('blob:') ? '' : blogger.avatar
+	}))
 
 	if (avatarItems?.size) {
 		for (const [bloggerId, avatarItem] of avatarItems.entries()) {
@@ -44,4 +47,7 @@ export async function pushBloggers(params: PushBloggersParams): Promise<void> {
 		const payload = await response.json().catch(() => ({}))
 		throw new Error(payload.error || '保存失败')
 	}
+
+	const payload = (await response.json().catch(() => ({}))) as { items?: Blogger[] }
+	return payload.items || nextBloggers
 }

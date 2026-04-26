@@ -11,7 +11,7 @@ import type { Blogger } from '../grid-view'
 interface CreateDialogProps {
 	blogger: Blogger | null
 	onClose: () => void
-	onSave: (blogger: Blogger) => void
+	onSave: (blogger: Blogger, avatarItem?: AvatarItem) => void
 }
 
 export default function CreateDialog({ blogger, onClose, onSave }: CreateDialogProps) {
@@ -24,6 +24,7 @@ export default function CreateDialog({ blogger, onClose, onSave }: CreateDialogP
 		stars: 3
 	})
 	const [showAvatarDialog, setShowAvatarDialog] = useState(false)
+	const [selectedAvatarItem, setSelectedAvatarItem] = useState<AvatarItem | undefined>()
 
 	useEffect(() => {
 		if (blogger) {
@@ -38,20 +39,17 @@ export default function CreateDialog({ blogger, onClose, onSave }: CreateDialogP
 				stars: 3
 			})
 		}
+		setSelectedAvatarItem(undefined)
 	}, [blogger])
 
 	const handleAvatarSubmit = (avatar: AvatarItem) => {
 		const avatarUrl = avatar.type === 'url' ? avatar.url : avatar.previewUrl
+		setSelectedAvatarItem(avatar)
 		setFormData({ ...formData, avatar: avatarUrl })
 	}
 
 	const handleSubmit = () => {
-		if (!formData.name.trim() || !formData.avatar.trim() || !formData.url.trim() || !formData.description.trim()) {
-			toast.error('请填写所有必填项')
-			return
-		}
-
-		onSave(formData)
+		onSave(formData, selectedAvatarItem)
 		onClose()
 		toast.success(blogger ? '更新成功' : '添加成功')
 	}
@@ -84,7 +82,7 @@ export default function CreateDialog({ blogger, onClose, onSave }: CreateDialogP
 							className='w-full text-lg font-bold focus:outline-none'
 						/>
 						<input
-							type='url'
+							type='text'
 							value={formData.url}
 							onChange={e => setFormData({ ...formData, url: e.target.value })}
 							placeholder='https://example.com'

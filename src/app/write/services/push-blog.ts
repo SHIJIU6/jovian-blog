@@ -37,12 +37,21 @@ async function uploadAsset(file: File, folder: string) {
 	return response.json() as Promise<{ url: string }>
 }
 
+function normalizePostSlug(value: string, fallback: string) {
+	const raw = (value || fallback).trim()
+	const normalized = raw
+		.toLowerCase()
+		.replace(/[^a-z0-9\u4e00-\u9fa5._-]+/g, '-')
+		.replace(/^-+|-+$/g, '')
+	return normalized || `post-${Date.now()}`
+}
+
 export async function pushBlog(params: PushBlogParams): Promise<void> {
 	const { form, cover, images, mode = 'create', originalSlug } = params
 	const status = normalizeBlogStatus(form.status, form.hidden)
+	const slug = normalizePostSlug(form.slug, form.title)
 
-	if (!form?.slug) throw new Error('需要 slug')
-	if (mode === 'edit' && originalSlug && originalSlug !== form.slug) {
+	if (mode === 'edit' && originalSlug && originalSlug !== slug) {
 		throw new Error('编辑模式下不支持修改 slug，请保持原 slug 不变')
 	}
 
@@ -52,12 +61,12 @@ export async function pushBlog(params: PushBlogParams): Promise<void> {
 	const uploaded = new Map<string, string>()
 	for (const image of images || []) {
 		if (image.type !== 'file') continue
-		const result = await uploadAsset(image.file, `posts/${form.slug}`)
+		const result = await uploadAsset(image.file, `posts/${slug}`)
 		uploaded.set(image.id, result.url)
 	}
 
 	if (cover?.type === 'file') {
-		const result = await uploadAsset(cover.file, `posts/${form.slug}`)
+		const result = await uploadAsset(cover.file, `posts/${slug}`)
 		coverUrl = result.url
 		uploaded.set(cover.id, result.url)
 	}
@@ -73,8 +82,8 @@ export async function pushBlog(params: PushBlogParams): Promise<void> {
 			'Content-Type': 'application/json'
 		},
 		body: JSON.stringify({
-			slug: form.slug,
-			title: form.title,
+			slug,
+			title: form.title || '未命名文章',
 			summary: form.summary,
 			contentMd: markdown,
 			tags: form.tags,

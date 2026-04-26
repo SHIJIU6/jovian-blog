@@ -37,6 +37,8 @@ function mapRowToPost(row: Record<string, unknown>): ContentPostListItem {
  */
 export async function listPostsFromD1(db: any, options: ContentListOptions = {}): Promise<ContentPostListItem[] | null> {
 	try {
+		const limit = typeof options.limit === 'number' && options.limit > 0 ? Math.floor(options.limit) : 100
+		const offset = typeof options.offset === 'number' && options.offset > 0 ? Math.floor(options.offset) : 0
 		const query = `
 			SELECT
 				p.id,
@@ -60,11 +62,11 @@ export async function listPostsFromD1(db: any, options: ContentListOptions = {})
 			  AND (? = 1 OR p.status = 'published')
 			GROUP BY p.id
 			ORDER BY COALESCE(p.display_date, p.published_at, p.updated_at, p.created_at) DESC
+			LIMIT ? OFFSET ?
 		`
-		const result = await db.prepare(query).bind(options.includeHidden ? 1 : 0).all()
+		const result = await db.prepare(query).bind(options.includeHidden ? 1 : 0, limit, offset).all()
 		const rows = Array.isArray(result?.results) ? result.results : []
-		const mapped = rows.map((row: Record<string, unknown>) => mapRowToPost(row))
-		return typeof options.limit === 'number' ? mapped.slice(0, options.limit) : mapped
+		return rows.map((row: Record<string, unknown>) => mapRowToPost(row))
 	} catch {
 		return null
 	}

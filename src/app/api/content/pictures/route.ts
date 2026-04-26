@@ -1,7 +1,17 @@
-import { getPictures } from '@/lib/server/content/structured'
+import { getPaginatedPictures } from '@/lib/server/content/structured'
+import { normalizePagination } from '@/lib/pagination'
 
 export const dynamic = 'force-dynamic'
 
-export async function GET() {
-	return Response.json(await getPictures())
+export async function GET(request: Request) {
+	const url = new URL(request.url)
+	return Response.json(
+		await getPaginatedPictures(
+			normalizePagination({
+				page: url.searchParams.get('page'),
+				pageSize: url.searchParams.get('pageSize'),
+				limit: url.searchParams.get('limit')
+			})
+		)
+	)
 }

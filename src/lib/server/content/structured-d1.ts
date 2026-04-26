@@ -6,6 +6,10 @@ import { markD1ScopeInitialized } from './d1-state'
 import type { SnippetItem } from '@/lib/content-item-id'
 
 type D1Row = Record<string, unknown>
+type D1ListOptions = {
+	limit?: number
+	offset?: number
+}
 
 /**
  * Reference: Cloudflare D1 docs (Workers prepared statements and batch execution, retrieved via Context7 on 2026-04-09)
@@ -66,11 +70,21 @@ async function runBatch(db: any, statements: any[]) {
 	}
 }
 
-export async function getProjectsFromD1(db: any): Promise<Project[] | null> {
+function getListBounds(options: D1ListOptions = {}) {
+	return {
+		limit: typeof options.limit === 'number' && options.limit > 0 ? Math.floor(options.limit) : 100,
+		offset: typeof options.offset === 'number' && options.offset > 0 ? Math.floor(options.offset) : 0
+	}
+}
+
+export async function getProjectsFromD1(db: any, options: D1ListOptions = {}): Promise<Project[] | null> {
 	try {
+		const { limit, offset } = getListBounds(options)
 		const rows = await getAllRows(
 			db,
-			'SELECT id, name, year, description, image_url, url, tags_json, github_url, npm_url FROM projects ORDER BY sort_order ASC, updated_at DESC, created_at DESC'
+			'SELECT id, name, year, description, image_url, url, tags_json, github_url, npm_url FROM projects ORDER BY sort_order ASC, updated_at DESC, created_at DESC LIMIT ? OFFSET ?',
+			limit,
+			offset
 		)
 
 		return rows.map(row => ({
@@ -131,11 +145,14 @@ export async function saveProjectsToD1(db: any, items: Project[]): Promise<boole
 	}
 }
 
-export async function getSharesFromD1(db: any): Promise<Share[] | null> {
+export async function getSharesFromD1(db: any, options: D1ListOptions = {}): Promise<Share[] | null> {
 	try {
+		const { limit, offset } = getListBounds(options)
 		const rows = await getAllRows(
 			db,
-			'SELECT id, name, logo_url, url, description, tags_json, stars FROM resources ORDER BY sort_order ASC, updated_at DESC, created_at DESC'
+			'SELECT id, name, logo_url, url, description, tags_json, stars FROM resources ORDER BY sort_order ASC, updated_at DESC, created_at DESC LIMIT ? OFFSET ?',
+			limit,
+			offset
 		)
 
 		return rows.map(row => ({
@@ -192,11 +209,14 @@ export async function saveSharesToD1(db: any, items: Share[]): Promise<boolean> 
 	}
 }
 
-export async function getBloggersFromD1(db: any): Promise<Blogger[] | null> {
+export async function getBloggersFromD1(db: any, options: D1ListOptions = {}): Promise<Blogger[] | null> {
 	try {
+		const { limit, offset } = getListBounds(options)
 		const rows = await getAllRows(
 			db,
-			'SELECT id, name, avatar_url, url, description, stars, status FROM bloggers ORDER BY sort_order ASC, updated_at DESC, created_at DESC'
+			'SELECT id, name, avatar_url, url, description, stars, status FROM bloggers ORDER BY sort_order ASC, updated_at DESC, created_at DESC LIMIT ? OFFSET ?',
+			limit,
+			offset
 		)
 
 		return rows.map(row => ({
@@ -253,9 +273,10 @@ export async function saveBloggersToD1(db: any, items: Blogger[]): Promise<boole
 	}
 }
 
-export async function getSnippetsFromD1(db: any): Promise<SnippetItem[] | null> {
+export async function getSnippetsFromD1(db: any, options: D1ListOptions = {}): Promise<SnippetItem[] | null> {
 	try {
-		const rows = await getAllRows(db, 'SELECT id, content FROM snippets ORDER BY sort_order ASC, created_at ASC')
+		const { limit, offset } = getListBounds(options)
+		const rows = await getAllRows(db, 'SELECT id, content FROM snippets ORDER BY sort_order ASC, created_at ASC LIMIT ? OFFSET ?', limit, offset)
 		return rows
 			.map(row => ({
 				id: String(row.id || ''),
@@ -292,11 +313,14 @@ export async function saveSnippetsToD1(db: any, items: SnippetItem[]): Promise<b
 	}
 }
 
-export async function getPicturesFromD1(db: any): Promise<Picture[] | null> {
+export async function getPicturesFromD1(db: any, options: D1ListOptions = {}): Promise<Picture[] | null> {
 	try {
+		const { limit, offset } = getListBounds(options)
 		const rows = await getAllRows(
 			db,
-			'SELECT id, description, uploaded_at, image_url, images_json, created_at FROM pictures ORDER BY COALESCE(uploaded_at, created_at) DESC'
+			'SELECT id, description, uploaded_at, image_url, images_json, created_at FROM pictures ORDER BY COALESCE(uploaded_at, created_at) DESC LIMIT ? OFFSET ?',
+			limit,
+			offset
 		)
 
 		return rows.map(row => {

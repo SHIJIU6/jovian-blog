@@ -11,7 +11,7 @@ import { createContentItemId } from '@/lib/content-item-id'
 interface CreateDialogProps {
 	project: Project | null
 	onClose: () => void
-	onSave: (project: Project) => void
+	onSave: (project: Project, imageItem?: ImageItem) => void
 }
 
 export default function CreateDialog({ project, onClose, onSave }: CreateDialogProps) {
@@ -27,6 +27,7 @@ export default function CreateDialog({ project, onClose, onSave }: CreateDialogP
 		npm: undefined
 	})
 	const [showImageDialog, setShowImageDialog] = useState(false)
+	const [selectedImageItem, setSelectedImageItem] = useState<ImageItem | undefined>()
 	const [tagsInput, setTagsInput] = useState('')
 
 	useEffect(() => {
@@ -47,10 +48,12 @@ export default function CreateDialog({ project, onClose, onSave }: CreateDialogP
 			})
 			setTagsInput('')
 		}
+		setSelectedImageItem(undefined)
 	}, [project])
 
 	const handleImageSubmit = (image: ImageItem) => {
 		const imageUrl = image.type === 'url' ? image.url : image.previewUrl
+		setSelectedImageItem(image)
 		setFormData({ ...formData, image: imageUrl })
 	}
 
@@ -64,17 +67,7 @@ export default function CreateDialog({ project, onClose, onSave }: CreateDialogP
 	}
 
 	const handleSubmit = () => {
-		if (!formData.name.trim() || !formData.image.trim() || !formData.url.trim() || !formData.description.trim()) {
-			toast.error('请填写所有必填项')
-			return
-		}
-
-		if (formData.tags.length === 0) {
-			toast.error('请至少添加一个标签')
-			return
-		}
-
-		onSave(formData)
+		onSave(formData, selectedImageItem)
 		onClose()
 		toast.success(project ? '更新成功' : '添加成功')
 	}
@@ -114,7 +107,7 @@ export default function CreateDialog({ project, onClose, onSave }: CreateDialogP
 								className='surface-input text-secondary w-20 px-2 py-1 text-xs'
 							/>
 							<input
-								type='url'
+								type='text'
 								value={formData.url}
 								onChange={e => setFormData({ ...formData, url: e.target.value })}
 								placeholder='https://example.com'
@@ -151,14 +144,14 @@ export default function CreateDialog({ project, onClose, onSave }: CreateDialogP
 
 				<div className='mt-3 space-y-2'>
 					<input
-						type='url'
+						type='text'
 						value={formData.github || ''}
 						onChange={e => setFormData({ ...formData, github: e.target.value || undefined })}
 						placeholder='GitHub URL（可选）'
 						className='surface-input w-full px-3 py-2'
 					/>
 					<input
-						type='url'
+						type='text'
 						value={formData.npm || ''}
 						onChange={e => setFormData({ ...formData, npm: e.target.value || undefined })}
 						placeholder='NPM URL（可选）'

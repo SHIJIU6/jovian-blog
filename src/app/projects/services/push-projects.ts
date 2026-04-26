@@ -20,9 +20,12 @@ async function uploadAsset(file: File, folder: string) {
 	return response.json() as Promise<{ url: string }>
 }
 
-export async function pushProjects(params: PushProjectsParams): Promise<void> {
+export async function pushProjects(params: PushProjectsParams): Promise<Project[]> {
 	const { projects, imageItems } = params
-	let nextProjects = [...projects]
+	let nextProjects = projects.map(project => ({
+		...project,
+		image: project.image?.startsWith('blob:') ? '' : project.image
+	}))
 
 	if (imageItems?.size) {
 		for (const [projectId, imageItem] of imageItems.entries()) {
@@ -44,4 +47,7 @@ export async function pushProjects(params: PushProjectsParams): Promise<void> {
 		const payload = await response.json().catch(() => ({}))
 		throw new Error(payload.error || '保存失败')
 	}
+
+	const payload = (await response.json().catch(() => ({}))) as { items?: Project[] }
+	return payload.items || nextProjects
 }
