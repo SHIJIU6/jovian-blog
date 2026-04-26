@@ -27,7 +27,7 @@ type LocalLikeStore = {
 }
 
 export type LikeMutationResult = LikeState & {
-	reason?: 'rate_limited'
+	reason?: 'rate_limited' | 'storage_unavailable'
 }
 
 const EMPTY_STORE: LocalLikeStore = {
@@ -91,6 +91,33 @@ function pruneVotes(store: LocalLikeStore) {
 function isMissingTableError(error: unknown, tableName: string) {
 	const message = String(error || '').toLowerCase()
 	return message.includes('no such table') && message.includes(tableName.toLowerCase())
+}
+
+async function ensureLikeTablesInD1(db: any) {
+	await db
+		.prepare(
+			`CREATE TABLE IF NOT EXISTS ${D1_VOTE_TABLE} (
+				target_key TEXT NOT NULL,
+				client_fingerprint TEXT NOT NULL,
+				vote_date TEXT NOT NULL,
+				created_at TEXT NOT NULL,
+				PRIMARY KEY (target_key, client_fingerprint, vote_date)
+			)`
+		)
+		.run()
+
+	await db.prepare(`CREATE INDEX IF NOT EXISTS idx_like_daily_votes_vote_date ON ${D1_VOTE_TABLE}(vote_date)`).run()
+
+	await db
+		.prepare(
+			`CREATE TABLE IF NOT EXISTS ${D1_COUNTER_TABLE} (
+				target_key TEXT NOT NULL PRIMARY KEY,
+				total_count INTEGER NOT NULL DEFAULT 0,
+				created_at TEXT NOT NULL,
+				updated_at TEXT NOT NULL
+			)`
+		)
+		.run()
 }
 
 async function readLocalStore(): Promise<LocalLikeStore> {
@@ -333,6 +360,8 @@ async function getLikeStatesFromD1(db: any, targetKeysInput: string[], fingerpri
 	const placeholders = targetKeys.map(() => '?').join(', ')
 
 	try {
+		await ensureLikeTablesInD1(db)
+
 		const [countMap, likedResult] = await Promise.all([
 			getLikeCountMapFromD1(db, targetKeys),
 			db
@@ -365,6 +394,8 @@ async function getLikeStatesFromD1(db: any, targetKeysInput: string[], fingerpri
 async function registerLikeInD1(db: any, targetKey: string, fingerprint: string, voteDate: string): Promise<LikeMutationResult | null> {
 	try {
 		const now = new Date().toISOString()
+		await ensureLikeTablesInD1(db)
+
 		const hadVote = await hasLikeVoteInD1(db, targetKey, fingerprint, voteDate)
 		if (hadVote === null) return null
 
@@ -372,17 +403,17 @@ async function registerLikeInD1(db: any, targetKey: string, fingerprint: string,
 			.prepare(`INSERT OR IGNORE INTO ${D1_VOTE_TABLE} (target_key, client_fingerprint, vote_date, created_at) VALUES (?, ?, ?, ?)`)
 			.bind(targetKey, fingerprint, voteDate, now)
 			.run()
-		const hasNewVote = !hadVote
+		const hasNewVote = !hadVote && Number(insertResult?.meta?.changes || 0) > 0
 
 		if (hasNewVote) {
 			try {
-				await backfillLikeCounterInD1(db, targetKey, now)
+				await incrementLikeCounterInD1(db, targetKey, now)
 			} catch (error) {
 				if (!isMissingTableError(error, D1_COUNTER_TABLE)) {
 					return null
 				}
 			}
-		} else if (Number(insertResult?.meta?.changes || 0) > 0) {
+		} else if (!hadVote) {
 			await backfillLikeCounterInD1(db, targetKey, now).catch(() => undefined)
 		}
 
@@ -416,6 +447,7 @@ export async function getLikeStates(targetKeysInput: string[], fingerprint: stri
 	if (env?.BLOG_DB) {
 		const states = await getLikeStatesFromD1(env.BLOG_DB, targetKeys, fingerprint, voteDate)
 		if (states) return states
+		return Object.fromEntries(targetKeys.map(targetKey => [targetKey, EMPTY_LIKE_STATE]))
 	}
 
 	return getLikeStatesFromLocal(targetKeys, fingerprint, voteDate)
@@ -429,6 +461,11 @@ export async function registerLike(targetKeyInput: string, fingerprint: string):
 	if (env?.BLOG_DB) {
 		const result = await registerLikeInD1(env.BLOG_DB, targetKey, fingerprint, voteDate)
 		if (result) return result
+		const state = await getLikeStateFromD1(env.BLOG_DB, targetKey, fingerprint, voteDate)
+		return {
+			...(state || EMPTY_LIKE_STATE),
+			reason: 'storage_unavailable'
+		}
 	}
 
 	return registerLikeInLocal(targetKey, fingerprint, voteDate)

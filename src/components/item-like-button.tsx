@@ -54,6 +54,9 @@ export function ItemLikeButton({ targetKey, state, onStateChange, className }: I
 				method: 'POST'
 			})
 			const payload = await response.json().catch(() => ({}))
+			if (!response.ok || payload?.reason === 'storage_unavailable') {
+				throw new Error('Like storage unavailable')
+			}
 			const nextState = {
 				count: typeof payload?.count === 'number' ? payload.count : optimisticState.count,
 				likedToday: Boolean(payload?.likedToday ?? true)

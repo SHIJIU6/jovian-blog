@@ -17,7 +17,7 @@ type LikeButtonProps = {
 type LikeResponse = {
 	count: number | null
 	likedToday: boolean
-	reason?: 'rate_limited'
+	reason?: 'rate_limited' | 'storage_unavailable'
 }
 
 const ENDPOINT = process.env.NEXT_PUBLIC_LIKE_ENDPOINT || '/api/likes'
@@ -110,6 +110,9 @@ export default function LikeButton({ target, targetType = 'post', delay, classNa
 			const url = `${ENDPOINT}?key=${encodeURIComponent(targetKey)}`
 			const res = await fetch(url, { method: 'POST' })
 			const data = await res.json().catch(() => ({}))
+			if (!res.ok || data?.reason === 'storage_unavailable') {
+				throw new Error('Like storage unavailable')
+			}
 			if (data.reason == 'rate_limited') {
 				setLikedToday(true)
 				toast('谢谢啦😘，今天已经不能再点赞啦💕')
