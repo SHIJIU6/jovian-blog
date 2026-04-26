@@ -15,6 +15,7 @@ const studioNavIdleClass = '[color:var(--text-muted)] hover:bg-[var(--studio-nav
 const studioLinks = [
 	{ href: '/studio', label: '概览' },
 	{ href: '/studio/site', label: '站点配置' },
+	{ href: '/studio/about', label: '关于' },
 	{ href: '/studio/write', label: '写文章' },
 	{ href: '/studio/blog', label: '文章管理' },
 	{ href: '/studio/projects', label: '项目' },
